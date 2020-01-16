@@ -1,0 +1,9 @@
+Questions:
+1.) Can characters have more than one class?
+2.) Are levels based on experience points, or is there another system?
+3.) Do you want skills to be included in the character sheet?
+4.) Effects like blindness, stun, etc to be included
+5.) Do you want currency to be included in the character sheet. If so, what type of currency?
+6.) Track Health and AC?
+7.) Movement speed
+8.) List of possible domain names. All domain will end with ".ddns.net"
