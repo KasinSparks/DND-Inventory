@@ -1,0 +1,8 @@
+Check For Running Virtual Env:
+1.) run pip -V
+2.) Check enviroment's location path
+	a.) If path is inside of DND_Inv... then python virtual enviroment is active, else proceed to section "Start Python Virtual Env"
+
+Start Python Virtual Env:
+1.) run source venv/bin/activate
+2.) proceed to section "Check For Running Virtual Env" for verification.
