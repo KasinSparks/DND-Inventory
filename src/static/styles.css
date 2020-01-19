@@ -1,0 +1,294 @@
+@font-face{
+	font-family: SAOUI-Regular;
+	src: url('../../fonts/SAOUI-Regular.otf')
+}
+@font-face{
+	font-family: SAOUI-Bold;
+	src: url('../../fonts/SAOUI-Bold.otf')
+}
+@font-face{
+	font-family: SAOUIWelcome-Bold;
+	src: url('../../fonts/SAOUIWelcome-Bold.otf')
+}
+@font-face{
+	font-family: SAOUIWelcome-Regular;
+	src: url('../../fonts/SAOUIWelcome-Regular.otf')
+}
+
+
+body{
+	/*min-width: 1600px;*/
+	width: 97%;
+	min-height: 900px;
+	height: 900px;
+	background-color: #2e2e2e;
+	margin: 0 auto;
+	font-family: SAOUI-Regular;
+}
+
+
+/* Equipment and Character container */
+.eq_ch_container{
+	min-width: 768px;
+	width: 59%;
+	height: 100%;
+	float: left;
+}
+
+/* Equipment containter */
+.eq_container{
+	width: 64%;
+	height: 100%;
+	background-color: #424242;
+	padding: 4px;
+	float: left;
+}
+
+/* Inner container */
+.inner_container{
+	margin-left: 2px;
+	margin-top: 2px;
+	border-style: solid;
+	border-width: 1%;
+	border-color: black;
+	width: 98%;
+	height: 99%;
+	background-color: grey;
+}
+
+/* Tabs at top of panels */
+.tab{
+	width: 100%;
+	height: 5%;
+	background-color: #252525;
+	border-bottom-style: solid;
+	border-bottom-color: black;
+	border-bottom-width: 1%;
+}
+
+/* Titles in the tab(s) */
+.tab h1{
+	margin: 0px;
+	text-align: center;
+	padding-top: 7px;
+	color: #606060;
+}
+
+/* Equipment */
+.equipment{
+	margin: 0 auto;
+	width: 584px;
+	height: 100%;
+}
+
+/* Equipment row */
+.equipment_row{
+	width: 100%;
+	height: 70px;
+	padding-top: 20px;
+}
+
+/* Equipment side */
+.equipment_side{
+	width: 50%;
+	height: 100%;
+	float: left;
+}
+
+/* Equipment item */
+.equipment_item{
+	width: 292px;
+	height: 70px;
+	float: left;
+}
+
+.equipment_item h2{
+	color: #606060;
+}
+
+/* Equipment left item */
+.equipment_left_item{
+	background-image: url(../static/EquipedPartLeft.png);
+}
+
+/* Equipment right item */
+.equipment_right_item{
+	background-image: url(../static/EquipedPartRight.png);
+}
+
+/* Equipment left item image */
+.equipment_left_img{
+	padding: 3px;
+	float: left;
+}
+
+.equipment_left_img img{
+	width: 64px;
+	height: 64px;
+}
+
+/* Equipment left item description */
+.equipment_left_item_name{
+	width: 225px;
+	height: 70px;
+}
+
+.equipment_left_item_name h2{
+	text-align: center;
+}
+
+/* Equipment left item image */
+.equipment_left_img{
+	padding: 3px;
+	float: left;
+}
+
+.equipment_left_img img{
+	width: 64px;
+	height: 64px;
+}
+
+/* Equipment right item description */
+.equipment_right_item_name{
+	width: 225px;
+	height: 70px;
+	float: left; /* we all float down here */
+}
+
+.equipment_right_item_name h2{
+	text-align: center;
+}
+
+/* Equipment right item image */
+.equipment_right_img{
+	padding: 3px;
+}
+
+.equipment_right_img img{
+	width: 64px;
+	height: 64px;
+}
+
+/* Item lines */
+.info_item{
+	width: 100%;
+	height: 3.5%;
+	background-color: #5a5a5a;
+	border-bottom-style: solid;
+	border-bottom-color: black;
+	border-bottom-width: 1%;
+}
+
+.info_item_seperator{
+	width: 100%;
+	height: 3.5%;
+	background-color: #252525;
+	border-bottom-style: solid;
+	border-bottom-color: black;
+	border-bottom-width: 1%;
+}
+
+/* Character info container */
+.char_info{
+	width: 32%;
+	height: 100%;
+	background-color: #424242;
+	float: left;
+	margin-left: 14px;
+	padding: 4px;
+}
+
+/* Character info h text color */
+.char_info h3, .char_info h1, .char_info h5{
+	color: #c1c1c1;
+	text-align: center;
+}
+
+/* Info Data */
+.info_data{
+	margin-top: 5px;
+}
+
+/* Basic info item things */
+.info_item > .info_left_section, .info_item > .info_middle_section, .info_item > .info_right_section{
+	height: 100%;
+	float: left;
+}
+
+/* info items that require a background image */
+.info_item > .info_middle_section, .info_item > .info_right_section{
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+/* Info left section */
+.info_left_section{
+	width: 40%;
+}
+
+/* Info middle section */
+.info_middle_section{
+	width: 40%;
+}
+
+/* Info middle top image */
+.info_middle_section_top_image{
+	background-image: url(../static/ItemPart.png);
+}
+/* Info middle center image */
+.info_middle_section_center_image{
+	background-image: url(../static/ItemPartCenter.png);
+}
+/* Info middle bottom image */
+.info_middle_section_bottom_image{
+	background-image: url(../static/ItemPartBottom.png);
+}
+
+
+/* Info right section */
+.info_right_section{
+	background-image: url(../static/ItemPartRight.png);
+	width: 20%;
+}
+
+/* Info right top image */
+.info_right_section_top_image{
+	background-image: url(../static/ItemPartRight.png);
+}
+/* Info right center image */
+.info_right_section_center_image{
+	background-image: url(../static/ItemPartRightCenter.png);
+}
+/* Info right bottom image */
+.info_right_section_bottom_image{
+	background-image: url(../static/ItemPartRightBottom.png);
+}
+
+
+.info_right_section h3, .info_middle_section h3{
+	padding-left: 4px;
+}
+
+/* Info with subscript text */
+.info_subscript{
+	height: 100%;
+	margin: 5px auto;
+}
+
+.info_subscript_middle{
+	width: 45%;
+}
+
+.info_subscript_right{
+	width: 70%;
+}
+
+.info_subscript > h3, .info_subscript > h5{
+	float: left;
+	margin: 0px;
+	padding-left: 4px;
+}
+
+.info_subscript > h5{
+	padding-top: 5px;
+}
