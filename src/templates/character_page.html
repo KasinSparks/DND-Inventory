@@ -1,7 +1,9 @@
 <!DOCTYPE html>
+<meta charset="UTF-8">
 <head>
 	<title>Character Page</title>
 	<link rel="stylesheet" href="../static/styles.css">
+	<script src="../static/script.js"></script>
 </head>
 <!-- will have to make multiple css files for diffrent devices -->
 <body>
@@ -14,7 +16,7 @@
 						<h1>Equipment</h1>
 					</div>
 					
-					<div style="width: 100%; height: 67.5%; background-color: #424242; border-bottom-style: solid; border-bottom-color: black; border-bottom-width: 1%;">
+					<div class="equipment_tab" style="width: 100%; height: 67.5%; background-color: #424242; border-bottom-style: solid; border-bottom-color: black; border-bottom-width: 1%;">
 						<div class="equipment">
 							<div class="equipment_side">
 								<div class="equipment_row tooltip">
@@ -50,9 +52,9 @@
 											<td>CHA:</td>
 											<td>+0</td>
 										</tr>
-									</table >
+									</table>
 								</div>
-								<div class="equipment_row tooltip">
+								<div class="equipment_row" onclick="test3('Shoulder');">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
 											<img src="../static/Item_img_shoulders.png" alt="Shoulder Item" />
@@ -61,17 +63,8 @@
 											<h2>Shoulder</h2>
 										</div>
 									</div>
-									<!-- Tool tip -->
-									<div class="tooltiptext">
-										<p style="margin: 0px;">Name: Shoulders</p>
-										<p style="margin: 0px;">STR +00 / DEX +00 / CON +00</p>
-										<p style="margin: 0px;">INT +00 / WIS +00 / CHA +00</p>
-									</div>
 								</div>
-								<div class="equipment_row" onmouseover="document.getElementById('test').innerHTML = '<p>Name: Shoulders</p>\
-									<p>STR +00 / DEX +00 / CON +00</p>\
-									<p>INT +00 / WIS +00 / CHA +00</p>\
-									'" onmouseout="document.getElementById('test').innerHTML = '<h2>Torso</h2>'">
+								<div class="equipment_row">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
 											<img src="../static/Item_img_chest.png" alt="Torso Item" />
