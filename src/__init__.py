@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, render_template
 
 def create_app(test_config=None):
 	# create and configure the app
@@ -27,13 +27,26 @@ def create_app(test_config=None):
 	from . import db
 	db.init_app(app)
 
-	# blueprints
+	#---------------------------------------------------------------#
+	#							Blueprints							#
+	#---------------------------------------------------------------#
+	
+	# auth
 	from .blueprints import auth
 	app.register_blueprint(auth.bp)
+	# data_server
+	from .blueprints import data_server
+	app.register_blueprint(data_server.bp)
 
 	# a simple page that says hello
 	@app.route('/hello')
 	def hello():
 		return 'Hello, World!'
+
+	@app.route('/')
+	@app.route('/home')
+	def home():
+		return render_template('character_page.html')
+	
 
 	return app

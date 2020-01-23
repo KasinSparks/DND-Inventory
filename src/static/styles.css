@@ -1,18 +1,18 @@
 @font-face{
 	font-family: SAOUI-Regular;
-	src: url('../../fonts/SAOUI-Regular.otf')
+	src: url('fonts/SAOUI-Regular.otf')
 }
 @font-face{
 	font-family: SAOUI-Bold;
-	src: url('../../fonts/SAOUI-Bold.otf')
+	src: url('fonts/SAOUI-Bold.otf')
 }
 @font-face{
 	font-family: SAOUIWelcome-Bold;
-	src: url('../../fonts/SAOUIWelcome-Bold.otf')
+	src: url('fonts/SAOUIWelcome-Bold.otf')
 }
 @font-face{
 	font-family: SAOUIWelcome-Regular;
-	src: url('../../fonts/SAOUIWelcome-Regular.otf')
+	src: url('fonts/SAOUIWelcome-Regular.otf')
 }
 
 ::-webkit-scrollbar {
@@ -361,4 +361,91 @@ body{
 
 table td{
 	color: white;
+}
+
+
+/*--------------------------------------*/
+/* 			Equipment Item Details		*/
+/*--------------------------------------*/
+
+.item_info{
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0,0,0,0.7);
+	position: relative;
+	top:-100%;
+	left: 0px;
+	z-index: 1;
+}
+
+.item_info_header{
+	display: flex;
+	padding: 20px;
+	width: 80%;
+	margin: 0 auto;
+}
+
+.item_info_header > img{
+	border: dotted white 2px;
+	margin: auto;
+	width: 64px;
+	height: 64px;
+}
+
+.item_info_header > h1{
+	color: white;
+	text-align: center;
+	padding: 0px;
+	margin: auto;
+}
+
+.item_info_data{
+	/*overflow-y: scroll;*/
+	display: flex;
+	flex-wrap: wrap;
+	max-height: 70%;
+}
+
+.item_info_description{
+	width: 80%;
+	margin: 0 auto;
+}
+
+.item_info_description > p{
+	color: white;
+	word-wrap: break-word;
+	text-align: center;
+}
+
+.item_info_data > table{
+	margin: 0 auto;
+	width: 70%;
+}
+
+.stats_table h2{
+	margin: 2px 5px;
+}
+
+.stats_table td{
+	text-align: center;
+	padding: 4px;
+}
+
+.item_info_footer{
+	bottom: 0px;
+	position: relative;
+	width: 10%;
+	margin: 4% auto;
+	border: solid white 2px;
+}
+
+.item_info_footer > h1{
+	color: crimson;
+	text-align: center;
+	padding: 0px;
+	margin: 0px;
+}
+
+.weight{
+	color: #808080;
 }

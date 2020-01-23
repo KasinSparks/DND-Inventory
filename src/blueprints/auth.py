@@ -24,14 +24,14 @@ def register():
 			error = 'Password is required.'
 		elif db.execute(
 			# TODO
-			'SELECT id FROM user WHERE username = ?', (username,)
+			'SELECT User_ID FROM Users WHERE Username = ?', (username,)
 		).fetchone() is not None:
 			error = 'User {} is already registered.'.format(username)
 
 		if error is None:
 			db.execute(
 				# TODO
-				'INSERT INTO user (username, password) VALUES (?, ?)',
+				'INSERT INTO user (Username, Password) VALUES (?, ?)',
 				(username, generate_password_hash(password))
 			)
 			db.commit()
@@ -51,17 +51,18 @@ def login():
 		error = None
 		user = db.execute(
 			# TODO
-			'SELECT * FROM user WHERE username = ?', (username,)
+			'SELECT * FROM Users WHERE Username = ?', (username,)
 		).fetchone()
 
-		if user is None or not check_password_hash(user['password'], password):
-			error = 'Incorrect username or password.'
+		if user is None or not check_password_hash(user['Password'], password):
+			error = 'Incorrect login info.'
 
 		if error is None:
 			session.clear()
-			session['user_id'] = user['id']
+			session['user_id'] = user['ID']
 			# TODO
-			return redirect(url_for('index'))
+			#return redirect(url_for('index'))
+			return redirect(url_for('home'))
 
 		flash(error)
 
@@ -70,29 +71,32 @@ def login():
 # Check if user is already loged in before a request
 @bp.before_app_request
 def load_logged_in_user():
-    user_id = session.get('user_id')
+	user_id = session.get('user_id')
 
-    if user_id is None:
-        g.user = None
-    else:
-        g.user = get_db().execute(
+	if user_id is None:
+		g.user = None
+	else:
+		g.user = get_db().execute(
 			# TODO
-            'SELECT * FROM user WHERE id = ?', (user_id,)
-        ).fetchone()
+			'SELECT * FROM Users WHERE User_ID = ?', (user_id,)
+		).fetchone()
 
 # Logout
 @bp.route('/logout')
 def logout():
-    session.clear()
-    return redirect(url_for('index'))
+	session.clear()
+	#return redirect(url_for('index'))
+	return redirect(url_for('auth.login'))
 
 # Authentication required
 def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for('auth.login'))
+	@functools.wraps(view)
+	def wrapped_view(**kwargs):
+		if g.user is None:
+			return redirect(url_for('auth.login'))
 
-        return view(**kwargs)
+		return view(**kwargs)
 
-    return wrapped_view
+	return wrapped_view
+
+

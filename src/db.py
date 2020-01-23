@@ -25,3 +25,14 @@ def close_db(e=None):
 def init_app(app):
 	app.teardown_appcontext(close_db)
 	#app.cli.add_command(init_db_command)
+
+def query_db(query, args=(), returnDataQuery=True, one=False):
+	if returnDataQuery:
+		cur = get_db().execute(query, args)
+		rv = cur.fetchall()
+		cur.close()
+		return (rv[0] if rv else None) if one else rv
+	else:	
+		get_db().execute(query, args)
+	
+	return
