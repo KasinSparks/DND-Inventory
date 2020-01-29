@@ -5,16 +5,27 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from ..db import get_db
+import datetime
+
+from ..db import get_db, query_db
+
+from ..data_obj.account_try import add_account_try, account_tries_remaining, get_lockout_time
+
+import math
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 # Register
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
+	header_text = 'Site Name Here'
+	error = None
+	username = ""
+
 	if request.method == 'POST':
 		username = request.form['username']
 		password = request.form['password']
+		confirm_password = request.form['password_confirm']
 		db = get_db()
 		error = None
 
@@ -22,6 +33,8 @@ def register():
 			error = 'Username is required.'
 		elif not password:
 			error = 'Password is required.'
+		elif password != confirm_password:
+			error = 'Passwords do not match.'
 		elif db.execute(
 			# TODO
 			'SELECT User_ID FROM Users WHERE Username = ?', (username,)
@@ -31,7 +44,7 @@ def register():
 		if error is None:
 			db.execute(
 				# TODO
-				'INSERT INTO user (Username, Password) VALUES (?, ?)',
+				'INSERT INTO Users (Username, Password) VALUES (?, ?)',
 				(username, generate_password_hash(password))
 			)
 			db.commit()
@@ -39,34 +52,59 @@ def register():
 
 		flash(error)
 
-	return render_template('auth/register.html')
+	return render_template('auth/register.html',
+							header_text=header_text,
+							error_msg=error,
+							username=username)
 
 # Login
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
+	header_text = 'Site Name Here'
+	tries_remaining = 0
+	unlockout_time = {}
+	error = None
+
 	if request.method == 'POST':
 		username = request.form['username']
 		password = request.form['password']
 		db = get_db()
-		error = None
 		user = db.execute(
-			# TODO
 			'SELECT * FROM Users WHERE Username = ?', (username,)
 		).fetchone()
 
-		if user is None or not check_password_hash(user['Password'], password):
-			error = 'Incorrect login info.'
+		if user is not None and account_tries_remaining(user['User_ID']) < 1:
+			# Accout locked
+			tries_remaining = 0
+			lockout_time = get_lockout_time(user['User_ID'])
+			time_until_unlocked = ((datetime.timedelta(hours=24) + lockout_time) - datetime.datetime.utcnow())
+			time_until_unlocked_hours = math.trunc(time_until_unlocked.seconds / 3600)
+			time_until_unlocked_minutes = math.trunc((time_until_unlocked.seconds / 3600 - math.trunc(time_until_unlocked.seconds / 3600)) * 60)
+			unlockout_time = {'Hours' : time_until_unlocked_hours, 'Minutes' : time_until_unlocked_minutes}
+			error = 'Account Locked'
+		elif user is None:
+			error = 'Incorrect login'
+		elif not check_password_hash(user['Password'], password):
+			error = 'Incorrect password'
+			tries_remaining = add_account_try(user['User_ID'])['tries_remaining']
+
 
 		if error is None:
 			session.clear()
-			session['user_id'] = user['ID']
+			session['user_id'] = user['User_ID']
 			# TODO
 			#return redirect(url_for('index'))
 			return redirect(url_for('home'))
 
 		flash(error)
 
-	return render_template('auth/login.html')
+	return render_template('auth/login.html',
+							header_text=header_text,
+							error_msg=error,
+							tries_remaining=tries_remaining,
+							unlockout_time=unlockout_time)
+
+
 
 # Check if user is already loged in before a request
 @bp.before_app_request

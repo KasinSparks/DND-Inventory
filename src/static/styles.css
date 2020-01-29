@@ -34,7 +34,7 @@ body{
 	display: flex;
 	flex-wrap: wrap;
 	height: 100%;
-	width: auto;
+	width: 100%;
 	margin: 0 auto;
 }
 
@@ -45,6 +45,7 @@ body{
 	width: 59%;
 	height: 100%;
 	display: flex;
+	margin: 0 auto;
 	margin-bottom: 20px;
 }
 
@@ -66,7 +67,7 @@ body{
 	border-color: black;
 	width: 98%;
 	height: 99%;
-	background-color: grey;
+	background-color: #424242;
 }
 
 /* Tabs at top of panels */
@@ -125,12 +126,12 @@ body{
 
 /* Equipment left item */
 .equipment_left_item{
-	background-image: url(../static/EquipedPartLeft.png);
+	background-image: url(images/EquipedPartLeft.png);
 }
 
 /* Equipment right item */
 .equipment_right_item{
-	background-image: url(../static/EquipedPartRight.png);
+	background-image: url(images/EquipedPartRight.png);
 }
 
 /* Equipment left item image */
@@ -249,35 +250,35 @@ body{
 
 /* Info middle top image */
 .info_middle_section_top_image{
-	background-image: url(../static/ItemPart.png);
+	background-image: url(images/ItemPart.png);
 }
 /* Info middle center image */
 .info_middle_section_center_image{
-	background-image: url(../static/ItemPartCenter.png);
+	background-image: url(images/ItemPartCenter.png);
 }
 /* Info middle bottom image */
 .info_middle_section_bottom_image{
-	background-image: url(../static/ItemPartBottom.png);
+	background-image: url(images/ItemPartBottom.png);
 }
 
 
 /* Info right section */
 .info_right_section{
-	background-image: url(../static/ItemPartRight.png);
+	background-image: url(images/ItemPartRight.png);
 	width: 20%;
 }
 
 /* Info right top image */
 .info_right_section_top_image{
-	background-image: url(../static/ItemPartRight.png);
+	background-image: url(images/ItemPartRight.png);
 }
 /* Info right center image */
 .info_right_section_center_image{
-	background-image: url(../static/ItemPartRightCenter.png);
+	background-image: url(images/ItemPartRightCenter.png);
 }
 /* Info right bottom image */
 .info_right_section_bottom_image{
-	background-image: url(../static/ItemPartRightBottom.png);
+	background-image: url(images/ItemPartRightBottom.png);
 }
 
 
@@ -448,4 +449,116 @@ table td{
 
 .weight{
 	color: #808080;
+}
+
+/*--------------------------------------*/
+/* 			Login Page Style			*/
+/*--------------------------------------*/
+
+.login_container{
+	margin: auto;
+	width: 355px;
+	height: 738px;
+	background-color: #424242;
+	padding: 4px;
+}
+
+.login_container .tab{
+	height: 55px;
+}
+
+.login_container .tab h1{
+	color: #c1c1c1;
+}
+
+.login_inner_panel{
+	width: 100%;
+	height: 75%;
+	background-color: #424242;
+}
+
+.login_form{
+	width: 100%;
+	height: 60%;	
+	padding-top: 20%;
+}
+
+.login_container .login_panel{
+	margin: 0 auto;
+	width: 225px;
+	height: 85%;	
+}
+
+
+.login_form .login_username{
+	background-image: url(../static/images/login_username.png);
+	width: 225px;
+	height: 70px;
+	margin-top: 16px;
+}
+
+.login_form .login_password{
+	background-image: url(../static/images/login_password.png);
+	width: 225px;
+	height: 82px;
+	margin-top: 8px;
+}
+
+.login_form input{
+	background: none;
+	border: none;
+	color: #606060;
+	font-size: xx-large;
+	text-align: center;
+	width: 100%;
+	height: 100%;
+	font-family: SAOUI-Bold;
+}
+
+.login_form .login_register{
+	width: 100%;
+	height: 70px;
+}
+
+.login_form .register_button{
+	background-image: url(../static/images/login_register.png);
+	width: 119px;	
+}
+
+.login_form .login_submit{
+	margin-top: 16px;
+	height: 70px;
+	width: 100%;
+}
+
+.login_form .submit_button{
+	background-image: url(../static/images/login_submit.png);
+	width: 132px;
+	float: right;
+}
+
+.login_inner_panel .reset_password{
+	height: 70px;
+	width: 225px;
+	margin: 0 auto;
+}
+
+.reset_password button{
+	background-color: black;
+	border: none;
+	font-family: SAOUI-Bold;
+	color: #c1c1c1;
+	font-size: x-large;
+	width: 100%;
+	height: 100%;
+}
+
+.login_footer{
+	margin: 0 auto;
+	width: 60%;
+	padding-top: 23%;
+}
+
+.login_footer p{
+	color: #606060;
 }

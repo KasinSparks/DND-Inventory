@@ -10,9 +10,26 @@ from .auth import login_required
 bp = Blueprint('dataserver', __name__, url_prefix='/dataserver')
 
 # Equipment Data 
-@bp.route('/equipmentItemDetails', methods=('GET', 'POST'))
+@bp.route('/equipmentItemDetails/<int:char_id>/<string:equipment_slot>', methods=('GET', 'POST'))
 @login_required
-def equipmentItemDetails():
+def equipmentItemDetails(char_id, equipment_slot):
+	# Get the character's item piece
+	queryStr = """SELECT * 
+				FROM Character
+				WHERE Character_ID=? AND User_ID=?;
+				"""
+	try:
+		items = query_db(queryStr, (char_id, session['user_id'],), True, True)
+	except:
+		print("ERROR: Items were not found")
+		return ""
+
+	try:
+		item_id = items['Character_' + equipment_slot]
+	except:
+		print("ERROR: Item was not found")
+		return ""
+
 	# Items query
 	queryStr = """SELECT *
 				FROM Items
@@ -20,10 +37,28 @@ def equipmentItemDetails():
 				WHERE Items.Item_ID=?;"""
 	# Check to see if ID has been assigned
 	
-	itemQueryResult = query_db(queryStr, (1,), True, True)
+	itemQueryResult = query_db(queryStr, (item_id,), True, True)
+
+	if itemQueryResult is None:
+		itemQueryResult = {'Item_Description' : 'null',
+							'Item_Name' : 'null',
+							'Item_Picture' : 'null',
+							'Rarities_Name' : 'null',
+							'Rarities_Color' : 'white',
+							'Item_Slot' : 'null',
+							'Item_Weight' : 'null',
+							'Item_Str_Bonus' : 0,
+							'Item_Dex_Bonus' : 0,
+							'Item_Con_Bonus' : 0,
+							'Item_Int_Bonus' : 0,
+							'Item_Wis_Bonus' : 0,
+							'Item_Cha_Bonus' : 0,
+							'Item_Effect1' : None,
+							'Item_Effect2' : None
+							}
 
 	# Check if item has an effect on it
-	if itemQueryResult['Item_Effect1'] is not None and itemQueryResult['Item_Effect1'] > 0:	
+	if itemQueryResult is not None and itemQueryResult['Item_Effect1'] is not None and itemQueryResult['Item_Effect1'] > 0:	
 		# Effect1 query
 		queryStr = """SELECT *
 					FROM Effects 
@@ -35,7 +70,7 @@ def equipmentItemDetails():
 		effect1QueryResult = {'Effect_Name' : 'Effect1', 'Effect_Description' : 'None'}
 
 	# Check if item has an effect on it
-	if itemQueryResult['Item_Effect2'] is not None and itemQueryResult['Item_Effect2'] > 0:	
+	if itemQueryResult is not None and itemQueryResult['Item_Effect2'] is not None and itemQueryResult['Item_Effect2'] > 0:	
 		# Effect2 query
 		queryStr = """SELECT *
 					FROM Effects 

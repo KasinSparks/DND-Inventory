@@ -10,34 +10,27 @@
 			<div class="tab">
 				{% if error_msg is none %}
 					<h1>{{ header_text }}</h1>
-				{% elif error_msg == 'Incorrect password' %}
-					<h1 style="color: orange;">Tries remaining {{ tries_remaining }}</h1>
-				{% elif error_msg == 'Account Locked' %}
-					<h1 style="color: red;">Account Locked for {{ unlockout_time['Hours'] }}:{{ unlockout_time['Minutes'] }} hours</h1>
 				{% else %}
-					<h1 style="color: orange;">Incorrect Login</h1>
+					<h1 style="color: orange;">{{ error_msg }}</h1>
 				{% endif %}
 
 			</div>
 			<div class="login_inner_panel">
 				<div class="login_panel">
-					<form class="login_form" action="/auth/login" method="POST">
-						<div class="login_register">
-							<input class="register_button" type="button" onclick="document.location = 'register'">
-						</div>
+					<form class="login_form" action="/auth/register" method="POST">
 						<div class="login_username">
-							<input type="text" name="username" placeholder="Username">
+							<input type="text" name="username" placeholder="Username" value="{{ username }}">
 						</div>
 						<div class="login_password">
 							<input type="password" name="password" placeholder="Password">
+						</div>
+						<div class="login_password">
+							<input type="password" name="password_confirm" placeholder="Confirm Password">
 						</div>
 						<div class="login_submit">
 							<input class="submit_button" type="submit" value="">
 						</div>
 					</form>
-				</div>
-				<div class="reset_password">
-					<button>Reset Password</button>
 				</div>
 			</div>
 			<div class="login_footer">

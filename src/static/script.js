@@ -11,7 +11,7 @@ function test(str){
 
 
 
-function equipmentItemDetails(equipmentItemStr){
+function equipmentItemDetails(charId, equipmentItemStr){
 	var hmtlInner = document.getElementsByClassName('eq_container')[0];
 	console.log(saveForLater[0]);
 	if(saveForLater[0] != undefined && saveForLater[0][1] != ""){
@@ -19,7 +19,7 @@ function equipmentItemDetails(equipmentItemStr){
 		return;
 	}
 	saveForLater[0] = [equipmentItemStr, hmtlInner.innerHTML];
-	itemDataFromXHTTP(hmtlInner, equipmentItemStr);
+	itemDataFromXHTTP(hmtlInner, charId, equipmentItemStr);
 
 	return;
 }
@@ -36,10 +36,14 @@ function appendToHTML(element, data){
 
 function itemInfo(element, jsonData){
 	// Quick verify data sent back
-	appendToHTML(element, getEquipmentItemDetailsHTML(jsonData));
+	if(jsonData != null){
+		appendToHTML(element, getEquipmentItemDetailsHTML(jsonData));
+	} else {
+		saveForLater[0] = ["", ""];
+	}
 }
 
-function itemDataFromXHTTP(element, equipmentItemStr){
+function itemDataFromXHTTP(element, charId, equipmentItemStr){
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function(){
 		if(this.readyState == 4 && this.status == 200){
@@ -50,7 +54,7 @@ function itemDataFromXHTTP(element, equipmentItemStr){
 		}
 	};
 	
-	const webpage = '/dataserver/equipmentItemDetails';
+	const webpage = '/dataserver/equipmentItemDetails/' + charId + '/' + equipmentItemStr;
 	xhttp.open("GET", webpage, true);
 	
 	xhttp.responseType = 'json';

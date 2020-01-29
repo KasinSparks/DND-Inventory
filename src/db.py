@@ -32,7 +32,9 @@ def query_db(query, args=(), returnDataQuery=True, one=False):
 		rv = cur.fetchall()
 		cur.close()
 		return (rv[0] if rv else None) if one else rv
-	else:	
-		get_db().execute(query, args)
+	else:
+		cur = get_db().execute(query, args)
+		get_db().commit()
+		cur.close()
 	
 	return
