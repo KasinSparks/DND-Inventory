@@ -4,7 +4,7 @@ from flask import (
 
 from ..db import get_db, query_db
 
-from auth import login_required
+from .auth import login_required
 
 bp = Blueprint('character', __name__, url_prefix='/character')
 

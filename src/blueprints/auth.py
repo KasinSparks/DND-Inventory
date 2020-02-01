@@ -18,7 +18,7 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 # Register
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
-	header_text = 'Site Name Here'
+	header_text = 'Register'
 	error = None
 	username = ""
 
@@ -35,11 +35,13 @@ def register():
 			error = 'Password is required.'
 		elif password != confirm_password:
 			error = 'Passwords do not match.'
+		elif len(username) > 15:
+			error = 'Username MAX 15 characters'
 		elif db.execute(
 			# TODO
 			'SELECT User_ID FROM Users WHERE Username = ?', (username,)
 		).fetchone() is not None:
-			error = 'User {} is already registered.'.format(username)
+			error = '{} Taken.'.format(username)
 
 		if error is None:
 			db.execute(
@@ -48,7 +50,12 @@ def register():
 				(username, generate_password_hash(password))
 			)
 			db.commit()
-			return redirect(url_for('auth.login'))
+
+			session.clear()
+			session['user_id'] = query_db("SELECT User_ID FROM Users WHERE Username=?", (username,), True, True)['User_ID']
+
+			return redirect(url_for('auth.register_tos'))
+			
 
 		flash(error)
 
@@ -94,6 +101,16 @@ def login():
 			session['user_id'] = user['User_ID']
 			# TODO
 			#return redirect(url_for('index'))
+
+			# Check for TOS agreement
+			sql_str = """SELECT Has_Agreed_TOS
+						FROM Users
+						WHERE User_ID=?;
+					"""
+			if query_db(sql_str, (session['user_id'],), True, True)['Has_Agreed_TOS'] < 1:
+				# User has not agreed
+				return redirect(url_for('auth.register_tos'))
+		
 			return redirect(url_for('home'))
 
 		flash(error)
@@ -138,3 +155,63 @@ def login_required(view):
 	return wrapped_view
 
 
+@bp.route('/register/tos')
+@login_required
+def register_tos():
+	# TODO: if user has already accepted TOS
+
+	return render_template('auth/register_tos.html',
+							header_text='Site Name Here')
+
+@bp.route('/register/tos/accept')
+@login_required
+def accept_tos():
+	# If user has already accepted
+	sql_str = """SELECT Has_Agreed_TOS
+				FROM Users
+				WHERE User_ID=?;
+				"""
+
+	has_accepted = query_db(sql_str, (session['user_id'],), True, True)['Has_Agreed_TOS']
+
+	if has_accepted > 0:
+		# User has already accepted the TOS
+		return render_template('auth/accepted_tos.html',
+								header_text='Site Name Here',
+								inner_text='You have already accepted the Terms of Service')
+
+	sql_str = """SELECT Notification_ID 
+				FROM Notification_Types
+				WHERE Type = ?;
+				"""
+
+	notification_type = query_db(sql_str, ('New User',), True, True)
+
+	# Generate admin notification
+	sql_str = """INSERT INTO Admin_Notifications
+				VALUES (?, ?, 0);
+				"""
+
+	query_db(sql_str, (session['user_id'], notification_type['Notification_ID'],), False)
+
+	# Update user info in DB
+	sql_str = """UPDATE Users
+				SET Has_Agreed_TOS = 1
+				WHERE User_ID=?;
+				"""
+
+	query_db(sql_str, (session['user_id'],), False)
+
+	# Get the user name
+	sql_str = """SELECT Username
+				From Users
+				WHERE User_ID=?;
+				"""
+
+	username = query_db(sql_str, (session['user_id'],), True, True)['Username']
+
+	# Redirect to next screen
+	return render_template('auth/accepted_tos.html',
+							header_text='Site Name Here',
+							inner_text=None,
+							username=username)

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<head>
+	<title>Terms of Service</title>
+	<link rel="stylesheet" href="../../../static/styles.css">
+	<script src="../../../static/script.js"></script>
+</head>
+<body onload="redirect_after_seconds('../../login', 10000);">
+	<div class="login_container">
+		<div class="inner_container">
+			<div class="tab">
+				<h1>{{ header_text }}</h1>
+			</div>
+			<div class="login_inner_panel">
+				<div class="login_panel">
+					<div class="tos_header">
+						<h2>TOS Accepted</h2>
+					</div>	
+					<div class="tos_body">
+						<div class="tos_body_text">
+							{% if inner_text is not none %}
+								<p>{{ inner_text }}</p>
+							{% else %}
+								<p>Thank you, {{ username }} for registering for an account with {{ header_text }}!</p>
+								<p>A site admin has been notified about your new account and will either approve or deny your account here soon.</p>
+							{% endif %}
+							<p>Redirecting in 10 seconds...</p>
+							<a href="{{ url_for('auth.login') }}">Click here to redirect now.</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tos_footer">
+				<p>Copyright - Created by Kasin and Jerin</p>
+			</div>
+		</div>
+	</div>
+</body>

@@ -129,3 +129,25 @@ function getEquipmentItemDetailsHTML(jsonData){
 	';
 	return equipmentItemDetailsHTML;
 }
+
+function accept_tos(){
+	document.location = 'tos/accept';
+	return;
+}
+
+function decline_tos(){
+	redirect_after_seconds('../login', 10000);
+	// TODO: make a better looking message
+	document.getElementsByClassName('login_container')[0].innerHTML = '<p>Terms of Service have been declined.\n\nRedirecting in 10 seconds...</p>';
+	return;
+}
+
+function redirect(location){
+	document.location = location;
+}
+
+function redirect_after_seconds(location, milliseconds){
+	setTimeout(function(){
+		redirect(location);
+	}, milliseconds);
+}

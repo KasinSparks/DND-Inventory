@@ -521,8 +521,12 @@ table td{
 }
 
 .login_form .register_button{
-	background-image: url(../static/images/login_register.png);
+	background-image: url(images/login_register.png);
 	width: 119px;	
+}
+
+.login_form .register_button:hover{
+	background-image: url(images/login_register_active.png);
 }
 
 .login_form .login_submit{
@@ -532,9 +536,13 @@ table td{
 }
 
 .login_form .submit_button{
-	background-image: url(../static/images/login_submit.png);
+	background-image: url(images/login_submit.png);
 	width: 132px;
 	float: right;
+}
+
+.login_form .submit_button:hover{
+	background-image: url(images/login_submit_active.png);
 }
 
 .login_inner_panel .reset_password{
@@ -545,12 +553,16 @@ table td{
 
 .reset_password button{
 	background-color: black;
-	border: none;
+	border: 3px solid black;
 	font-family: SAOUI-Bold;
 	color: #c1c1c1;
 	font-size: x-large;
 	width: 100%;
 	height: 100%;
+}
+
+.reset_password button:hover{
+	background-color: #252525;
 }
 
 .login_footer{
@@ -561,4 +573,79 @@ table td{
 
 .login_footer p{
 	color: #606060;
+}
+
+
+/*--------------------------------------*/
+/* 			TOS Page Style				*/
+/*--------------------------------------*/
+
+.tos_header{
+	width: 100%;
+	height: 70px;
+	border: 3px solid black;
+	background-color: #252525;
+	margin-top: 20%;
+}
+
+.tos_body{
+	margin: 14px 0px;
+	width: 100%;
+	height: 340px;
+	border: 3px solid black;
+	background-color: #252525;
+}
+
+.tos_buttons{
+	margin: 0 auto;
+	width: 218px;
+	height: 70px;
+	display: flex;
+}
+
+.tos_footer{
+	margin: 0 auto;
+	width: 60%;
+	padding-top: 11%;
+}
+
+.tos_footer p{
+	color: #606060;
+}
+
+.tos_buttons div{
+	width: 109px;
+}
+
+.tos_accept_button{
+	background-image: url(images/tos_accept.png);
+}
+
+.tos_decline_button{
+	background-image: url(images/tos_decline.png);
+}
+
+.tos_accept_button:hover{
+	background-image: url(images/tos_accept_active.png);
+}
+
+.tos_decline_button:hover{
+	background-image: url(images/tos_decline_active.png);
+}
+
+.tos_body_text{
+	margin: 0 auto;
+	width: 94%;
+	height: 100%;
+	overflow-y: auto;
+}
+
+.tos_body_text p{
+	padding: 0px;
+	color: white;
+}
+
+.tos_header h2{
+	color: white;
+	text-align: center;
 }
