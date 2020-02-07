@@ -103,6 +103,7 @@ body{
 	width: 100%;
 	height: 70px;
 	padding-top: 20px;
+	cursor: pointer;
 }
 
 /* Equipment side */
@@ -149,6 +150,7 @@ body{
 .equipment_left_item_name{
 	width: 225px;
 	height: 70px;
+	padding-left: 35px;
 }
 
 .equipment_left_item_name h2{
@@ -648,4 +650,154 @@ table td{
 .tos_header h2{
 	color: white;
 	text-align: center;
+}
+
+
+/*--------------------------------------*/
+/* 				Inventory				*/
+/*--------------------------------------*/
+.inv_container{
+	width: 45%;
+	height: 100%;
+	background-color: crimson;
+	min-width: 768px;
+	margin: 0 auto;
+}
+
+.inv_container_menubar{
+	height: 52px;
+	width: 100%;
+	background-color: green;
+	border-bottom: solid 3px black;
+	display: flex;
+	overflow: hidden;
+}
+
+.inv_container_inner_area{
+	height: 93.8%;
+	background-color: chocolate;
+	display: flex;
+	flex-direction: column;
+}
+
+.inv_container_menubar > div{
+	width: 33.4%;
+	height: 100%;
+	cursor: pointer;
+}
+
+.inv_container_menubar h1{
+	text-align: center;
+	color: #606060;
+	margin: 3%;
+}
+
+.inv_container_menu_button_middle{
+	border-left: solid 3px black;
+	border-right: solid 3px black;
+}
+
+
+.inv_container_menu_button_inactive{
+	background-color: #252525;
+}
+
+.inv_container_menu_button_active{
+	background-color: #424242;
+}
+
+.inv_container_menu_button_active > h1{
+	color: #c1c1c1;
+}
+
+.inv_container_inventory_section{
+	/*height: 100%;*/
+	width: 100%;
+	/*display: flex;*/
+}
+
+.inv_container_skills_section{
+	height: 100%;
+	width: 100%;
+	/*display: flex;*/
+}
+
+.inv_container_abilities_section{
+	height: 100%;
+	width: 100%;
+	/*display: flex;*/
+}
+
+.inv_container_inner_area h2{
+	color: #c1c1c1;
+	margin: 0px;
+}
+
+
+.inv_category_line{
+	width: 100%;
+	height: 70px;
+	background-color: #252525;
+	border-bottom: 3px solid black;
+	display: flex;
+}
+
+.inv_line_item{
+	width: 100%;
+	height: 70px;
+	background-color: #1b1b1b;
+	border-bottom: 3px solid black;
+}
+
+.inv_add_item_button{
+	background-image: url(./images/inv_add_item.png);
+	width: 31px;
+	height: 31px;
+}
+
+.inv_category_collapse_button{
+	background-image: url(./images/inv_collapse.png);
+	width: 31px;
+	height: 31px;
+}
+
+.inv_category_expand_button{
+	background-image: url(./images/inv_extend.png);
+	width: 31px;
+	height: 31px;
+}
+
+.inv_remove_item_button{
+	background-image: url(./images/inv_remove_item.png);
+	width: 31px;
+	height: 31px;
+}
+
+.inv_equip_item_button{
+	background-image: url(./images/inv_equip.png);
+	width: 31px;
+	height: 31px;
+}
+
+.inv_unequip_item_button{
+	background-image: url(./images/inv_unequip.png);
+	width: 31px;
+	height: 31px;
+}
+
+.inv_line_inner{
+	width: 90%;
+	margin: 0 auto;
+	padding-top: 20px;
+	display: flex;
+}
+
+.inv_line_inner > h2{
+	text-align: center;
+	width: 50%;
+	margin: 0 auto;
+}
+
+.clickable{
+	cursor: pointer;
 }

@@ -1,0 +1,58 @@
+//Note on skill calculation: All skills start at 0 then modified by their respective attribute's modifier score.
+//Expample: 16dex (+3) would add +3 to all the Dexterity related skills.
+
+Strength
+* Athletics
+
+Dexterity
+* Acrobatics
+* Sleight of Hand
+* Stealth
+
+Intelligence
+* Arcana
+* History1
+* Investigation
+* Nature
+* Religion
+
+Wisdom
+* Animal Handling
+* Insight
+* Medicine
+* Perception
+* Survival
+
+Charisma
+* Deception
+* Intimidation
+* Performance
+* Persuasion
+
+0
+
+Athletics
+Acrobatics
+Sleight of Hand
+Stealth
+Arcana
+History1
+Investigation
+Nature
+Religion
+Animal Handling
+Insight
+Medicine
+Perception
+Survival
+Deception
+Intimidation
+Performance
+Persuasion
+
+
+
+
+
+
+baseVal + attributeModifier + itemSkillBnous

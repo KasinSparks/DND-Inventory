@@ -9,7 +9,7 @@ import datetime
 
 from ..db import get_db, query_db
 
-from ..data_obj.account_try import add_account_try, account_tries_remaining, get_lockout_time
+from ..data_obj.account_try import add_account_try, account_tries_remaining, get_lockout_time, is_attempt_within_range
 
 import math
 
@@ -80,7 +80,7 @@ def login():
 			'SELECT * FROM Users WHERE Username = ?', (username,)
 		).fetchone()
 
-		if user is not None and account_tries_remaining(user['User_ID']) < 1:
+		if user is not None and account_tries_remaining(user['User_ID']) < 1 and is_attempt_within_range(user['User_ID']):
 			# Accout locked
 			tries_remaining = 0
 			lockout_time = get_lockout_time(user['User_ID'])
@@ -111,7 +111,7 @@ def login():
 				# User has not agreed
 				return redirect(url_for('auth.register_tos'))
 		
-			return redirect(url_for('home'))
+			return redirect(url_for('character.character_select'))
 
 		flash(error)
 

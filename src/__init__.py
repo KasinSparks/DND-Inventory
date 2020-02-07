@@ -41,9 +41,7 @@ def create_app(test_config=None):
 	@app.route('/')
 	@app.route('/home')
 	def home():
-		return render_template('character_page.html',
-								Char_Str=1,
-								char_id=1)
+		return 'Change this later'
 	
 
 	return app

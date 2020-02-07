@@ -151,3 +151,71 @@ function redirect_after_seconds(location, milliseconds){
 		redirect(location);
 	}, milliseconds);
 }
+
+function inv_tab(activeClass, activeButtonID){
+	inv_inner_area_children = document.getElementsByClassName('inv_container_inner_area')[0].children;
+
+	for(var i = 0; i < inv_inner_area_children.length; ++i){
+		if(inv_inner_area_children[i].className === activeClass){
+			inv_inner_area_children[i].removeAttribute('style');
+		} else {
+			inv_inner_area_children[i].style.display = 'none';
+		}
+	}
+
+	inv_buttons = document.getElementsByClassName('inv_container_menubar')[0].children;
+	for(var i = 0; i < inv_buttons.length; ++i){
+		if(inv_buttons[i].id === activeButtonID){
+			inv_buttons[i].className = inv_buttons[i].className.replace('inactive', 'active');
+		} else if(!inv_buttons[i].className.includes('inactive')){
+			inv_buttons[i].className = inv_buttons[i].className.replace('active', 'inactive');
+		}
+	}
+
+	
+	return;
+}
+
+function category_expand_and_collapse(categoryID, option){
+	inv_cat = document.getElementById(categoryID); 
+
+	inv_line_items = inv_cat.getElementsByClassName('inv_line_item');
+
+	inv_category_button = inv_cat.getElementsByClassName('inv_category_button')[0];
+
+	for(var i = 0; i < inv_line_items.length; ++i){
+		if(option === 'expand'){
+			inv_line_items[i].removeAttribute('style');
+			setToOption(inv_category_button, option, 'collapse');
+			setToOption_Image(inv_category_button, option, 'collapse');
+		} else if(option === 'collapse'){
+			inv_line_items[i].style.display = 'none';
+			setToOption(inv_category_button, option, 'expand');
+			setToOption_Image(inv_category_button, option, 'expand');
+		} else {
+		// do nothing
+		}
+	}
+
+	return;
+}
+
+function setToOption(element, prevOption, option){
+	element.setAttribute('onclick', element.getAttribute('onclick').replace("'" + prevOption + "'", "'" + option + "'"));
+}
+
+function setToOption_Image(element, prevOption, option){
+	element.setAttribute('class', element.getAttribute('class').replace(prevOption, option));
+}
+
+function select_other_button(element_name){
+	select_button_helper(element_name, '');
+}
+
+function select_standard_button(element_name){
+	select_button_helper(element_name, 'display: none;');
+}
+
+function select_button_helper(element_name, style_attribute){
+	document.getElementsByName(element_name)[0].setAttribute('style', style_attribute);
+}
