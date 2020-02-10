@@ -36,7 +36,7 @@ function appendToHTML(element, data){
 
 function itemInfo(element, jsonData){
 	// Quick verify data sent back
-	if(jsonData != null){
+	if(jsonData != null && (jsonData.name != '' && jsonData.name != 'null')){
 		appendToHTML(element, getEquipmentItemDetailsHTML(jsonData));
 	} else {
 		saveForLater[0] = ["", ""];
@@ -77,7 +77,7 @@ function getEquipmentItemDetailsHTML(jsonData){
 	var equipmentItemDetailsHTML = '<!--ITEM_INFO-->\
 	<div class="item_info">\
 		<div class="item_info_header">\
-			<img style="border-color: ' + jsonData.rarity_color + '" src="' + jsonData.image + '" alt="' + jsonData.slot + ' Item"/>\
+			<img style="border-color: ' + jsonData.rarity_color + '" src="data:image/' + jsonData.image_type + ';charset=utf-8;base64,' + jsonData.encoded_image + '" alt="' + jsonData.slot + ' Item"/>\
 			<h1 style="color: ' + jsonData.rarity_color + '">' + jsonData.name + '<h1>\
 		</div>\
 		<div class="item_info_data">\
@@ -218,4 +218,119 @@ function select_standard_button(element_name){
 
 function select_button_helper(element_name, style_attribute){
 	document.getElementsByName(element_name)[0].setAttribute('style', style_attribute);
+}
+
+class ChangeCharacterData{
+	constructor(char_id, webpage, responseType, field_id_name, submit_route){
+		this.char_id = char_id;
+		this.webpage = webpage;
+		this.responseType = responseType;
+		this.field_id_name = field_id_name;
+		this.submit_route = submit_route;
+	}
+
+	dataCall(callbackFunction, submit_route=this.submit_route, char_id=this.char_id, field_id_name=this.field_id_name){
+		console.log(submit_route);
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function(){
+			if(this.readyState == 4 && this.status == 200){
+				if(this.response == null){
+					console.error('Response from ' + webpage + ' was null.');
+					return;
+				}
+				callbackFunction(char_id, this.response, field_id_name, submit_route);
+				return
+			}
+		};
+		
+		xhttp.open("GET", this.webpage, true);
+		
+		xhttp.responseType = this.responseType;
+	
+		xhttp.send();
+	
+		return;
+	}
+	
+	dropdown(char_id, dropdown_options, field_id_name, submit_route){
+		var html_string = '<div class="char_item_val_change_container"><select id="new_value">';
+		
+		console.log(submit_route);
+
+		var field = document.getElementById(field_id_name);
+		if(field == null){
+			return;
+		}
+
+		isChangeCharDataOpen = true;
+
+		dropdown_options.classes.forEach(element => {
+			html_string += '<option value="' + element.id + '">' + element.name + '</option>';
+		});
+
+		html_string += '</select>\
+							<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 0 + ');">Y</button>\
+							<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
+							</div>';
+
+		// Put the data in to html and insert it
+		
+		field.setAttribute('style', 'display: none;');
+		field.parentElement.parentElement.innerHTML += html_string;
+		
+
+		return;
+	}
+	
+	
+}
+
+
+var isChangeCharDataOpen = false;
+
+function submitChanges(char_id, field_id_name, submit_route, callType=0){
+	var element = document.getElementById('new_value');
+	switch(callType){
+		case 0:
+			submitData(submit_route + char_id, 'value=' + element.options[element.selectedIndex].value, field_id_name);
+			break;
+		default:
+			console.log('Value:: ' + element.value);
+	}
+	abortChanges(field_id_name);
+	return
+}
+
+function submitData(url, params, field_id_name){
+	var http = new XMLHttpRequest();
+	http.open('POST', url, true);
+
+	//Send the proper header information along with the request
+	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+	http.onreadystatechange = function() {
+		//Call a function when the state changes.
+		if(http.readyState == 4 && http.status == 200) {
+			// do something here
+			document.getElementById(field_id_name).innerHTML = http.responseText;
+		}
+	}
+	http.send(params);
+}
+
+function abortChanges(field_id_name){
+	if(isChangeCharDataOpen){
+		document.getElementById(field_id_name).setAttribute('style', '');
+		document.getElementsByClassName('char_item_val_change_container')[0].remove();
+	}
+	isChangeCharDataOpen = false;
+	return;
+}
+
+
+function changeClass(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/getClassOptions', 'json', 'character_class', '/character/edit/class/');
+		ccd.dataCall(ccd.dropdown);
+	}
 }

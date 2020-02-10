@@ -1,10 +1,16 @@
 from flask import (
-	Blueprint, g, redirect, render_template, request, session, url_for
+	Blueprint, g, redirect, render_template, request, session, url_for, current_app
 )
+
+import os
 
 from ..db import get_db, query_db
 
 from .auth import login_required
+
+from ..image_sever import convert_image_to_base64
+
+import math
 
 bp = Blueprint('character', __name__, url_prefix='/character')
 
@@ -40,7 +46,14 @@ def character_page(char_id):
 		# Error
 		redirect(url_for('character.character_select'))
 
-	
+	item_id_list = [
+		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
+		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+		characters['Character_Weapon4']
+	] 
 
 	# Query DB for character's items and equipment
 
@@ -83,32 +96,88 @@ def character_page(char_id):
 	else:
 		alignment_name = alignment_name['Alignment_Name']
 
+	stat_bonus = sumation_stats(item_id_list)
+
+	image_data = convert_image_to_base64(os.path.join(current_app.config['IMAGE_UPLOAD'], characters['Character_Image']))
+	#image_data = convert_image_to_base64(characters['Character_Image'])
+
 	character_data = {
 		'name' : shorten_string(characters['Character_Name'], 20),
 		'class' : shorten_string(class_name, 12),
 		'level' : convert_form_field_data_to_int(characters['Character_Level']),
 		'hp' : convert_form_field_data_to_int(characters['Character_HP']),
-		'max_hp' : convert_form_field_data_to_int(characters['Character_Max_HP']),
-		'ac' : convert_form_field_data_to_int(characters['Character_AC']),
-		'initiative' : convert_form_field_data_to_int(characters['Character_Initiative']),
-		'attack_bonus' : convert_form_field_data_to_int(characters['Character_Attack_Bonus']),
+		'max_hp' : convert_form_field_data_to_int(characters['Character_Max_HP']) + stat_bonus['health'],
+		'ac' : convert_form_field_data_to_int(characters['Character_AC']) + stat_bonus['ac'],
+		'initiative' : convert_form_field_data_to_int(characters['Character_Initiative']) + stat_bonus['initiative'],
+		'attack_bonus' : convert_form_field_data_to_int(characters['Character_Attack_Bonus']) + stat_bonus['attack'],
 		'alignment' : shorten_string(alignment_name, 12),
 		'currency' : convert_form_field_data_to_int(characters['Character_Currency']),
 		'weight' : convert_form_field_data_to_int(characters['Character_Base_Carrying_Cap']),
 		'max_weight' : convert_form_field_data_to_int(characters['Character_Max_Carry_Weight']),
-		'str' : convert_form_field_data_to_int(characters['Character_Strength']),
-		'dex' : convert_form_field_data_to_int(characters['Character_Dexterity']),
-		'con' : convert_form_field_data_to_int(characters['Character_Constitution']),
-		'int' : convert_form_field_data_to_int(characters['Character_Intelligence']),
-		'wis' : convert_form_field_data_to_int(characters['Character_Wisdom']),
-		'cha' : convert_form_field_data_to_int(characters['Character_Charisma']),
+		'str' : convert_form_field_data_to_int(characters['Character_Strength']) + stat_bonus['str'],
+		'dex' : convert_form_field_data_to_int(characters['Character_Dexterity']) + stat_bonus['dex'],
+		'con' : convert_form_field_data_to_int(characters['Character_Constitution']) + stat_bonus['con'],
+		'int' : convert_form_field_data_to_int(characters['Character_Intelligence']) + stat_bonus['int'],
+		'wis' : convert_form_field_data_to_int(characters['Character_Wisdom']) + stat_bonus['wis'],
+		'cha' : convert_form_field_data_to_int(characters['Character_Charisma']) + stat_bonus['cha'],
+		'image' : image_data['encoded_image'],
+		'image_type' : image_data['image_type'] 
 	}
 
+	stat_modifiers = {
+		'str' :	calculate_modifier(character_data['str']), 
+		'dex' :	calculate_modifier(character_data['dex']),
+		'con' :	calculate_modifier(character_data['con']),
+		'int' :	calculate_modifier(character_data['int']),
+		'wis' :	calculate_modifier(character_data['wis']),
+		'cha' :	calculate_modifier(character_data['cha'])
+	}
+
+	inv_items = get_inv_items(char_id, item_id_list)
+
+	for k in inv_items:
+		for i in inv_items[k]:
+			character_data['weight'] += i['Item_Weight']
 
 	return render_template('character_page.html',
 							char_id=char_id,
 							equiped_item=equiped_item_short_data,
-							character_data=character_data)
+							character_data=character_data,
+							stat_modifiers=stat_modifiers,
+							inv_items=inv_items)
+
+
+def get_inv_items(char_id : int, equiped_items_ids):
+	items = {}
+	
+	sql_str = """SELECT Items.Item_ID, Items.Item_Weight, Items.Item_Name, Rarities.Rarities_Color, Slots.Slots_Name
+				FROM Inventory
+				INNER JOIN Items on Inventory.Item_ID=Items.Item_ID
+				INNER JOIN Rarities on Rarities.Rarities_ID=Items.Rarity_ID
+				INNER JOIN Slots on Items.Item_Slot=Slots.Slots_ID
+				WHERE Inventory.Character_ID = ?;
+			"""
+	query_result = query_db(sql_str, (char_id,), True)
+
+	for q in query_result:
+		if q['Slots_Name'] not in items.keys():
+			items[q['Slots_Name']] = []
+		
+		item_fields = {
+			'Item_ID' : q['Item_ID'],
+			'Item_Weight' : q['Item_Weight'],
+			'Item_Name' : q['Item_Name'],
+			'Rarities_Color' : q['Rarities_Color'],
+			'Slots_Name' : q['Slots_Name'],
+			'Is_Equiped' : True if q['Item_ID'] in equiped_items_ids else False
+		}
+
+		items[q['Slots_Name']].append(item_fields)
+
+	return items
+
+def calculate_modifier(stat_value):
+	return math.ceil((stat_value - 11) / 2)
 
 def item_short_query(item_id):
 	sql_str = """SELECT Items.Item_Name, Rarities.Rarities_Color, Items.Item_Picture
@@ -118,10 +187,50 @@ def item_short_query(item_id):
 			"""
 	return query_db(sql_str, (item_id,), True, True)
 
+def item_stat_query(item_id):
+	sql_str = """SELECT Items.Item_Str_Bonus, Items.Item_Dex_Bonus, Items.Item_Con_Bonus,
+				Items.Item_Int_Bonus, Items.Item_Wis_Bonus, Items.Item_Cha_Bonus,
+				Items.Item_Attack_Bonus, Items.Item_Initiative_Bonus, Items.Item_Health_Bonus,
+				Items.Item_AC_Bonus
+				FROM Items
+				WHERE Items.Item_ID = ?;
+			"""
+	return query_db(sql_str, (item_id,), True, True)
+
+def sumation_stats(item_id_list):
+	stat_bonus = {
+		'str' : 0,
+		'dex' : 0,
+		'con' : 0,
+		'int' : 0,
+		'wis' : 0,
+		'cha' : 0,
+		'attack' : 0,
+		'initiative' : 0,
+		'health' : 0,
+		'ac' : 0,
+	}
+
+	for item_id in item_id_list:
+		query_result = item_stat_query(item_id)
+		if query_result is not None:
+			stat_bonus['str'] += convert_form_field_data_to_int(query_result['Item_Str_Bonus'])
+			stat_bonus['dex'] += convert_form_field_data_to_int(query_result['Item_Dex_Bonus'])
+			stat_bonus['con'] += convert_form_field_data_to_int(query_result['Item_Con_Bonus'])
+			stat_bonus['int'] += convert_form_field_data_to_int(query_result['Item_Int_Bonus'])
+			stat_bonus['wis'] += convert_form_field_data_to_int(query_result['Item_Wis_Bonus'])
+			stat_bonus['cha'] += convert_form_field_data_to_int(query_result['Item_Cha_Bonus'])
+			stat_bonus['attack'] += convert_form_field_data_to_int(query_result['Item_Attack_Bonus'])
+			stat_bonus['initiative'] += convert_form_field_data_to_int(query_result['Item_Initiative_Bonus'])
+			stat_bonus['health'] += convert_form_field_data_to_int(query_result['Item_Health_Bonus'])
+			stat_bonus['ac'] += convert_form_field_data_to_int(query_result['Item_AC_Bonus'])
+
+	return stat_bonus
+
 def item_short_data(item_id, default_name, defalut_image_name):
 	item_data = {
 		'name' : default_name,
-		'image' : url_for('static', filename='images/' + defalut_image_name),
+		'image' : convert_image_to_base64(os.path.join('src', 'static', 'images', defalut_image_name)),
 		'rarity_color' : None 
 	}
 
@@ -134,8 +243,11 @@ def item_short_data(item_id, default_name, defalut_image_name):
 	if item['Item_Name'] is not None and item['Item_Name'] != '':
 		item_data['name'] = shorten_string(item['Item_Name'], 17)
 
-	if item['Item_Picture'] is not None and item['Item_Picture'] != '':
-		item_data['image'] = item['Item_Picture']
+	if item['Item_Picture'] is not None and item['Item_Picture'] != '' and item['Item_Picture'] != 'no_image.png':
+		item_data['image'] = convert_image_to_base64(os.path.join(current_app.config['IMAGE_UPLOAD'], item['Item_Picture']))
+	else:
+		item_data['image'] = convert_image_to_base64(os.path.join('src', 'static', 'images', item['Item_Picture']))
+
 
 	if item['Rarities_Color'] is not None and item['Rarities_Color'] != '':
 		item_data['rarity_color'] = item['Rarities_Color']
@@ -313,3 +425,52 @@ def create_character_submit():
 	
 	# TODO: add variables so users do not have to reenter data if error occurs
 	return redirect(url_for('character.create_character'))
+
+
+@bp.route('/edit/class/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_class(char_id):
+	sql_str = """SELECT Character_ID
+				FROM Character
+				WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	has_char = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if has_char is None:
+		print('User does not have character with user id.')
+		return '400'
+
+	if request.method == 'POST':
+		new_val = request.form['value']
+
+		sql_str = """SELECT Class_ID
+				FROM Class;
+				"""
+		class_ids = query_db(sql_str)
+		class_ids = [x['Class_ID'] for x in class_ids]
+
+		try:
+			new_val = int(new_val)
+		except:
+			new_val = -1
+
+		if new_val not in class_ids:
+			print('NO class with id. ')
+			return '400'
+		
+		sql_str = """UPDATE	Character
+				SET Character_Class = ?
+				WHERE User_ID = ? AND Character_ID = ?; 
+				"""
+		query_db(sql_str, (new_val, session['user_id'], char_id), False)
+			
+		sql_str = """SELECT Class_Name
+					FROM Class
+					WHERE Class_ID = ?;
+				"""
+		class_name = query_db(sql_str, (new_val,), True, True)['Class_Name']
+		return class_name
+
+
+
+	return '200'

@@ -60,7 +60,7 @@ body{
 
 /* Inner container */
 .inner_container{
-	margin-left: 2px;
+	margin: auto;
 	margin-top: 2px;
 	border-style: solid;
 	border-width: 1%;
@@ -360,7 +360,7 @@ body{
 .tooltip:hover .tooltiptext {
 	visibility: visible;
 	opacity: 1;
-} 
+}
 
 table td{
 	color: white;
@@ -800,4 +800,22 @@ table td{
 
 .clickable{
 	cursor: pointer;
+}
+
+
+.char_item_val_change_container {
+	/*visibility: hidden;*/
+	width: 160px;
+	background-color: #222222;
+	text-align: center;
+	padding: 5px 0;
+	border-radius: 10px;
+	border-color: black;
+	border-width: 3px;
+	margin-left: 10%;
+	margin-top: -2%;
+
+	/* Position the tooltip text */
+	position: absolute;
+	z-index: 1;
 }
