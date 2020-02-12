@@ -87,15 +87,14 @@ def equipmentItemDetails(char_id, equipment_slot):
 	else:
 		effect2QueryResult = {'Effect_Name' : 'Effect2', 'Effect_Description' : 'None'}
 
+	image = url_for('static', filename='images/no_image.png')
+
 	if itemQueryResult['Item_Picture'] is not None and itemQueryResult['Item_Picture'] != '' and itemQueryResult['Item_Picture'] != 'no_image.png':
-		item_encoded = convert_image_to_base64(os.path.join(current_app.config['IMAGE_UPLOAD'], itemQueryResult['Item_Picture']))
-	else:
-		item_encoded = convert_image_to_base64(os.path.join('src', 'static', 'images', itemQueryResult['Item_Picture']))
+		image = '/dataserver/imageserver/item/' + itemQueryResult['Item_Picture']
 
 	return jsonify(description=itemQueryResult['Item_Description'],
 					name=itemQueryResult['Item_Name'],
-					encoded_image=item_encoded['encoded_image'],
-					image_type=item_encoded['image_type'],
+					image=image,
 					rarity=itemQueryResult['Rarities_Name'],
 					rarity_color=itemQueryResult['Rarities_Color'],
 					slot=itemQueryResult['Item_Slot'],
@@ -163,3 +162,308 @@ def get_class_options():
 		class_name_and_id.append({'id' : item['Class_ID'], 'name' : item['Class_Name']})
 
 	return jsonify(classes=class_name_and_id)
+
+@bp.route('getAlignmentOptions')
+@login_required
+def get_alignment_options():
+	sql_str = """SELECT Alignment_ID, Alignment_Name
+			FROM Alignments;
+			"""
+	class_data = query_db(sql_str)
+
+	class_name_and_id = []
+	
+	for item in class_data:
+		class_name_and_id.append({'id' : item['Alignment_ID'], 'name' : item['Alignment_Name']})
+
+	return jsonify(classes=class_name_and_id)
+
+@bp.route('getLevel/<int:char_id>')
+@login_required
+def get_level(char_id):
+	sql_str = """SELECT Character_Level
+			FROM Character
+			WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if query_result is None:
+		return jsonify(current_value=0)
+
+	return jsonify(current_value=query_result['Character_Level'])
+
+@bp.route('getHealth/<int:char_id>')
+@login_required
+def get_health(char_id):
+	sql_str = """SELECT Character_HP
+			FROM Character
+			WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if query_result is None:
+		return jsonify(current_value=0)
+
+	return jsonify(current_value=query_result['Character_HP'])
+
+@bp.route('getMaxHealth/<int:char_id>')
+@login_required
+def get_max_health(char_id):
+	sql_str = """SELECT Character_Max_HP
+			FROM Character
+			WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if query_result is None:
+		return jsonify(current_value=0, base=0)
+
+	base_max_hp = query_result['Character_Max_HP']
+
+	
+
+	sql_str = """SELECT *
+			FROM Character
+			WHERE Character_ID = ?;
+			"""
+	characters = query_db(sql_str, (char_id,), True, True)
+
+	item_id_list = [
+		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
+		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+		characters['Character_Weapon4']
+	]
+
+	health_additional = 0
+
+	for i in item_id_list:
+		sql_str = """SELECT Item_Health_Bonus
+				FROM Items
+				WHERE Item_ID = ?;
+				""" 
+		item = query_db(sql_str, (i,), True, True)
+		if item is not None:
+			health_additional += item['Item_Health_Bonus']
+
+
+	return jsonify(additional=health_additional, base=base_max_hp)
+
+@bp.route('getAC/<int:char_id>')
+@login_required
+def get_AC(char_id):
+	sql_str = """SELECT Character_AC
+			FROM Character
+			WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if query_result is None:
+		return jsonify(current_value=0, base=0)
+
+	base_ac = query_result['Character_AC']
+
+	
+
+	sql_str = """SELECT *
+			FROM Character
+			WHERE Character_ID = ?;
+			"""
+	characters = query_db(sql_str, (char_id,), True, True)
+
+	item_id_list = [
+		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
+		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+		characters['Character_Weapon4']
+	]
+
+	ac_additional = 0
+
+	for i in item_id_list:
+		sql_str = """SELECT Item_AC_Bonus
+				FROM Items
+				WHERE Item_ID = ?;
+				""" 
+		item = query_db(sql_str, (i,), True, True)
+		if item is not None:
+			ac_additional += item['Item_AC_Bonus']
+
+
+	return jsonify(additional=ac_additional, base=base_ac)
+
+@bp.route('getInitiative/<int:char_id>')
+@login_required
+def get_initiative(char_id):
+	sql_str = """SELECT Character_Initiative
+			FROM Character
+			WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if query_result is None:
+		return jsonify(current_value=0, base=0)
+
+	base_initiative = query_result['Character_Initiative']
+
+	
+
+	sql_str = """SELECT *
+			FROM Character
+			WHERE Character_ID = ?;
+			"""
+	characters = query_db(sql_str, (char_id,), True, True)
+
+	item_id_list = [
+		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
+		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+		characters['Character_Weapon4']
+	]
+
+	initiative_additional = 0
+
+	for i in item_id_list:
+		sql_str = """SELECT Item_Initiative_Bonus
+				FROM Items
+				WHERE Item_ID = ?;
+				""" 
+		item = query_db(sql_str, (i,), True, True)
+		if item is not None:
+			initiative_additional += item['Item_Initiative_Bonus']
+
+
+	return jsonify(additional=initiative_additional, base=base_initiative)
+
+@bp.route('getAttackBonus/<int:char_id>')
+@login_required
+def get_attack_bonus(char_id):
+	sql_str = """SELECT Character_Attack_Bonus
+			FROM Character
+			WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if query_result is None:
+		return jsonify(current_value=0, base=0)
+
+	base_stat = query_result['Character_Attack_Bonus']
+
+	
+
+	sql_str = """SELECT *
+			FROM Character
+			WHERE Character_ID = ?;
+			"""
+	characters = query_db(sql_str, (char_id,), True, True)
+
+	item_id_list = [
+		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
+		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+		characters['Character_Weapon4']
+	]
+
+	stat_additional = 0
+
+	for i in item_id_list:
+		sql_str = """SELECT Item_Attack_Bonus
+				FROM Items
+				WHERE Item_ID = ?;
+				""" 
+		item = query_db(sql_str, (i,), True, True)
+		if item is not None:
+			stat_additional += item['Item_Attack_Bonus']
+
+
+	return jsonify(additional=stat_additional, base=base_stat)
+
+
+@bp.route('getStr/<int:char_id>')
+@login_required
+def get_str(char_id):
+	sql_str = """SELECT Character_Strength
+			FROM Character
+			WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if query_result is None:
+		return jsonify(current_value=0, base=0)
+
+	base_stat = query_result['Character_Strength']
+
+	
+
+	sql_str = """SELECT *
+			FROM Character
+			WHERE Character_ID = ?;
+			"""
+	characters = query_db(sql_str, (char_id,), True, True)
+
+	item_id_list = [
+		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
+		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+		characters['Character_Weapon4']
+	]
+
+	stat_additional = 0
+
+	for i in item_id_list:
+		sql_str = """SELECT Item_Str_Bonus
+				FROM Items
+				WHERE Item_ID = ?;
+				""" 
+		item = query_db(sql_str, (i,), True, True)
+		if item is not None:
+			stat_additional += item['Item_Str_Bonus']
+
+
+	return jsonify(additional=stat_additional, base=base_stat)
+
+@bp.route('getCurrency/<int:char_id>')
+@login_required
+def get_currency(char_id):
+	sql_str = """SELECT Character_Currency
+			FROM Character
+			WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if query_result is None:
+		return jsonify(current_value=0)
+
+	return jsonify(current_value=query_result['Character_Currency'])
+
+@bp.route('dummyCall')
+def dummy_call():
+	return jsonify(response='I\'m a dummy')
+
+@bp.route('/imageserver/user/<string:image_name>')
+@login_required
+def getUserImage(image_name):
+	# TODO: Read the docs on how to improve this for server
+	
+	return send_from_directory(os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'users', str(session['user_id'])), image_name, as_attachment=False)
+	
+	#return send_from_directory(os.path.join('..', 'src', 'static'), 'tree.jpg', as_attachment=False)
+	#return send_from_directory(os.path.join('..', 'src', 'static'), 'tree.jpg', as_attachment=False)
+
+@bp.route('/imageserver/item/<string:image_name>')
+@login_required
+def getItemImage(image_name):
+	# TODO: Read the docs on how to improve this for server
+	
+	return send_from_directory(os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'items'), image_name, as_attachment=False)
+	

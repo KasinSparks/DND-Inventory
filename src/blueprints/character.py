@@ -1,6 +1,8 @@
 from flask import (
-	Blueprint, g, redirect, render_template, request, session, url_for, current_app
+	Blueprint, g, redirect, render_template, request, session, url_for, current_app, jsonify
 )
+
+from werkzeug import secure_filename
 
 import os
 
@@ -100,6 +102,10 @@ def character_page(char_id):
 
 	image_data = convert_image_to_base64(os.path.join(current_app.config['IMAGE_UPLOAD'], characters['Character_Image']))
 	#image_data = convert_image_to_base64(characters['Character_Image'])
+	image_data = url_for('static', filename='images/no_image.png')
+
+	if characters['Character_Image'] is not None and characters['Character_Image'] != '' and characters['Character_Image'] != 'no_image.png':
+		image_data = '/dataserver/imageserver/user/' + characters['Character_Image']
 
 	character_data = {
 		'name' : shorten_string(characters['Character_Name'], 20),
@@ -113,15 +119,15 @@ def character_page(char_id):
 		'alignment' : shorten_string(alignment_name, 12),
 		'currency' : convert_form_field_data_to_int(characters['Character_Currency']),
 		'weight' : convert_form_field_data_to_int(characters['Character_Base_Carrying_Cap']),
-		'max_weight' : convert_form_field_data_to_int(characters['Character_Max_Carry_Weight']),
+		#'max_weight' : convert_form_field_data_to_int(characters['Character_Max_Carry_Weight']),
+		'max_weight' : 15 * (convert_form_field_data_to_int(characters['Character_Strength']) + stat_bonus['str']),
 		'str' : convert_form_field_data_to_int(characters['Character_Strength']) + stat_bonus['str'],
 		'dex' : convert_form_field_data_to_int(characters['Character_Dexterity']) + stat_bonus['dex'],
 		'con' : convert_form_field_data_to_int(characters['Character_Constitution']) + stat_bonus['con'],
 		'int' : convert_form_field_data_to_int(characters['Character_Intelligence']) + stat_bonus['int'],
 		'wis' : convert_form_field_data_to_int(characters['Character_Wisdom']) + stat_bonus['wis'],
 		'cha' : convert_form_field_data_to_int(characters['Character_Charisma']) + stat_bonus['cha'],
-		'image' : image_data['encoded_image'],
-		'image_type' : image_data['image_type'] 
+		'image' : image_data,
 	}
 
 	stat_modifiers = {
@@ -177,7 +183,7 @@ def get_inv_items(char_id : int, equiped_items_ids):
 	return items
 
 def calculate_modifier(stat_value):
-	return math.ceil((stat_value - 11) / 2)
+	return math.floor((stat_value - 10) / 2)
 
 def item_short_query(item_id):
 	sql_str = """SELECT Items.Item_Name, Rarities.Rarities_Color, Items.Item_Picture
@@ -230,7 +236,8 @@ def sumation_stats(item_id_list):
 def item_short_data(item_id, default_name, defalut_image_name):
 	item_data = {
 		'name' : default_name,
-		'image' : convert_image_to_base64(os.path.join('src', 'static', 'images', defalut_image_name)),
+		#'image' : convert_image_to_base64(os.path.join('src', 'static', 'images', defalut_image_name)),
+		'image' : url_for('static', filename='images/' + defalut_image_name),
 		'rarity_color' : None 
 	}
 
@@ -243,10 +250,12 @@ def item_short_data(item_id, default_name, defalut_image_name):
 	if item['Item_Name'] is not None and item['Item_Name'] != '':
 		item_data['name'] = shorten_string(item['Item_Name'], 17)
 
+	#if item['Item_Picture'] is not None and item['Item_Picture'] != '' and item['Item_Picture'] != 'no_image.png':
+	#	item_data['image'] = convert_image_to_base64(os.path.join(current_app.config['IMAGE_UPLOAD'], item['Item_Picture']))
+	#else:
+	#	item_data['image'] = convert_image_to_base64(os.path.join('src', 'static', 'images', item['Item_Picture']))
 	if item['Item_Picture'] is not None and item['Item_Picture'] != '' and item['Item_Picture'] != 'no_image.png':
-		item_data['image'] = convert_image_to_base64(os.path.join(current_app.config['IMAGE_UPLOAD'], item['Item_Picture']))
-	else:
-		item_data['image'] = convert_image_to_base64(os.path.join('src', 'static', 'images', item['Item_Picture']))
+		item_data['image'] = '/dataserver/imageserver/item/' + item['Item_Picture']
 
 
 	if item['Rarities_Color'] is not None and item['Rarities_Color'] != '':
@@ -427,18 +436,24 @@ def create_character_submit():
 	return redirect(url_for('character.create_character'))
 
 
-@bp.route('/edit/class/<int:char_id>', methods=('GET', 'POST'))
-@login_required
-def edit_class(char_id):
+def check_if_user_has_character(user_id, char_id):
 	sql_str = """SELECT Character_ID
 				FROM Character
 				WHERE User_ID = ? AND Character_ID = ?;
 			"""
-	has_char = query_db(sql_str, (session['user_id'], char_id), True, True)
+	has_char = query_db(sql_str, (user_id, char_id), True, True)
 
-	if has_char is None:
-		print('User does not have character with user id.')
+	if has_char is not None:
+		return True 
+	
+	return False
+
+@bp.route('/edit/class/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_class(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
 		return '400'
+
 
 	if request.method == 'POST':
 		new_val = request.form['value']
@@ -472,5 +487,444 @@ def edit_class(char_id):
 		return class_name
 
 
+
+	return '200'
+
+
+
+@bp.route('/edit/alignment/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_alignment(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
+		return '400'
+
+
+	if request.method == 'POST':
+		new_val = request.form['value']
+
+		sql_str = """SELECT Alignment_ID
+				FROM Alignments;
+				"""
+		class_ids = query_db(sql_str)
+		class_ids = [x['Alignment_ID'] for x in class_ids]
+
+		try:
+			new_val = int(new_val)
+		except:
+			new_val = -1
+
+		if new_val not in class_ids:
+			print('NO alignment with id. ')
+			return '400'
+		
+		sql_str = """UPDATE	Character
+				SET Character_Alignment = ?
+				WHERE User_ID = ? AND Character_ID = ?; 
+				"""
+		query_db(sql_str, (new_val, session['user_id'], char_id), False)
+			
+		sql_str = """SELECT Alignment_Name
+					FROM Alignments
+					WHERE Alignment_ID = ?;
+				"""
+		class_name = query_db(sql_str, (new_val,), True, True)['Alignment_Name']
+		return class_name
+
+
+
+	return '200'
+
+@bp.route('/edit/level/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_level(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
+		return '400'
+
+	if request.method == 'POST':
+		new_val = request.form['value']
+
+		try:
+			new_val_int = int(new_val)
+		except:
+			new_val_int = 0
+
+		sql_str = """UPDATE	Character
+				SET Character_Level = ?
+				WHERE User_ID = ? AND Character_ID = ?; 
+				"""
+		query_db(sql_str, (new_val_int, session['user_id'], char_id), False)
+		
+		return new_val 
+
+
+
+	return '200'
+
+@bp.route('/edit/currency/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_currency(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
+		return '400'
+
+	if request.method == 'POST':
+		new_val = request.form['value']
+
+		try:
+			new_val_int = int(new_val)
+		except:
+			new_val_int = 0
+
+		sql_str = """UPDATE	Character
+				SET Character_Currency = ?
+				WHERE User_ID = ? AND Character_ID = ?; 
+				"""
+		query_db(sql_str, (new_val_int, session['user_id'], char_id), False)
+		
+		return new_val 
+
+
+
+	return '200'
+
+
+@bp.route('/edit/image/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_image(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
+		return '400'
+
+	if request.method == 'POST':
+		if 'image' not in request.files:
+			return 'No file included'
+
+		
+		new_img = request.files['image']
+
+		if new_img.filename == '':
+			return 'File name was blank'
+
+		if new_img and allowed_file(new_img.filename):
+			filename = secure_filename(new_img.filename)
+			dirName = os.path.join('users', str(session['user_id']))
+			fullDirName = os.path.join(current_app.config['IMAGE_UPLOAD'], dirName)
+
+			if not os.path.exists(fullDirName):
+				os.mkdir(fullDirName, mode=0o770)
+
+			new_img.save(os.path.join(fullDirName, filename))
+
+			sql_str = """UPDATE Character
+						SET Character_Image=?
+						WHERE Character_ID=?;
+					"""
+			query_db(sql_str, (filename, char_id), False)
+
+			return redirect(url_for('character.character_page', char_id=char_id)) 
+
+		return 'Not in allowed file types or image was None' 
+
+	return '400'
+
+def allowed_file(filename):
+	 return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+
+
+@bp.route('/edit/health/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_health(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
+		return '400'
+
+	if request.method == 'POST':
+		new_val = request.form['value']
+
+		try:
+			new_val = int(new_val)
+		except:
+			new_val = 0
+
+		sql_str = """SELECT Character_Max_HP
+					FROM Character
+					WHERE User_ID = ? AND Character_ID = ?;
+				"""
+		max_hp = query_db(sql_str, (session['user_id'], char_id), True, True)['Character_Max_HP']
+
+		if new_val > max_hp:
+			new_val = max_hp
+
+		sql_str = """UPDATE	Character
+				SET Character_HP = ?
+				WHERE User_ID = ? AND Character_ID = ?; 
+				"""
+		query_db(sql_str, (new_val, session['user_id'], char_id), False)
+		
+		return str(new_val)
+
+	return '200'
+
+@bp.route('/edit/maxhealth/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_maxhealth(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
+		return '400'
+
+	if request.method == 'POST':
+		new_val = request.form['value']
+
+		try:
+			new_val = int(new_val)
+		except:
+			new_val = 0
+
+		sql_str = """UPDATE	Character
+				SET Character_Max_HP = ?
+				WHERE User_ID = ? AND Character_ID = ?; 
+				"""
+		query_db(sql_str, (new_val, session['user_id'], char_id), False)
+
+
+		sql_str = """SELECT *
+			FROM Character
+			WHERE Character_ID = ?;
+			"""
+		characters = query_db(sql_str, (char_id,), True, True)
+
+		item_id_list = [
+			characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
+			characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+			characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+			characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+			characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+			characters['Character_Weapon4']
+		]
+
+		health_additional = 0
+
+		for i in item_id_list:
+			sql_str = """SELECT Item_Health_Bonus
+					FROM Items
+					WHERE Item_ID = ?;
+					""" 
+			item = query_db(sql_str, (i,), True, True)
+			if item is not None:
+				health_additional += item['Item_Health_Bonus']
+
+		val = new_val + health_additional
+		
+		return str(val)
+
+	return '200'
+
+@bp.route('/edit/ac/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_ac(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
+		return '400'
+
+	if request.method == 'POST':
+		new_val = request.form['value']
+
+		try:
+			new_val = int(new_val)
+		except:
+			new_val = 0
+
+		sql_str = """UPDATE	Character
+				SET Character_AC = ?
+				WHERE User_ID = ? AND Character_ID = ?; 
+				"""
+		query_db(sql_str, (new_val, session['user_id'], char_id), False)
+
+
+		sql_str = """SELECT *
+			FROM Character
+			WHERE Character_ID = ?;
+			"""
+		characters = query_db(sql_str, (char_id,), True, True)
+
+		item_id_list = [
+			characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
+			characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+			characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+			characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+			characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+			characters['Character_Weapon4']
+		]
+
+		ac_additional = 0
+
+		for i in item_id_list:
+			sql_str = """SELECT Item_AC_Bonus
+					FROM Items
+					WHERE Item_ID = ?;
+					""" 
+			item = query_db(sql_str, (i,), True, True)
+			if item is not None:
+				ac_additional += item['Item_AC_Bonus']
+
+		val = new_val + ac_additional
+		
+		return str(val)
+
+	return '200'
+
+@bp.route('/edit/initiative/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_initiative(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
+		return '400'
+
+	if request.method == 'POST':
+		new_val = request.form['value']
+
+		try:
+			new_val = int(new_val)
+		except:
+			new_val = 0
+
+		sql_str = """UPDATE	Character
+				SET Character_Initiative = ?
+				WHERE User_ID = ? AND Character_ID = ?; 
+				"""
+		query_db(sql_str, (new_val, session['user_id'], char_id), False)
+
+
+		sql_str = """SELECT *
+			FROM Character
+			WHERE Character_ID = ?;
+			"""
+		characters = query_db(sql_str, (char_id,), True, True)
+
+		item_id_list = [
+			characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
+			characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+			characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+			characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+			characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+			characters['Character_Weapon4']
+		]
+
+		initiative_additional = 0
+
+		for i in item_id_list:
+			sql_str = """SELECT Item_Initiative_Bonus
+					FROM Items
+					WHERE Item_ID = ?;
+					""" 
+			item = query_db(sql_str, (i,), True, True)
+			if item is not None:
+				initiative_additional += item['Item_Initiative_Bonus']
+
+		val = new_val + initiative_additional
+		
+		return str(val)
+
+	return '200'
+
+@bp.route('/edit/attackBonus/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_attack_bonus(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
+		return '400'
+
+	if request.method == 'POST':
+		new_val = request.form['value']
+
+		try:
+			new_val = int(new_val)
+		except:
+			new_val = 0
+
+		sql_str = """UPDATE	Character
+				SET Character_Attack_Bonus = ?
+				WHERE User_ID = ? AND Character_ID = ?; 
+				"""
+		query_db(sql_str, (new_val, session['user_id'], char_id), False)
+
+
+		sql_str = """SELECT *
+			FROM Character
+			WHERE Character_ID = ?;
+			"""
+		characters = query_db(sql_str, (char_id,), True, True)
+
+		item_id_list = [
+			characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
+			characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+			characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+			characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+			characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+			characters['Character_Weapon4']
+		]
+
+		stat_additional = 0
+
+		for i in item_id_list:
+			sql_str = """SELECT Item_Attack_Bonus
+					FROM Items
+					WHERE Item_ID = ?;
+					""" 
+			item = query_db(sql_str, (i,), True, True)
+			if item is not None:
+				stat_additional += item['Item_Attack_Bonus']
+
+		val = new_val + stat_additional
+		
+		return str(val)
+
+	return '200'
+
+
+@bp.route('/edit/str/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_str(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
+		return '400'
+
+	if request.method == 'POST':
+		new_val = request.form['value']
+
+		try:
+			new_val = int(new_val)
+		except:
+			new_val = 0
+
+		sql_str = """UPDATE	Character
+				SET Character_Strength = ?
+				WHERE User_ID = ? AND Character_ID = ?; 
+				"""
+		query_db(sql_str, (new_val, session['user_id'], char_id), False)
+
+
+		sql_str = """SELECT *
+			FROM Character
+			WHERE Character_ID = ?;
+			"""
+		characters = query_db(sql_str, (char_id,), True, True)
+
+		item_id_list = [
+			characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
+			characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+			characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+			characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+			characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+			characters['Character_Weapon4']
+		]
+
+		stat_additional = 0
+
+		for i in item_id_list:
+			sql_str = """SELECT Item_Str_Bonus
+					FROM Items
+					WHERE Item_ID = ?;
+					""" 
+			item = query_db(sql_str, (i,), True, True)
+			if item is not None:
+				stat_additional += item['Item_Str_Bonus']
+
+		val = new_val + stat_additional
+		
+		return str(val)
 
 	return '200'

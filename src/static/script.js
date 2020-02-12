@@ -77,7 +77,7 @@ function getEquipmentItemDetailsHTML(jsonData){
 	var equipmentItemDetailsHTML = '<!--ITEM_INFO-->\
 	<div class="item_info">\
 		<div class="item_info_header">\
-			<img style="border-color: ' + jsonData.rarity_color + '" src="data:image/' + jsonData.image_type + ';charset=utf-8;base64,' + jsonData.encoded_image + '" alt="' + jsonData.slot + ' Item"/>\
+			<img style="border-color: ' + jsonData.rarity_color + '" src="' + jsonData.image + '" alt="' + jsonData.slot + ' Item"/>\
 			<h1 style="color: ' + jsonData.rarity_color + '">' + jsonData.name + '<h1>\
 		</div>\
 		<div class="item_info_data">\
@@ -255,7 +255,7 @@ class ChangeCharacterData{
 	dropdown(char_id, dropdown_options, field_id_name, submit_route){
 		var html_string = '<div class="char_item_val_change_container"><select id="new_value">';
 		
-		console.log(submit_route);
+		//console.log(submit_route);
 
 		var field = document.getElementById(field_id_name);
 		if(field == null){
@@ -281,8 +281,106 @@ class ChangeCharacterData{
 
 		return;
 	}
+
+	number(char_id, current_number, field_id_name, submit_route){
+		var html_string = '<div class="char_item_val_change_container">';
+		
+		html_string += '<input type="number" id="new_value" value="' + current_number.current_value + '">';
+
+		var field = document.getElementById(field_id_name);
+		if(field == null){
+			return;
+		}
+
+		isChangeCharDataOpen = true;
+
+		html_string += '<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 1 + ');">Y</button>\
+						<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
+						</div>';
+
+		
+		field.setAttribute('style', 'display: none;');
+		field.parentElement.parentElement.innerHTML += html_string;
+		
+
+		return;
+	}
+
+	number_additional(char_id, current_number, field_id_name, submit_route){
+		var html_string = '<div class="char_item_val_change_container">';
+
+		html_string += '<div style="display: flex; width: 100%;">\
+							<div class="stat_details"><h4>Base</h4><p>' + current_number.base + '</p></div>\
+							<div class="stat_details"><h4>Additional</h4><p>' + current_number.additional + '</p></div>\
+						</div>'
+		
+		html_string += '<input type="number" id="new_value" value="' + current_number.base + '">';
+
+		var field = document.getElementById(field_id_name);
+		if(field == null){
+			return;
+		}
+
+		isChangeCharDataOpen = true;
+
+		html_string += '<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 1 + ');">Y</button>\
+						<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
+						</div>';
+
+		
+		field.setAttribute('style', 'display: none;');
+		field.parentElement.parentElement.innerHTML += html_string;
+		
+
+		return;
+	}
+
+	image(char_id, dummy_data, field_id_name, submit_route){
+		var html_string = '<div class="char_item_val_change_container">\
+						<form method="post" enctype="multipart/form-data" action="' + submit_route + char_id + '">\
+						<input name="image" type="file" id="new_value" accept="image/gif, image/jpeg, image/png, image/jpg">';
+
+		var field = document.getElementById(field_id_name);
+		if(field == null){
+			return;
+		}
+
+		isChangeCharDataOpen = true;
+
+		html_string += '<input type="submit", value="Y"/>\
+						<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
+						</form></div>';
+
+		
+		field.setAttribute('style', 'display: none;');
+		field.parentElement.innerHTML += html_string;
+		
+
+		return;
+	}
 	
-	
+	string_value(char_id, current_string, field_id_name, submit_route){
+		var html_string = '<div class="char_item_val_change_container">\
+		<input type="number" id="new_value" value="' + current_number.level + '">';
+
+		var field = document.getElementById(field_id_name);
+		if(field == null){
+		return;
+		}
+
+		isChangeCharDataOpen = true;
+
+		html_string += '<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 1 + ');">Y</button>\
+				<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
+				</div>';
+
+
+		field.setAttribute('style', 'display: none;');
+		field.parentElement.parentElement.innerHTML += html_string;
+
+
+		return;
+	}	
 }
 
 
@@ -292,7 +390,17 @@ function submitChanges(char_id, field_id_name, submit_route, callType=0){
 	var element = document.getElementById('new_value');
 	switch(callType){
 		case 0:
-			submitData(submit_route + char_id, 'value=' + element.options[element.selectedIndex].value, field_id_name);
+			submitData(submit_route + char_id,
+				'value=' + element.options[element.selectedIndex].value,
+				field_id_name);
+			break;
+		case 1:
+			submitData(submit_route + char_id, 'value=' + element.value,
+				field_id_name);
+			break;
+		case 2:
+			submitImage(submit_route + char_id, 'image=' + element.value,
+				field_id_name);
 			break;
 		default:
 			console.log('Value:: ' + element.value);
@@ -318,6 +426,24 @@ function submitData(url, params, field_id_name){
 	http.send(params);
 }
 
+function submitImage(url, params, field_id_name){
+	var http = new XMLHttpRequest();
+	http.open('POST', url, true);
+
+	//Send the proper header information along with the request
+	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+	http.onreadystatechange = function() {
+		//Call a function when the state changes.
+		if(http.readyState == 4 && http.status == 200) {
+			// do something here
+			//console.log(http.responseText);
+			//document.getElementById(field_id_name).innerHTML = http.responseText;
+		}
+	}
+	http.send(params);
+}
+
 function abortChanges(field_id_name){
 	if(isChangeCharDataOpen){
 		document.getElementById(field_id_name).setAttribute('style', '');
@@ -330,7 +456,88 @@ function abortChanges(field_id_name){
 
 function changeClass(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/getClassOptions', 'json', 'character_class', '/character/edit/class/');
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/getClassOptions',
+			'json', 'character_class', '/character/edit/class/');
 		ccd.dataCall(ccd.dropdown);
+	}
+}
+
+function changeLevel(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/getLevel/' + char_id, 'json',
+			'character_level', '/character/edit/level/');
+		ccd.dataCall(ccd.number);
+	}
+}
+
+function changeImage(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/dummyCall', 'json',
+			'character_image', '/character/edit/image/');
+		ccd.dataCall(ccd.image);
+	}
+}
+
+function changeHealth(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/getHealth/' + char_id, 'json',
+			'character_hp', '/character/edit/health/')
+		ccd.dataCall(ccd.number);
+	}
+}
+
+function changeMaxHealth(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/getMaxHealth/' + char_id, 'json',
+			'character_max_hp', '/character/edit/maxhealth/')
+		ccd.dataCall(ccd.number_additional);
+	}
+}
+
+function changeAC(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/getAC/' + char_id, 'json',
+			'character_ac', '/character/edit/ac/')
+		ccd.dataCall(ccd.number_additional);
+	}
+}
+
+function changeInitiative(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/getInitiative/' + char_id, 'json',
+			'character_initiative', '/character/edit/initiative/')
+		ccd.dataCall(ccd.number_additional);
+	}
+}
+
+function changeAttackBonus(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/getAttackBonus/' + char_id, 'json',
+			'character_attack_bonus', '/character/edit/attackBonus/')
+		ccd.dataCall(ccd.number_additional);
+	}
+}
+
+function changeAlignment(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/getAlignmentOptions',
+			'json', 'character_alignment', '/character/edit/alignment/');
+		ccd.dataCall(ccd.dropdown);
+	}
+}
+
+function changeCurrency(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/getCurrency/' + char_id, 'json',
+			'character_currency', '/character/edit/currency/')
+		ccd.dataCall(ccd.number);
+	}
+}
+
+function changeStrBonus(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeCharacterData(char_id, '/dataserver/getStr/' + char_id, 'json',
+			'character_str_bonus', '/character/edit/str/')
+		ccd.dataCall(ccd.number_additional);
 	}
 }

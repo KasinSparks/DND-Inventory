@@ -22,14 +22,14 @@
 								<div class="equipment_row tooltip" onclick="equipmentItemDetails({{ char_id }}, 'Helmet');">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
-											<img src="data:image/{{ equiped_item['head']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['head']['image']['encoded_image'] }}" alt="Head Item" />
+											<img src="{{ equiped_item['head']['image'] }}" alt="Head Item" />
 										</div>
 										<div class="equipment_left_item_name">
 											<h2 
 												{% if equiped_item['head']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['head']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['head']['name'] }}</h2>
+											>{{ equiped_item['head']['name']|e }}</h2>
 										</div>
 									</div>	
 									<!-- Tool tip -->
@@ -61,70 +61,70 @@
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Shoulders');">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
-											<img src="data:image/{{ equiped_item['shoulder']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['shoulder']['image']['encoded_image'] }}" alt="Shoulder Item" />
+											<img src="{{ equiped_item['shoulder']['image'] }}" alt="Shoulder Item" />
 										</div>
 										<div class="equipment_left_item_name">
 											<h2 
 												{% if equiped_item['shoulder']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['shoulder']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['shoulder']['name'] }}</h2>
+											>{{ equiped_item['shoulder']['name']|e }}</h2>
 										</div>
 									</div>
 								</div>
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Chest');">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
-											<img src="data:image/{{ equiped_item['chest']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['chest']['image']['encoded_image'] }}" alt="Torso Item" />
+											<img src="{{ equiped_item['chest']['image'] }}" alt="Torso Item" />
 										</div>
 										<div class="equipment_left_item_name">
 											<h2 
 												{% if equiped_item['chest']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['chest']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['chest']['name'] }}</h2>
+											>{{ equiped_item['chest']['name']|e }}</h2>
 										</div>
 									</div>
 								</div>
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Gloves');">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
-											<img src="data:image/{{ equiped_item['hand']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['hand']['image']['encoded_image'] }}" alt="Hand Item" />
+											<img src="{{ equiped_item['hand']['image'] }}" alt="Hand Item" />
 										</div>
 										<div class="equipment_left_item_name">
 											<h2 
 												{% if equiped_item['hand']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['hand']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['hand']['name'] }}</h2>
+											>{{ equiped_item['hand']['name']|e }}</h2>
 										</div>
 									</div>
 								</div>	
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Leggings');">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
-											<img src="data:image/{{ equiped_item['leg']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['leg']['image']['encoded_image'] }}" alt="Leg Item" />
+											<img src="{{ equiped_item['leg']['image'] }}" alt="Leg Item" />
 										</div>
 										<div class="equipment_left_item_name">
 											<h2 
 												{% if equiped_item['leg']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['leg']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['leg']['name'] }}</h2>
+											>{{ equiped_item['leg']['name']|e }}</h2>
 										</div>
 									</div>
 								</div>	
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Boots');">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
-											<img src="data:image/{{ equiped_item['boots']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['boots']['image']['encoded_image'] }}" alt="Foot Item" />
+											<img src="{{ equiped_item['boots']['image'] }}" alt="Foot Item" />
 										</div>
 										<div class="equipment_left_item_name">
 											<h2 
 												{% if equiped_item['boots']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['boots']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['boots']['name'] }}</h2>
+											>{{ equiped_item['boots']['name']|e }}</h2>
 										</div>
 									</div>
 								</div>	
@@ -137,10 +137,10 @@
 												{% if equiped_item['trinket1']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['trinket1']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['trinket1']['name'] }}</h2>
+											>{{ equiped_item['trinket1']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="data:image/{{ equiped_item['trinket1']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['trinket1']['image']['encoded_image'] }}" alt="Trinket Item 1" />
+											<img src="{{ equiped_item['trinket1']['image'] }}" alt="Trinket Item 1" />
 										</div>
 									</div>
 								</div>
@@ -151,10 +151,10 @@
 												{% if equiped_item['trinket2']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['trinket2']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['trinket2']['name'] }}</h2>
+											>{{ equiped_item['trinket2']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="data:image/{{ equiped_item['trinket2']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['trinket2']['image']['encoded_image'] }}" alt="Trinket Item 2" />
+											<img src="{{ equiped_item['trinket2']['image'] }}" alt="Trinket Item 2" />
 										</div>
 									</div>
 								</div>
@@ -165,10 +165,10 @@
 												{% if equiped_item['ring1']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['ring1']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['ring1']['name'] }}</h2>
+											>{{ equiped_item['ring1']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="data:image/{{ equiped_item['ring1']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['ring1']['image']['encoded_image'] }}" alt="Ring Item 1" />
+											<img src="{{ equiped_item['ring1']['image'] }}" alt="Ring Item 1" />
 										</div>
 									</div>
 								</div>
@@ -179,10 +179,10 @@
 												{% if equiped_item['ring2']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['ring2']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['ring2']['name'] }}</h2>
+											>{{ equiped_item['ring2']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="data:image/{{ equiped_item['ring2']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['ring2']['image']['encoded_image'] }}" alt="Ring Item 2" />
+											<img src="{{ equiped_item['ring2']['image'] }}" alt="Ring Item 2" />
 										</div>
 									</div>
 								</div>
@@ -193,10 +193,10 @@
 												{% if equiped_item['item1']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['item1']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['item1']['name'] }}</h2>
+											>{{ equiped_item['item1']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="data:image/{{ equiped_item['item1']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['item1']['image']['encoded_image'] }}" alt="Magic Item 2" />
+											<img src="{{ equiped_item['item1']['image'] }}" alt="Magic Item 2" />
 										</div>
 									</div>
 								</div>
@@ -207,10 +207,10 @@
 												{% if equiped_item['item2']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['item2']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['item2']['name'] }}</h2>
+											>{{ equiped_item['item2']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="data:image/{{ equiped_item['item2']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['item2']['image']['encoded_image'] }}" alt="Magic Item 2" />
+											<img src="{{ equiped_item['item2']['image'] }}" alt="Magic Item 2" />
 										</div>
 									</div>
 								</div>
@@ -228,28 +228,28 @@
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Weapon1');">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
-											<img src="data:image/{{ equiped_item['weapon1']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['weapon1']['image']['encoded_image'] }}" alt="Main Hand 1" />
+											<img src="{{ equiped_item['weapon1']['image'] }}" alt="Main Hand 1" />
 										</div>
 										<div class="equipment_left_item_name">
 											<h2 
 												{% if equiped_item['weapon1']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['weapon1']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['weapon1']['name'] }}</h2>
+											>{{ equiped_item['weapon1']['name']|e }}</h2>
 										</div>
 									</div>
 								</div>
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Weapon2');">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
-											<img src="data:image/{{ equiped_item['offhand1']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['offhand1']['image']['encoded_image'] }}" alt="Offhand 1" />
+											<img src="{{ equiped_item['offhand1']['image'] }}" alt="Offhand 1" />
 										</div>
 										<div class="equipment_left_item_name">
 											<h2 
 												{% if equiped_item['offhand1']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['offhand1']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['offhand1']['name'] }}</h2>
+											>{{ equiped_item['offhand1']['name']|e }}</h2>
 										</div>
 									</div>
 								</div>
@@ -262,10 +262,10 @@
 												{% if equiped_item['weapon2']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['weapon2']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['weapon2']['name'] }}</h2>
+											>{{ equiped_item['weapon2']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="data:image/{{ equiped_item['weapon2']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['weapon2']['image']['encoded_image'] }}" alt="Main Hand 2" />
+											<img src="{{ equiped_item['weapon2']['image'] }}" alt="Main Hand 2" />
 										</div>
 									</div>
 								</div>
@@ -276,10 +276,10 @@
 												{% if equiped_item['offhand2']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['offhand2']['rarity_color'] }}"
 												{% endif %}
-											>{{ equiped_item['offhand2']['name'] }}</h2>
+											>{{ equiped_item['offhand2']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="data:image/{{ equiped_item['offhand2']['image']['image_type'] }};charset=utf-8;base64, {{ equiped_item['offhand2']['image']['encoded_image'] }}" alt="Offhand 2" />
+											<img src="{{ equiped_item['offhand2']['image'] }}" alt="Offhand 2" />
 										</div>
 									</div>
 								</div>
@@ -292,21 +292,21 @@
 			<div class="char_info">
 				<div class="inner_container">
 					<div class="tab">
-						<h1 id="character_name">{{ character_data['name'] }}</h1>
+						<h1 id="character_name">{{ character_data['name']|e }}</h1>
 					</div>
 					
-					<div style="width: 100%; height: 29.4%; background-color: purple; border-bottom-style: solid; border-bottom-color: black; border-bottom-width: 1%;">
-						<img src="data:image/{{ character_data['image_type'] }};charset=utf-8;base64, {{ character_data['image'] }}" style="width: 100%; height: 100%;" alt="Character Image"/>
+					<div class="char_image_container">
+						<img id="character_image" class="character_image clickable" src="{{ character_data['image'] }}" alt="Character Image" onclick="changeImage({{ char_id }});"/>
 					</div>
 
 					<div class="info_item">
 						<div class="info_left_section">
 							<h3 class="info_data">Classification</h3>
 						</div>	
-						<div class="info_middle_section info_middle_section_top_image" onclick="changeClass({{ char_id }});">
-							<h3 id="character_class" class="info_data">{{ character_data['class'] }}</h3>
+						<div class="info_middle_section info_middle_section_top_image clickable" onclick="changeClass({{ char_id }});">
+							<h3 id="character_class" class="info_data">{{ character_data['class']|e }}</h3>
 						</div>
-						<div class="info_right_section info_right_section_top_image">
+						<div class="info_right_section info_right_section_top_image clickable" onclick="changeLevel({{ char_id }});">
 							<h3 id="character_level" class="info_data">{{ character_data['level'] }}</h3>
 						</div>
 					</div>
@@ -314,14 +314,10 @@
 						<div class="info_left_section">
 							<h3 class="info_data">HP</h3>
 						</div>	
-						<div class="info_middle_section info_middle_section_top_image tooltip">
+						<div class="info_middle_section info_middle_section_top_image clickable" onclick="changeHealth({{ char_id }});">
 							<h3 id="character_hp" class="info_data">{{ character_data['hp'] }}</h3>
-							<div class="tooltiptext">
-								<label for="hp_val">HP: </label>
-								<input name="hp_val" type="number" value="{{ character_data['hp'] }}" onchange="alert('yup');" >
-							</div>
 						</div>
-						<div class="info_right_section info_right_section_top_image">
+						<div class="info_right_section info_right_section_top_image clickable" onclick="changeMaxHealth({{ char_id }});">
 							<h3 id="character_max_hp" class="info_data">{{ character_data['max_hp'] }}</h3>
 						</div>
 					</div>
@@ -329,7 +325,7 @@
 						<div class="info_left_section">
 							<h3 class="info_data">AC</h3>
 						</div>	
-						<div class="info_middle_section info_middle_section_top_image">
+						<div class="info_middle_section info_middle_section_top_image clickable" onclick="changeAC({{ char_id }});">
 							<h3 id="character_ac" class="info_data">{{ character_data['ac'] }}</h3>
 						</div>
 						<div class="info_right_section info_right_section_top_image">
@@ -343,7 +339,7 @@
 						<div class="info_left_section">
 							<h3 class="info_data">Initiative</h3>
 						</div>	
-						<div class="info_middle_section info_middle_section_top_image">
+						<div class="info_middle_section info_middle_section_top_image clickable" onclick="changeInitiative({{ char_id }});">
 							<h3 id="character_initiative" class="info_data">{{ character_data['initiative'] }}</h3>
 						</div>
 						<div class="info_right_section info_right_section_top_image">
@@ -354,7 +350,7 @@
 						<div class="info_left_section">
 							<h3 class="info_data">Attack Bonus</h3>
 						</div>	
-						<div class="info_middle_section info_middle_section_top_image">
+						<div class="info_middle_section info_middle_section_top_image clickable" onclick="changeAttackBonus({{ char_id }});">
 							<h3 id="character_attack_bonus" class="info_data">{{ character_data['attack_bonus'] }}</h3>
 						</div>
 						<div class="info_right_section info_right_section_top_image">
@@ -368,8 +364,8 @@
 						<div class="info_left_section">
 							<h3 class="info_data">Alignment</h3>
 						</div>	
-						<div class="info_middle_section info_middle_section_bottom_image">
-							<h3 id="character_alignment" class="info_data">{{ character_data['alignment'] }}</h3>
+						<div class="info_middle_section info_middle_section_bottom_image clickable" onclick="changeAlignment({{ char_id }});">
+							<h3 id="character_alignment" class="info_data">{{ character_data['alignment']|e }}</h3>
 						</div>
 						<div class="info_right_section info_right_section_bottom_image">
 							<h3 class="info_data"></h3>
@@ -379,7 +375,7 @@
 						<div class="info_left_section">
 							<h3 class="info_data">Currency</h3>
 						</div>	
-						<div class="info_middle_section info_middle_section_center_image">
+						<div class="info_middle_section info_middle_section_center_image clickable" onclick="changeCurrency({{ char_id }});">
 							<h3 id="character_currency" class="info_data">{{ character_data['currency'] }}</h3>
 						</div>
 						<div class="info_right_section info_right_section_center_image">
@@ -498,7 +494,7 @@
 								<div class="inv_line_item clickable">
 									<div class="inv_line_inner">
 										<div class="inv_remove_item_button clickable"></div >
-										<h2 style="color: {{ item['Rarities_Color'] }}">{{ item['Item_Name'] }}</h2>
+										<h2 style="color: {{ item['Rarities_Color'] }}">{{ item['Item_Name']|e }}</h2>
 										{% if item['Is_Equiped'] %}
 											<div class="inv_unequip_item_button clickable"></div >
 										{% else %}
