@@ -846,9 +846,9 @@ function updateInvCategoryHelper(char_id, response, category_name){
 		itemString += '</div>';
 
 		if(item.Is_Equiped){
-			itemString += '<div class="inv_unequip_item_button clickable" onclick="unequipItem(' + char_id + ', ' + item.Item_ID + ');"></div >';
+			itemString += '<div class="inv_unequip_item_button clickable" onclick="unequipItem(' + char_id + ', ' + item.Item_ID + ',' + category_name + ');"></div >';
 		}else{
-			itemString += '<div class="inv_equip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ');"></div >';
+			itemString += '<div class="inv_equip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ',' + category_name +  ');"></div >';
 			//itemString += '<div class="inv_equip_item_button clickable"></div >';
 		}
 
@@ -896,9 +896,22 @@ function unequipItem(char_id, item_id){
 	submitUnequipChange('/character/test', '', '');
 }
 
-function equipItem(char_id, item_id){
+function equipItem(char_id, item_id, slot_name){
+	slot_num = 0;
+	if(is_multiple_slots){
+		// Determine which slot to add the item to
+	} else {
+		equipItemChangeSubmit('/character/item/equip/', char_id, item_id);
+	}
+}
+
+function multipleSlotsInsert(url_prefix, char_id, item_id, slot_num){
+
+}
+
+function equipItemChangeSubmit(url_prefix, char_id, item_id, slot_num=0){
 	// Send update to server
-	submitEquipChange('/character/item/equip/' + char_id + '/' + item_id + '/0', char_id, item_id);
+	submitEquipChange(url_prefix + char_id + '/' + item_id + '/' + slot_num, char_id, item_id);
 }
 
 function submitEquipChange(url, char_id, item_id){

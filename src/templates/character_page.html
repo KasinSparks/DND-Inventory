@@ -476,9 +476,9 @@
 											{% endif %}
 										</div>
 										{% if item['Is_Equiped'] %}
-											<div class="inv_unequip_item_button clickable" onclick="unequipItem({{ char_id }}, {{ item['Item_ID'] }});"></div >
+											<div class="inv_unequip_item_button clickable" onclick="unequipItem({{ char_id }}, {{ item['Item_ID'] }}, {{ ii }});"></div >
 										{% else %}
-											<div class="inv_equip_item_button clickable" onclick="equipItem({{ char_id }}, {{ item['Item_ID'] }});"></div >
+											<div class="inv_equip_item_button clickable" onclick="equipItem({{ char_id }}, {{ item['Item_ID'] }}), {{ ii }});"></div >
 										{% endif %}
 									</div>	
 								</div>
