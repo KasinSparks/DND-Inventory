@@ -80,6 +80,8 @@ def login():
 			'SELECT * FROM Users WHERE Username = ?', (username,)
 		).fetchone()
 
+		# TODO: check for is verified
+
 		if user is not None and account_tries_remaining(user['User_ID']) < 1 and is_attempt_within_range(user['User_ID']):
 			# Accout locked
 			tries_remaining = 0

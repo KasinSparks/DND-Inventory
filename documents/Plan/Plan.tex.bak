@@ -161,13 +161,13 @@
 		\begin{tabular}{| l | l | p{7cm} |}
 			\hline
 			\multicolumn{1}{|c|}{\bf{Field}} & \multicolumn{1}{|c|}{\bf{Data Type}} & \multicolumn{1}{|c|}{\bf{Description}}\\ \hline
-			Helmet & Item & \\ \hline
-			Chest Piece & Item & \\ \hline
-			Shoulders & Item & \\ \hline
+			Head & Item & \\ \hline
+			Torso Piece & Item & \\ \hline
+			Shoulder & Item & \\ \hline
 			Forearms & Item & \\ \hline
-			Gloves & Item & \\ \hline
-			Leggings & Item & \\ \hline
-			Boots & Item & \\ \hline
+			Hand & Item & \\ \hline
+			Leg & Item & \\ \hline
+			Foot & Item & \\ \hline
 			Main Hand & Item & \\ \hline
 			Off Hand & Item & \\ \hline
 			Ring Slot 0-9 & Item & \\ \hline

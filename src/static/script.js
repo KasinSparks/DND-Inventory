@@ -120,6 +120,14 @@ function getEquipmentItemDetailsHTML(jsonData){
 					<td colspan=2><h2>' + jsonData.effect2_name + ':</h2></td>\
 					<td colspan=2><h2>' + jsonData.effect2_description + '</h2></td>\
 				</tr>\
+				<tr>\
+					<td colspan=2><h2>Number of Damage Dices:</h2></td>\
+					<td colspan=2><h2>' + jsonData.item_damage_num_of_dices + '</h2></td>\
+				</tr>\
+				<tr>\
+					<td colspan=2><h2>Number of Damage Dice Sides:</h2></td>\
+					<td colspan=2><h2>' + jsonData.item_damage_num_of_dice_sides + '</h2></td>\
+				</tr>\
 			</table>\
 		</div>\
 		<div class="item_info_footer" onclick="test2();">\
@@ -220,7 +228,7 @@ function select_button_helper(element_name, style_attribute){
 	document.getElementsByName(element_name)[0].setAttribute('style', style_attribute);
 }
 
-class ChangeCharacterData{
+class ChangeData{
 	constructor(char_id, webpage, responseType, field_id_name, submit_route){
 		this.char_id = char_id;
 		this.webpage = webpage;
@@ -229,7 +237,7 @@ class ChangeCharacterData{
 		this.submit_route = submit_route;
 	}
 
-	dataCall(callbackFunction, submit_route=this.submit_route, char_id=this.char_id, field_id_name=this.field_id_name){
+	dataCall(callbackFunction=null, submit_route=this.submit_route, char_id=this.char_id, field_id_name=this.field_id_name){
 		console.log(submit_route);
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function(){
@@ -238,8 +246,13 @@ class ChangeCharacterData{
 					console.error('Response from ' + webpage + ' was null.');
 					return;
 				}
+				if(callbackFunction == null){
+					console.log(this.response);
+					return this.response;
+				}
+				
 				callbackFunction(char_id, this.response, field_id_name, submit_route);
-				return
+				return;
 			}
 		};
 		
@@ -396,7 +409,7 @@ function submitChanges(char_id, field_id_name, submit_route, callType=0){
 			break;
 		case 1:
 			submitData(submit_route + char_id, 'value=' + element.value,
-				field_id_name);
+				field_id_name, true);
 			break;
 		case 2:
 			submitImage(submit_route + char_id, 'image=' + element.value,
@@ -409,7 +422,7 @@ function submitChanges(char_id, field_id_name, submit_route, callType=0){
 	return
 }
 
-function submitData(url, params, field_id_name){
+function submitData(url, params, field_id_name='', is_json=false){
 	var http = new XMLHttpRequest();
 	http.open('POST', url, true);
 
@@ -420,7 +433,15 @@ function submitData(url, params, field_id_name){
 		//Call a function when the state changes.
 		if(http.readyState == 4 && http.status == 200) {
 			// do something here
-			document.getElementById(field_id_name).innerHTML = http.responseText;
+			if(!is_json && field_id_name != ''){
+				document.getElementById(field_id_name).innerHTML = http.responseText;
+			} else {
+				var data = JSON.parse(http.response);
+				for(var k in data){
+					console.log(k + ', ' + data[k])
+					document.getElementById(k).innerHTML = data[k];
+				}
+			}
 		}
 	}
 	http.send(params);
@@ -456,7 +477,7 @@ function abortChanges(field_id_name){
 
 function changeClass(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/getClassOptions',
+		var ccd = new ChangeData(char_id, '/dataserver/getClassOptions',
 			'json', 'character_class', '/character/edit/class/');
 		ccd.dataCall(ccd.dropdown);
 	}
@@ -464,7 +485,7 @@ function changeClass(char_id){
 
 function changeLevel(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/getLevel/' + char_id, 'json',
+		var ccd = new ChangeData(char_id, '/dataserver/getLevel/' + char_id, 'json',
 			'character_level', '/character/edit/level/');
 		ccd.dataCall(ccd.number);
 	}
@@ -472,7 +493,7 @@ function changeLevel(char_id){
 
 function changeImage(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/dummyCall', 'json',
+		var ccd = new ChangeData(char_id, '/dataserver/dummyCall', 'json',
 			'character_image', '/character/edit/image/');
 		ccd.dataCall(ccd.image);
 	}
@@ -480,7 +501,7 @@ function changeImage(char_id){
 
 function changeHealth(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/getHealth/' + char_id, 'json',
+		var ccd = new ChangeData(char_id, '/dataserver/getHealth/' + char_id, 'json',
 			'character_hp', '/character/edit/health/')
 		ccd.dataCall(ccd.number);
 	}
@@ -488,7 +509,7 @@ function changeHealth(char_id){
 
 function changeMaxHealth(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/getMaxHealth/' + char_id, 'json',
+		var ccd = new ChangeData(char_id, '/dataserver/getMaxHealth/' + char_id, 'json',
 			'character_max_hp', '/character/edit/maxhealth/')
 		ccd.dataCall(ccd.number_additional);
 	}
@@ -496,7 +517,7 @@ function changeMaxHealth(char_id){
 
 function changeAC(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/getAC/' + char_id, 'json',
+		var ccd = new ChangeData(char_id, '/dataserver/getAC/' + char_id, 'json',
 			'character_ac', '/character/edit/ac/')
 		ccd.dataCall(ccd.number_additional);
 	}
@@ -504,7 +525,7 @@ function changeAC(char_id){
 
 function changeInitiative(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/getInitiative/' + char_id, 'json',
+		var ccd = new ChangeData(char_id, '/dataserver/getInitiative/' + char_id, 'json',
 			'character_initiative', '/character/edit/initiative/')
 		ccd.dataCall(ccd.number_additional);
 	}
@@ -512,7 +533,7 @@ function changeInitiative(char_id){
 
 function changeAttackBonus(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/getAttackBonus/' + char_id, 'json',
+		var ccd = new ChangeData(char_id, '/dataserver/getAttackBonus/' + char_id, 'json',
 			'character_attack_bonus', '/character/edit/attackBonus/')
 		ccd.dataCall(ccd.number_additional);
 	}
@@ -520,7 +541,7 @@ function changeAttackBonus(char_id){
 
 function changeAlignment(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/getAlignmentOptions',
+		var ccd = new ChangeData(char_id, '/dataserver/getAlignmentOptions',
 			'json', 'character_alignment', '/character/edit/alignment/');
 		ccd.dataCall(ccd.dropdown);
 	}
@@ -528,16 +549,455 @@ function changeAlignment(char_id){
 
 function changeCurrency(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/getCurrency/' + char_id, 'json',
+		var ccd = new ChangeData(char_id, '/dataserver/getCurrency/' + char_id, 'json',
 			'character_currency', '/character/edit/currency/')
 		ccd.dataCall(ccd.number);
 	}
 }
 
-function changeStrBonus(char_id){
+function changeStr(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeCharacterData(char_id, '/dataserver/getStr/' + char_id, 'json',
-			'character_str_bonus', '/character/edit/str/')
+		var ccd = new ChangeData(char_id, '/dataserver/getStr/' + char_id, 'json',
+			'character_str', '/character/edit/str/')
 		ccd.dataCall(ccd.number_additional);
 	}
 }
+
+function changeDex(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeData(char_id, '/dataserver/getDex/' + char_id, 'json',
+			'character_dex', '/character/edit/dex/')
+		ccd.dataCall(ccd.number_additional);
+	}
+}
+
+function changeCon(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeData(char_id, '/dataserver/getCon/' + char_id, 'json',
+			'character_con', '/character/edit/con/')
+		ccd.dataCall(ccd.number_additional);
+	}
+}
+
+function changeInt(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeData(char_id, '/dataserver/getInt/' + char_id, 'json',
+			'character_int', '/character/edit/int/')
+		ccd.dataCall(ccd.number_additional);
+	}
+}
+
+function changeWis(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeData(char_id, '/dataserver/getWis/' + char_id, 'json',
+			'character_wis', '/character/edit/wis/')
+		ccd.dataCall(ccd.number_additional);
+	}
+}
+
+function changeCha(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeData(char_id, '/dataserver/getCha/' + char_id, 'json',
+			'character_cha', '/character/edit/cha/')
+		ccd.dataCall(ccd.number_additional);
+	}
+}
+
+
+function add_item_to_inv(char_id, item_slot){
+	var ccd = new ChangeData(char_id, '/dataserver/getItemList/' + item_slot, 'json', '', '');
+	ccd.dataCall(inv_item_add_pop_up);
+	return; 
+}
+
+function enable_input(input_name){
+	var element = document.getElementsByName(input_name)[0];
+	var status = element.getAttribute('disabled');
+
+	if(status == null){
+		element.setAttribute('disabled', '');
+	} else {
+		element.removeAttribute('disabled');
+	}
+
+	return;
+}
+
+function inv_item_add_pop_up(char_id, response, a=null, b=null){
+	var items_html = '';
+
+	response.items.forEach(element => {
+		items_html += '\
+			<div class="inv_add_item_row_item">\
+				<div class="inv_add_item_input">\
+					<input type="checkbox" name="' + element.Item_ID + '" onclick="enable_input(\'' + element.Item_ID + '.amount\');">\
+					<input type="number" name="' + element.Item_ID + '.amount" min="1" value="1" disabled>\
+				</div>\
+				<div class="inv_add_item_data">\
+					<img src="/dataserver/imageserver/item/' + element.Item_Picture + '"/>\
+					<h2 style="color:' + element.Rarities_Color + ';">' + element.Item_Name + '</h2>\
+				</div>\
+			</div>\
+		'
+	});
+
+
+	var html = '\
+		<div class="inv_add_item_container">\
+			<div class="inv_add_item_header">\
+				<h1>' + response.slot_name + '<h1>\
+			</div>\
+			' + items_html + '\
+			<div class="inv_add_item_buttons">\
+				<div class="clickable" onclick="invAddSubmit(' + char_id + ',\'' + response.slot_name + '\');">\
+					<h4 style="color: white;">Submit</h4>\
+				</div>\
+				<div class="clickable" onclick="cancelAddItem();">\
+					<h4 style="color: white;">Cancel</h4>\
+				</div>\
+			</div>\
+		</div>\
+		';
+
+	document.getElementsByClassName('inv_container')[0].innerHTML += html;
+}
+
+function cancelAddItem(){
+	document.getElementsByClassName('inv_add_item_container')[0].remove();
+	return;
+}
+
+function invAddSubmit(char_id, slot_name){
+	var rowItems = document.getElementsByClassName('inv_add_item_row_item');
+
+	//document.getElementsByClassName('')[0].getElementsByTagName('input')[0].value;
+
+	var parmStr = '';
+	var isFirst = true;
+
+	for(var i = 0; i < rowItems.length; ++i){
+		var inputItems = rowItems[i].getElementsByTagName('input');
+		var isChecked = false;
+		for(var j = 0; j < inputItems.length; ++j){
+			if(isChecked){
+				parmStr += inputItems[j].value;
+			}
+			
+			if(inputItems[j].type === 'checkbox' && inputItems[j].checked){
+				if(!isFirst){
+					parmStr += '&';
+					
+				} else {
+					isFirst = false;
+				}
+				parmStr += inputItems[j].name + '='; 
+				isChecked = true;
+			} 
+			console.log(parmStr);
+		}
+
+		/* if(i < rowItems.length - 1 && parmStr.length > 0){
+			parmStr += '&';
+		} */
+	}
+
+	console.log(parmStr);
+
+	submitAddItemData('/character/add/items/' + char_id, parmStr, 'character_weight', char_id, slot_name);
+
+
+	return;
+}
+
+function removeItemDialog(char_id, current_number, field_id_name, submit_route){
+	var html_string = '<div class="item_remove_container">';
+	
+	//html_string += '<input type="number" id="new_value" value="' + current_number.current_value + '">';
+	html_string += '<input type="number" id="inv_item_new_value" value="1" min="0" max="' + current_number.current_value + '">';
+
+	var field = document.getElementById(field_id_name);
+	if(field == null){
+		return;
+	}
+
+	isRemoveItemOpen = true;
+
+	html_string += '<button onclick="removeItemSubmit(' + char_id + ',' + current_number.item_id + ',\'' + current_number.slot_name +'\');">Remove</button>\
+					<button onclick="abortInvItemsChanges(\'' + field_id_name + '\');">X</button>\
+					</div>';
+
+	
+	field.parentElement.innerHTML += html_string;
+	
+
+	return;
+}
+
+var isRemoveItemOpen = false;
+
+function abortInvItemsChanges(field_id_name){
+	//document.getElementById(field_id_name).setAttribute('style', '');
+	document.getElementsByClassName('item_remove_container')[0].remove();
+	isRemoveItemOpen = false;
+	return;
+}
+
+function removeItem(char_id, item_id){
+	if(!isRemoveItemOpen){
+		var ccd = new ChangeData(char_id, '/dataserver/getItemAmount/' + char_id + '/' + item_id, 'json',
+			'inv_item_' + item_id, '/character/edit/itemAmount/'+ char_id + '/' + item_id);
+		ccd.dataCall(removeItemDialog);
+	} else {
+		console.error('remove item is already open...');
+	}
+}
+
+
+function removeItemSubmit(char_id, item_id, slot_name){
+	var element = document.getElementById('inv_item_new_value');
+	var paramStr = item_id + '=' + element.value;
+	console.log('paramStr: ' + paramStr);
+	submitAddItemData('/character/remove/items/' + char_id, paramStr, '', char_id, slot_name);
+	return;
+}
+
+/* 
+function submitData(url, params, field_id_name='', is_json=false){
+	var http = new XMLHttpRequest();
+	http.open('POST', url, true);
+
+	//Send the proper header information along with the request
+	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+	http.onreadystatechange = function() {
+		//Call a function when the state changes.
+		if(http.readyState == 4 && http.status == 200) {
+			// do something here
+			if(!is_json && field_id_name != ''){
+				document.getElementById(field_id_name).innerHTML = http.responseText;
+			} else {
+				var data = JSON.parse(http.response);
+				for(var k in data){
+					console.log(k + ', ' + data[k])
+					document.getElementById(k).innerHTML = data[k];
+				}
+			}
+		}
+	}
+	http.send(params);
+} */
+
+function updateInvCategory(callbackFunction = null, char_id, category_name, webpage){
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function(){
+		if(this.readyState == 4 && this.status == 200){
+			if(this.response == null){
+				console.error('Response from ' + webpage + ' was null.');
+				return;
+			}
+			if(callbackFunction == null){
+				console.log(this.response);
+				return this.response;
+			}
+			
+			callbackFunction(char_id, this.response, category_name);
+			return;
+		}
+	};
+	
+	xhttp.open("GET", webpage, true);
+	
+	xhttp.responseType = 'json'; 
+
+	xhttp.send();
+
+	return;
+}
+
+function updateInvCategoryHelper(char_id, response, category_name){
+	var parent = document.getElementById('inv_category_' + category_name);
+	var lineItems = parent.getElementsByClassName('inv_line_item');
+	
+	console.log(lineItems.length);
+	// because... javascript have to do this in reverse order
+	for(var i = lineItems.length - 1; i > -1; --i){
+		console.log('removing...');
+		lineItems[i].remove();
+		console.log('here');
+		console.log(i);
+	}
+
+	itemString = '';
+ 
+	response.forEach(item => {
+		itemString = '';
+		console.log(item);
+		itemString += '\
+			<div class="inv_line_item clickable">\
+				<div class="inv_line_inner">\
+					<div id="inv_item_' + item.Item_ID + '" class="inv_remove_item_button clickable" onclick="removeItem(' + char_id + ', ' + item['Item_ID'] + ');"></div >\
+					<div class="inv_item_text">\
+						<h2 style="color: ' + item.Rarities_Color + '">' + item.Item_Name + '</h2>';
+	
+		if(item.Amount > 1){
+			itemString += '<h3>x' + item.Amount + '</h3>';
+		}
+
+		itemString += '</div>';
+
+		if(item.Is_Equiped){
+			itemString += '<div class="inv_unequip_item_button clickable" onclick="unequipItem(' + char_id + ', ' + item.Item_ID + ');"></div >';
+		}else{
+			itemString += '<div class="inv_equip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ');"></div >';
+			//itemString += '<div class="inv_equip_item_button clickable"></div >';
+		}
+
+		itemString += '</div>	\
+			</div>\
+		';
+
+		parent.innerHTML += itemString;	
+	});
+
+	var test = document.getElementsByClassName('inv_add_item_container')[0];
+	var test2 = document.getElementsByClassName('item_remove_container')[0];
+
+
+	if(test != null){
+		test.remove();
+	} else if(test2 != null){
+		test2.remove();
+	}
+
+	return;
+}
+
+function submitAddItemData(url, params, field_id_name='', char_id, slot_name){
+	var http = new XMLHttpRequest();
+	http.open('POST', url, true);
+
+	//Send the proper header information along with the request
+	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+	http.onreadystatechange = function() {
+		//Call a function when the state changes.
+		if(http.readyState == 4 && http.status == 200) {
+			// do something here
+			updateInvCategory(updateInvCategoryHelper, char_id, slot_name, '/dataserver/getItemsInSlot/' + char_id + '/' +  slot_name);
+			document.getElementById('character_weight').innerHTML = this.response;
+			isRemoveItemOpen = false;
+		}
+	}
+	http.send(params);
+}
+
+function unequipItem(char_id, item_id){
+	// Send update to server
+	submitUnequipChange('/character/test', '', '');
+}
+
+function equipItem(char_id, item_id){
+	// Send update to server
+	submitEquipChange('/character/item/equip/' + char_id + '/' + item_id + '/0', char_id, item_id);
+}
+
+function submitEquipChange(url, char_id, item_id){
+	var http = new XMLHttpRequest();
+	http.onreadystatechange = function(){ 
+		if(http.readyState == 4 && http.status == 200) {
+			// Update item picture and name in equipment
+			updateEquipedItemName(this.response);
+			updateEquipedItemPicture(this.response);
+
+			// Update stats
+			updateCharacterStats(this.response);
+
+			console.log(this.response.slot_name);
+
+			// Change button to equip button
+			updateInvCategory(updateInvCategoryHelper, char_id, this.response.slot_name, '/dataserver/getItemsInSlot/' + char_id + '/' +  this.response.slot_name);
+			//invertEquipButton(char_id, item_id);
+		}
+	}
+
+	http.open("GET", url, true);
+	
+	http.responseType = 'json'; 
+
+	http.send();
+
+	return;
+}
+
+function updateEquipedItemPicture(response, use_default_image = false){
+	var img_element = document.getElementById('equipment_' + response.slot_name + '_image');
+
+	var new_src = '/static/images/no_image.png';
+
+	if(!use_default_image){
+		new_src = '/dataserver/imageserver/item/' + response.item_data['picture'];
+	}
+	
+	img_element.setAttribute('src', new_src);
+}
+
+function updateEquipedItemName(response, use_default_data=false){
+	var name_element = document.getElementById('equipment_' + response.slot_name + '_text');
+
+	var new_name = response.slot_name;
+	var color = '#606060';
+
+	if(!use_default_data){
+		new_name = response.item_data['name'];
+		color = response.item_data['color'];
+	}
+	
+	name_element.innerHTML = new_name;
+	name_element.setAttribute('style', 'color: ' + color + ';');
+}
+
+function updateCharacterStats(response){
+	var prefix = 'character_';
+	var ids = [
+		'max_hp', 'ac', 'initiative', 'attack_bonus', 'max_weight',
+		'str', 'dex', 'con', 'int', 'wis', 'cha'
+	];
+	
+	var mod_ids = [
+		'str_mod', 'dex_mod', 'con_mod', 'int_mod', 'wis_mod', 'cha_mod', 
+	];
+
+	ids.forEach(id => {
+		var fullId = prefix + id;
+		console.log(fullId + ', ' + response.character_data[id]);
+		document.getElementById(fullId).innerHTML = response.character_data[id];
+	});	
+}
+
+function invertEquipButton(char_id, item_id){
+	var itemDiv = document.getElementById('inv_item_' + item_id);
+
+	var itemParentDiv = itemDiv.parentElement;
+
+	var unequipClassName = 'inv_unequip_item_button';
+	var equipClassName = 'inv_equip_item_button';
+
+	var currentDiv = itemParentDiv.getElementsByClassName(unequipClassName)[0];
+
+	var newClass = '';
+	var newFunctionCall = '';
+
+	if(currentDiv != null){
+		newClass = equipClassName;
+		newFunctionCall = 'equipItem';
+	} else {
+		currentDiv = itemParentDiv.getElementsByClassName(equipClassName)[0];
+		newClass = unequipClassName;
+		newFunctionCall = 'unequipItem';
+	}
+
+	currentDiv.setAttribute('class', newClass + ' clickable');
+	currentDiv.setAttribute('onclick', newFunctionCall + '(' + char_id + ',' + item_id + ');');
+
+}
+

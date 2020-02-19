@@ -46,13 +46,13 @@ def character_page(char_id):
 
 	if characters is None:
 		# Error
-		redirect(url_for('character.character_select'))
+		return redirect(url_for('character.character_select'))
 
 	item_id_list = [
-		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
-		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+		characters['Character_Head'], characters['Character_Shoulder'], characters['Character_Torso'],
+		characters['Character_Hand'],characters['Character_Leg'],characters['Character_Foot'],
 		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+		characters['Character_Ring2'],characters['Character_Item1'],characters['Character_Item2'],
 		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
 		characters['Character_Weapon4']
 	] 
@@ -60,18 +60,18 @@ def character_page(char_id):
 	# Query DB for character's items and equipment
 
 	equiped_item_short_data = {
-		'head' : item_short_data(characters['Character_Helmet'], 'Head', 'Item_img.png'),
-		'shoulder' : item_short_data(characters['Character_Shoulders'], 'Shoulder', 'Item_img_shoulders.png'),
-		'chest' : item_short_data(characters['Character_Chest'], 'Torso', 'Item_img_chest.png'),
-		'hand' : item_short_data(characters['Character_Gloves'], 'Hand', 'Item_img_glove.png'),
-		'leg' : item_short_data(characters['Character_Leggings'], 'Leg', 'Item_img_leggings.png'),
-		'boots' : item_short_data(characters['Character_Boots'], 'Foot', 'Item_img_boots.png'),
+		'head' : item_short_data(characters['Character_Head'], 'Head', 'Item_img.png'),
+		'shoulder' : item_short_data(characters['Character_Shoulder'], 'Shoulder', 'Item_img_Shoulder.png'),
+		'Torso' : item_short_data(characters['Character_Torso'], 'Torso', 'Item_img_torso.png'),
+		'hand' : item_short_data(characters['Character_Hand'], 'Hand', 'Item_img_hand.png'),
+		'leg' : item_short_data(characters['Character_Leg'], 'Leg', 'Item_img_leg.png'),
+		'Foot' : item_short_data(characters['Character_Foot'], 'Foot', 'Item_img_foot.png'),
 		'trinket1' : item_short_data(characters['Character_Trinket1'], 'Trinket', 'Item_img_trinket.png'),
 		'trinket2' : item_short_data(characters['Character_Trinket2'], 'Trinket', 'Item_img_trinket.png'),
 		'ring1' : item_short_data(characters['Character_Ring1'], 'Ring', 'Item_img_ring.png'),
 		'ring2' : item_short_data(characters['Character_Ring2'], 'Ring', 'Item_img_ring.png'),
-		'item1' : item_short_data(characters['Character_Magic_Item1'], 'Item', 'Item_img_item.png'),
-		'item2' : item_short_data(characters['Character_Magic_Item2'], 'Item', 'Item_img_item.png'),
+		'item1' : item_short_data(characters['Character_Item1'], 'Item', 'Item_img_item.png'),
+		'item2' : item_short_data(characters['Character_Item2'], 'Item', 'Item_img_item.png'),
 		'weapon1' : item_short_data(characters['Character_Weapon1'], 'Main Hand', 'Item_img_weapon.png'),
 		'offhand1' : item_short_data(characters['Character_Weapon2'], 'Off Hand', 'Item_img_offhand.png'),
 		'weapon2' : item_short_data(characters['Character_Weapon3'], 'Main Hand', 'Item_img_weapon.png'),
@@ -142,21 +142,37 @@ def character_page(char_id):
 	inv_items = get_inv_items(char_id, item_id_list)
 
 	for k in inv_items:
-		for i in inv_items[k]:
-			character_data['weight'] += i['Item_Weight']
+		for i in inv_items[k]['items']:
+			character_data['weight'] += int(i['Item_Weight']) * int(i['Amount'])
+
+	sql_str = """
+		"""
 
 	return render_template('character_page.html',
 							char_id=char_id,
 							equiped_item=equiped_item_short_data,
 							character_data=character_data,
 							stat_modifiers=stat_modifiers,
-							inv_items=inv_items)
+							inv_items=inv_items
+						)
 
 
 def get_inv_items(char_id : int, equiped_items_ids):
 	items = {}
+
+	sql_str = """SELECT *
+				FROM SLOTS;
+		"""
+	slots = query_db(sql_str)
+
+	for slot in slots:
+		items[slot['Slots_Name']] = {
+			'id' : slot['Slots_ID'],
+			'equipable' : slot['Slots_Equipable'],
+			'items' : []
+		}
 	
-	sql_str = """SELECT Items.Item_ID, Items.Item_Weight, Items.Item_Name, Rarities.Rarities_Color, Slots.Slots_Name
+	sql_str = """SELECT Items.Item_ID, Items.Item_Weight, Items.Item_Name, Rarities.Rarities_Color, Slots.Slots_Name, Inventory.Amount
 				FROM Inventory
 				INNER JOIN Items on Inventory.Item_ID=Items.Item_ID
 				INNER JOIN Rarities on Rarities.Rarities_ID=Items.Rarity_ID
@@ -166,19 +182,23 @@ def get_inv_items(char_id : int, equiped_items_ids):
 	query_result = query_db(sql_str, (char_id,), True)
 
 	for q in query_result:
-		if q['Slots_Name'] not in items.keys():
-			items[q['Slots_Name']] = []
+		#if q['Slots_Name'] not in items.keys():
+		#	items[q['Slots_Name']] = []
 		
 		item_fields = {
 			'Item_ID' : q['Item_ID'],
 			'Item_Weight' : q['Item_Weight'],
 			'Item_Name' : q['Item_Name'],
 			'Rarities_Color' : q['Rarities_Color'],
-			'Slots_Name' : q['Slots_Name'],
+			'Amount' : q['Amount'],
+			#'Slots_Name' : q['Slots_Name'],
+			#'Slots_ID' : q['Slots_ID'],
 			'Is_Equiped' : True if q['Item_ID'] in equiped_items_ids else False
 		}
 
-		items[q['Slots_Name']].append(item_fields)
+		items[q['Slots_Name']]['items'].append(item_fields)
+
+	print(items)
 
 	return items
 
@@ -197,7 +217,7 @@ def item_stat_query(item_id):
 	sql_str = """SELECT Items.Item_Str_Bonus, Items.Item_Dex_Bonus, Items.Item_Con_Bonus,
 				Items.Item_Int_Bonus, Items.Item_Wis_Bonus, Items.Item_Cha_Bonus,
 				Items.Item_Attack_Bonus, Items.Item_Initiative_Bonus, Items.Item_Health_Bonus,
-				Items.Item_AC_Bonus
+				Items.Item_AC_Bonus, Items.Item_Damage_Num_Of_Dices, Items.Item_Damage_Num_Of_Dice_Sides
 				FROM Items
 				WHERE Items.Item_ID = ?;
 			"""
@@ -215,6 +235,8 @@ def sumation_stats(item_id_list):
 		'initiative' : 0,
 		'health' : 0,
 		'ac' : 0,
+		'num_of_dices' : 0,
+		'num_of_dice_sides' : 0
 	}
 
 	for item_id in item_id_list:
@@ -230,6 +252,8 @@ def sumation_stats(item_id_list):
 			stat_bonus['initiative'] += convert_form_field_data_to_int(query_result['Item_Initiative_Bonus'])
 			stat_bonus['health'] += convert_form_field_data_to_int(query_result['Item_Health_Bonus'])
 			stat_bonus['ac'] += convert_form_field_data_to_int(query_result['Item_AC_Bonus'])
+			stat_bonus['num_of_dices'] += convert_form_field_data_to_int(query_result['Item_Damage_Num_Of_Dices'])
+			stat_bonus['num_of_dice_sides'] += convert_form_field_data_to_int(query_result['Item_Damage_Num_Of_Dice_Sides'])
 
 	return stat_bonus
 
@@ -554,7 +578,8 @@ def edit_level(char_id):
 				"""
 		query_db(sql_str, (new_val_int, session['user_id'], char_id), False)
 		
-		return new_val 
+		#return new_val 
+		return jsonify(character_level=new_val)
 
 
 
@@ -580,7 +605,8 @@ def edit_currency(char_id):
 				"""
 		query_db(sql_str, (new_val_int, session['user_id'], char_id), False)
 		
-		return new_val 
+		#return new_val 
+		return jsonify(character_currency=new_val)
 
 
 
@@ -659,15 +685,15 @@ def edit_health(char_id):
 				"""
 		query_db(sql_str, (new_val, session['user_id'], char_id), False)
 		
-		return str(new_val)
+		return jsonify(character_hp=new_val)
 
 	return '200'
 
-@bp.route('/edit/maxhealth/<int:char_id>', methods=('GET', 'POST'))
-@login_required
-def edit_maxhealth(char_id):
+def edit_field(char_id, character_field : str, item_field : str):
 	if not check_if_user_has_character(session['user_id'], char_id):
-		return '400'
+		# TODO: change this to a exception later
+		return 0
+		#return '400'
 
 	if request.method == 'POST':
 		new_val = request.form['value']
@@ -678,7 +704,7 @@ def edit_maxhealth(char_id):
 			new_val = 0
 
 		sql_str = """UPDATE	Character
-				SET Character_Max_HP = ?
+				SET """ + character_field + """ = ?
 				WHERE User_ID = ? AND Character_ID = ?; 
 				"""
 		query_db(sql_str, (new_val, session['user_id'], char_id), False)
@@ -691,169 +717,10 @@ def edit_maxhealth(char_id):
 		characters = query_db(sql_str, (char_id,), True, True)
 
 		item_id_list = [
-			characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
-			characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+			characters['Character_Head'], characters['Character_Shoulder'], characters['Character_Torso'],
+			characters['Character_Hand'],characters['Character_Leg'],characters['Character_Foot'],
 			characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-			characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
-			characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
-			characters['Character_Weapon4']
-		]
-
-		health_additional = 0
-
-		for i in item_id_list:
-			sql_str = """SELECT Item_Health_Bonus
-					FROM Items
-					WHERE Item_ID = ?;
-					""" 
-			item = query_db(sql_str, (i,), True, True)
-			if item is not None:
-				health_additional += item['Item_Health_Bonus']
-
-		val = new_val + health_additional
-		
-		return str(val)
-
-	return '200'
-
-@bp.route('/edit/ac/<int:char_id>', methods=('GET', 'POST'))
-@login_required
-def edit_ac(char_id):
-	if not check_if_user_has_character(session['user_id'], char_id):
-		return '400'
-
-	if request.method == 'POST':
-		new_val = request.form['value']
-
-		try:
-			new_val = int(new_val)
-		except:
-			new_val = 0
-
-		sql_str = """UPDATE	Character
-				SET Character_AC = ?
-				WHERE User_ID = ? AND Character_ID = ?; 
-				"""
-		query_db(sql_str, (new_val, session['user_id'], char_id), False)
-
-
-		sql_str = """SELECT *
-			FROM Character
-			WHERE Character_ID = ?;
-			"""
-		characters = query_db(sql_str, (char_id,), True, True)
-
-		item_id_list = [
-			characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
-			characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
-			characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-			characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
-			characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
-			characters['Character_Weapon4']
-		]
-
-		ac_additional = 0
-
-		for i in item_id_list:
-			sql_str = """SELECT Item_AC_Bonus
-					FROM Items
-					WHERE Item_ID = ?;
-					""" 
-			item = query_db(sql_str, (i,), True, True)
-			if item is not None:
-				ac_additional += item['Item_AC_Bonus']
-
-		val = new_val + ac_additional
-		
-		return str(val)
-
-	return '200'
-
-@bp.route('/edit/initiative/<int:char_id>', methods=('GET', 'POST'))
-@login_required
-def edit_initiative(char_id):
-	if not check_if_user_has_character(session['user_id'], char_id):
-		return '400'
-
-	if request.method == 'POST':
-		new_val = request.form['value']
-
-		try:
-			new_val = int(new_val)
-		except:
-			new_val = 0
-
-		sql_str = """UPDATE	Character
-				SET Character_Initiative = ?
-				WHERE User_ID = ? AND Character_ID = ?; 
-				"""
-		query_db(sql_str, (new_val, session['user_id'], char_id), False)
-
-
-		sql_str = """SELECT *
-			FROM Character
-			WHERE Character_ID = ?;
-			"""
-		characters = query_db(sql_str, (char_id,), True, True)
-
-		item_id_list = [
-			characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
-			characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
-			characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-			characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
-			characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
-			characters['Character_Weapon4']
-		]
-
-		initiative_additional = 0
-
-		for i in item_id_list:
-			sql_str = """SELECT Item_Initiative_Bonus
-					FROM Items
-					WHERE Item_ID = ?;
-					""" 
-			item = query_db(sql_str, (i,), True, True)
-			if item is not None:
-				initiative_additional += item['Item_Initiative_Bonus']
-
-		val = new_val + initiative_additional
-		
-		return str(val)
-
-	return '200'
-
-@bp.route('/edit/attackBonus/<int:char_id>', methods=('GET', 'POST'))
-@login_required
-def edit_attack_bonus(char_id):
-	if not check_if_user_has_character(session['user_id'], char_id):
-		return '400'
-
-	if request.method == 'POST':
-		new_val = request.form['value']
-
-		try:
-			new_val = int(new_val)
-		except:
-			new_val = 0
-
-		sql_str = """UPDATE	Character
-				SET Character_Attack_Bonus = ?
-				WHERE User_ID = ? AND Character_ID = ?; 
-				"""
-		query_db(sql_str, (new_val, session['user_id'], char_id), False)
-
-
-		sql_str = """SELECT *
-			FROM Character
-			WHERE Character_ID = ?;
-			"""
-		characters = query_db(sql_str, (char_id,), True, True)
-
-		item_id_list = [
-			characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
-			characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
-			characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-			characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+			characters['Character_Ring2'],characters['Character_Item1'],characters['Character_Item2'],
 			characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
 			characters['Character_Weapon4']
 		]
@@ -861,70 +728,360 @@ def edit_attack_bonus(char_id):
 		stat_additional = 0
 
 		for i in item_id_list:
-			sql_str = """SELECT Item_Attack_Bonus
+			sql_str = """SELECT """ + item_field + """
 					FROM Items
 					WHERE Item_ID = ?;
 					""" 
 			item = query_db(sql_str, (i,), True, True)
 			if item is not None:
-				stat_additional += item['Item_Attack_Bonus']
+				stat_additional += item[item_field]
 
-		val = new_val + stat_additional
-		
-		return str(val)
+		return  (new_val + stat_additional)
 
-	return '200'
+	return 0
+	#return '200'
+
+
+@bp.route('/edit/maxhealth/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_maxhealth(char_id):
+	val = edit_field(char_id, 'Character_Max_HP', 'Item_Health_Bonus')
+	return jsonify(character_max_hp=val)
+
+@bp.route('/edit/ac/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_ac(char_id):
+	val = edit_field(char_id, 'Character_AC', 'Item_AC_Bonus')
+	return jsonify(character_ac=val)
+
+@bp.route('/edit/initiative/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_initiative(char_id):
+	val = edit_field(char_id, 'Character_Initiative', 'Item_Initiative_Bonus')	
+	return jsonify(character_initiative=val)
+
+@bp.route('/edit/attackBonus/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_attack_bonus(char_id):
+	val = edit_field(char_id, 'Character_Attack_Bonus', 'Item_Attack_Bonus')	
+	return jsonify(character_attack_bonus=val)
 
 
 @bp.route('/edit/str/<int:char_id>', methods=('GET', 'POST'))
 @login_required
 def edit_str(char_id):
-	if not check_if_user_has_character(session['user_id'], char_id):
-		return '400'
+	val = edit_field(char_id, 'Character_Strength', 'Item_Str_Bonus')	
+	return jsonify(
+			character_str=val,
+			character_max_weight=val * 15,
+			character_str_mod=calculate_modifier(val)
+		)
+
+@bp.route('/edit/dex/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_dex(char_id):
+	val = edit_field(char_id, 'Character_Dexterity', 'Item_Dex_Bonus')	
+	return jsonify(
+			character_dex=val,
+			character_dex_mod=calculate_modifier(val)
+		)
+
+@bp.route('/edit/con/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_con(char_id):
+	val = edit_field(char_id, 'Character_Constitution', 'Item_Con_Bonus')	
+	return jsonify(
+			character_con=val,
+			character_con_mod=calculate_modifier(val)
+		)
+
+@bp.route('/edit/int/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_int(char_id):
+	val = edit_field(char_id, 'Character_Intelligence', 'Item_Int_Bonus')	
+	return jsonify(
+			character_int=val,
+			character_int_mod=calculate_modifier(val)
+		)
+
+@bp.route('/edit/wis/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_wis(char_id):
+	val = edit_field(char_id, 'Character_Wisdom', 'Item_Wis_Bonus')	
+	return jsonify(
+			character_wis=val,
+			character_wis_mod=calculate_modifier(val)
+		)
+
+@bp.route('/edit/cha/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_cha(char_id):
+	val = edit_field(char_id, 'Character_Charisma', 'Item_Cha_Bonus')	
+	return jsonify(
+			character_cha=val,
+			character_cha_mod=calculate_modifier(val)
+		)
+
+@bp.route('/add/items/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def add_items(char_id):
+	weight = 0 
 
 	if request.method == 'POST':
-		new_val = request.form['value']
+		if not check_if_user_has_character(session['user_id'], char_id):
+			# TODO: change this to a exception later
+			return 0
+			#return '400
 
-		try:
-			new_val = int(new_val)
-		except:
-			new_val = 0
+		
 
-		sql_str = """UPDATE	Character
-				SET Character_Strength = ?
-				WHERE User_ID = ? AND Character_ID = ?; 
+		
+		for line in request.form:
+			sql_str = """SELECT Amount, Items.Item_Weight
+						FROM Inventory
+						LEFT JOIN Items ON Items.Item_ID=Inventory.Item_ID
+						WHERE Character_ID = ? AND Inventory.Item_ID = ?;
+					"""
+			try:
+				item_id = int(line)
+				prev_amount_query = query_db(sql_str, (char_id, item_id), True, True)
+				prev_amount = 0
+
+				numberOfItems = int(request.form[line])
+				if numberOfItems > 0:
+					if prev_amount_query is not None:
+						prev_amount = int(prev_amount_query['Amount'])
+						sql_str = """UPDATE Inventory
+								SET Amount = ?
+								WHERE Character_ID = ? AND Item_ID = ?;
+								"""
+						query_db(sql_str, (prev_amount + numberOfItems, char_id, line), False)
+					else:
+						sql_str = """INSERT INTO Inventory (Character_ID,Item_ID,Amount)
+									VALUES (?,?,?);
+								"""	
+						query_db(sql_str, (char_id, line, prev_amount + numberOfItems), False)
+
+					
+			except Exception as e:
+				# Catch exception
+				print(e)
+
+	
+		print(request.form)
+
+	sql_str = """SELECT Item_Weight, Amount 
+				FROM Inventory
+				INNER JOIN Items ON Items.Item_ID = Inventory.Item_ID
+				WHERE Character_ID=?;
 				"""
-		query_db(sql_str, (new_val, session['user_id'], char_id), False)
+	item_weights_query = query_db(sql_str, (char_id,), True)
+
+	for item in item_weights_query:
+		weight += float(item['Item_Weight']) * float(item['Amount'])
+
+	print('weight: ' + str(weight))
+
+	return str(weight)
+
+@bp.route('/remove/items/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def remove_items(char_id):
+	weight = 0
+
+	if request.method == 'POST':
+		if not check_if_user_has_character(session['user_id'], char_id):
+			# TODO: change this to a exception later
+			return 0
+			#return '400
+
+		print('request form: ')
+		print(request.form)
+	
+		sql_str = """SELECT Amount, Items.Item_Weight
+					FROM Inventory
+					LEFT JOIN Items ON Items.Item_ID=Inventory.Item_ID
+					WHERE Character_ID = ? AND Inventory.Item_ID = ?;
+				"""
+		try:
+			for k in request.form:
+				item_id = int(k)
+				amount = int(request.form[k])
+				print('item_id: ' + str(item_id))
+				sql_str = """SELECT Amount
+						FROM Inventory
+						WHERE Character_ID = ? AND Item_ID = ?;
+					"""
+
+				item = query_db(sql_str, (char_id, item_id), True, True)
+
+				new_amount = item['Amount'] - amount 
+
+				if (new_amount) > 0:
+					# update count
+					sql_str = """UPDATE Inventory
+								SET Amount = ?
+								WHERE Item_ID = ? AND Character_ID = ?;
+							"""
+					query_db(sql_str, (new_amount, item_id, char_id), False)
+				else:
+					# check if equiped
+					sql_str = """SELECT *
+						FROM Character
+						WHERE Character_ID = ?;
+						"""
+					characters = query_db(sql_str, (char_id,), True, True)
+
+					item_id_list = [
+						characters['Character_Head'], characters['Character_Shoulder'], characters['Character_Torso'],
+						characters['Character_Hand'],characters['Character_Leg'],characters['Character_Foot'],
+						characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+						characters['Character_Ring2'],characters['Character_Item1'],characters['Character_Item2'],
+						characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+						characters['Character_Weapon4']
+					]
+
+					isEquiped = False
+
+					for iid in item_id_list:
+						if iid == item_id:
+							# is equiped
+							isEquiped = True
+							break
+
+					if not isEquiped:
+						# remove item
+						sql_str = """DELETE FROM Inventory
+									WHERE Item_ID = ? AND Character_ID = ?;
+								"""
+						query_db(sql_str, (item_id, char_id), False)
+					else:
+						print('unable to deleted a currently equiped item')
+
+					
+		except Exception as e:
+			# Catch exception
+			print(e)
+
+	
+		print(request.form)
+
+	sql_str = """SELECT Item_Weight, Amount 
+				FROM Inventory
+				INNER JOIN Items ON Items.Item_ID = Inventory.Item_ID
+				WHERE Character_ID=?;
+				"""
+	item_weights_query = query_db(sql_str, (char_id,), True)
+
+	for item in item_weights_query:
+		weight += float(item['Item_Weight']) * float(item['Amount'])
+
+	print('weight: ' + str(weight))
+
+	return str(weight)
 
 
-		sql_str = """SELECT *
-			FROM Character
+@bp.route('item/equip/<int:char_id>/<int:item_id>/<int:slot_number>', methods=('GET', 'POST'))
+@login_required
+def item_equip(char_id, item_id, slot_number = 0):
+	# Check for user_id associated with char_id
+	sql_str = """SELECT *
+				FROM Character
+				WHERE Character.User_ID = ? AND Character.Character_ID = ?;
+				"""
+
+	characters = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if characters is None:
+		# Error
+		return redirect(url_for('character.character_select'))
+	
+	sql_str = """SELECT *
+				FROM Inventory
+				WHERE Character_ID = ? AND Item_ID = ?;
+			"""
+	item = query_db(sql_str, (char_id, item_id), True, True)
+	if item is None:
+		return redirect(url_for('character.character_select'))
+
+	sql_str = """SELECT Slots.Slots_Name
+			FROM Items
+			INNER JOIN Slots ON Items.Item_Slot=Slots.Slots_ID
+			WHERE Items.Item_ID = ?;
+			"""
+
+	slot_name = query_db(sql_str, (item_id,), True, True)['Slots_Name']
+
+	if slot_number > 0 and slot_number < 4:
+		slot_name += str(slot_number)
+
+	sql_str = """UPDATE Character 
+			SET Character_""" + slot_name + """=?
 			WHERE Character_ID = ?;
 			"""
-		characters = query_db(sql_str, (char_id,), True, True)
 
-		item_id_list = [
-			characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
-			characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
-			characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-			characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
-			characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
-			characters['Character_Weapon4']
-		]
+	query_db(sql_str, (item_id, char_id,), False)
 
-		stat_additional = 0
+	sql_str = """SELECT *
+				FROM Character
+				WHERE Character.User_ID = ? AND Character.Character_ID = ?;
+				"""
 
-		for i in item_id_list:
-			sql_str = """SELECT Item_Str_Bonus
-					FROM Items
-					WHERE Item_ID = ?;
-					""" 
-			item = query_db(sql_str, (i,), True, True)
-			if item is not None:
-				stat_additional += item['Item_Str_Bonus']
+	characters = query_db(sql_str, (session['user_id'], char_id), True, True)
 
-		val = new_val + stat_additional
-		
-		return str(val)
+	sql_str = """SELECT Item_Picture, Item_Name, Rarities_Color
+				FROM Items
+				INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID
+				WHERE Item_ID = ?;
+			"""
+	item_data = query_db(sql_str, (item_id, ), True, True)
 
-	return '200'
+	item_data_dict = {
+		'picture' : item_data['Item_Picture'],
+		'name' : shorten_string(item_data['Item_Name'], 17),
+		'color' : item_data['Rarities_Color']
+	}
+
+
+	item_id_list = [
+		characters['Character_Head'], characters['Character_Shoulder'], characters['Character_Torso'],
+		characters['Character_Hand'],characters['Character_Leg'],characters['Character_Foot'],
+		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+		characters['Character_Ring2'],characters['Character_Item1'],characters['Character_Item2'],
+		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+		characters['Character_Weapon4']
+	] 
+
+
+	stat_bonus = sumation_stats(item_id_list)
+
+	character_data = {
+		'max_hp' : convert_form_field_data_to_int(characters['Character_Max_HP']) + stat_bonus['health'],
+		'ac' : convert_form_field_data_to_int(characters['Character_AC']) + stat_bonus['ac'],
+		'initiative' : convert_form_field_data_to_int(characters['Character_Initiative']) + stat_bonus['initiative'],
+		'attack_bonus' : convert_form_field_data_to_int(characters['Character_Attack_Bonus']) + stat_bonus['attack'],
+		'weight' : convert_form_field_data_to_int(characters['Character_Base_Carrying_Cap']),
+		#'max_weight' : convert_form_field_data_to_int(characters['Character_Max_Carry_Weight']),
+		'max_weight' : 15 * (convert_form_field_data_to_int(characters['Character_Strength']) + stat_bonus['str']),
+		'str' : convert_form_field_data_to_int(characters['Character_Strength']) + stat_bonus['str'],
+		'dex' : convert_form_field_data_to_int(characters['Character_Dexterity']) + stat_bonus['dex'],
+		'con' : convert_form_field_data_to_int(characters['Character_Constitution']) + stat_bonus['con'],
+		'int' : convert_form_field_data_to_int(characters['Character_Intelligence']) + stat_bonus['int'],
+		'wis' : convert_form_field_data_to_int(characters['Character_Wisdom']) + stat_bonus['wis'],
+		'cha' : convert_form_field_data_to_int(characters['Character_Charisma']) + stat_bonus['cha'],
+	}
+
+	stat_modifiers = {
+		'str_mod' :	calculate_modifier(character_data['str']), 
+		'dex_mod' :	calculate_modifier(character_data['dex']),
+		'con_mod' :	calculate_modifier(character_data['con']),
+		'int_mod' :	calculate_modifier(character_data['int']),
+		'wis_mod' :	calculate_modifier(character_data['wis']),
+		'cha_mod' :	calculate_modifier(character_data['cha'])
+	}
+	return jsonify(
+		character_data = character_data,
+		stat_modifiers = stat_modifiers,
+		slot_name = slot_name,
+		item_data = item_data_dict
+	)

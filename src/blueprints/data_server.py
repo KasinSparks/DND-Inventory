@@ -6,7 +6,7 @@ from flask import (
 
 from ..image_sever import convert_image_to_base64
 
-from werkzeug import secure_filename
+from werkzeug import secure_filename, escape
 
 from ..db import get_db, query_db
 from .auth import login_required
@@ -46,22 +46,25 @@ def equipmentItemDetails(char_id, equipment_slot):
 	itemQueryResult = query_db(queryStr, (item_id,), True, True)
 
 	if itemQueryResult is None:
-		itemQueryResult = {'Item_Description' : 'null',
-							'Item_Name' : 'null',
-							'Item_Picture' : 'no_image.png',
-							'Rarities_Name' : 'null',
-							'Rarities_Color' : 'white',
-							'Item_Slot' : 'null',
-							'Item_Weight' : 'null',
-							'Item_Str_Bonus' : 0,
-							'Item_Dex_Bonus' : 0,
-							'Item_Con_Bonus' : 0,
-							'Item_Int_Bonus' : 0,
-							'Item_Wis_Bonus' : 0,
-							'Item_Cha_Bonus' : 0,
-							'Item_Effect1' : None,
-							'Item_Effect2' : None
-							}
+		itemQueryResult = {
+			'Item_Description' : 'null',
+			'Item_Name' : 'null',
+			'Item_Picture' : 'no_image.png',
+			'Rarities_Name' : 'null',
+			'Rarities_Color' : 'white',
+			'Item_Slot' : 'null',
+			'Item_Weight' : 'null',
+			'Item_Str_Bonus' : 0,
+			'Item_Dex_Bonus' : 0,
+			'Item_Con_Bonus' : 0,
+			'Item_Int_Bonus' : 0,
+			'Item_Wis_Bonus' : 0,
+			'Item_Cha_Bonus' : 0,
+			'Item_Effect1' : None,
+			'Item_Effect2' : None,
+			'Item_Damage_Num_Of_Dices' : 0,
+			'Item_Damage_Num_Of_Dice_Sides' : 0
+			}
 
 	# Check if item has an effect on it
 	if itemQueryResult is not None and itemQueryResult['Item_Effect1'] is not None and itemQueryResult['Item_Effect1'] > 0:	
@@ -92,24 +95,27 @@ def equipmentItemDetails(char_id, equipment_slot):
 	if itemQueryResult['Item_Picture'] is not None and itemQueryResult['Item_Picture'] != '' and itemQueryResult['Item_Picture'] != 'no_image.png':
 		image = '/dataserver/imageserver/item/' + itemQueryResult['Item_Picture']
 
-	return jsonify(description=itemQueryResult['Item_Description'],
-					name=itemQueryResult['Item_Name'],
-					image=image,
-					rarity=itemQueryResult['Rarities_Name'],
-					rarity_color=itemQueryResult['Rarities_Color'],
-					slot=itemQueryResult['Item_Slot'],
-					weight=itemQueryResult['Item_Weight'],
-					str_bonus=itemQueryResult['Item_Str_Bonus'],
-					dex_bonus=itemQueryResult['Item_Dex_Bonus'],
-					con_bonus=itemQueryResult['Item_Con_Bonus'],
-					int_bonus=itemQueryResult['Item_Int_Bonus'],
-					wis_bonus=itemQueryResult['Item_Wis_Bonus'],
-					cha_bonus=itemQueryResult['Item_Cha_Bonus'],
-					effect1_name=effect1QueryResult['Effect_Name'],
-					effect1_description=effect1QueryResult['Effect_Description'],
-					effect2_name=effect2QueryResult['Effect_Name'],
-					effect2_description=effect2QueryResult['Effect_Description'],
-					)
+	return jsonify(
+		description=itemQueryResult['Item_Description'],
+		name=itemQueryResult['Item_Name'],
+		image=image,
+		rarity=itemQueryResult['Rarities_Name'],
+		rarity_color=itemQueryResult['Rarities_Color'],
+		slot=itemQueryResult['Item_Slot'],
+		weight=itemQueryResult['Item_Weight'],
+		str_bonus=itemQueryResult['Item_Str_Bonus'],
+		dex_bonus=itemQueryResult['Item_Dex_Bonus'],
+		con_bonus=itemQueryResult['Item_Con_Bonus'],
+		int_bonus=itemQueryResult['Item_Int_Bonus'],
+		wis_bonus=itemQueryResult['Item_Wis_Bonus'],
+		cha_bonus=itemQueryResult['Item_Cha_Bonus'],
+		effect1_name=effect1QueryResult['Effect_Name'],
+		effect1_description=effect1QueryResult['Effect_Description'],
+		effect2_name=effect2QueryResult['Effect_Name'],
+		effect2_description=effect2QueryResult['Effect_Description'],
+		item_damage_num_of_dices=itemQueryResult['Item_Damage_Num_Of_Dices'],
+		item_damage_num_of_dice_sides=itemQueryResult['Item_Damage_Num_Of_Dice_Sides']
+	)
 
 
 @bp.route('/characterInfo/<int:char_id>/<string:field>', methods=('GET', 'POST'))
@@ -206,10 +212,8 @@ def get_health(char_id):
 
 	return jsonify(current_value=query_result['Character_HP'])
 
-@bp.route('getMaxHealth/<int:char_id>')
-@login_required
-def get_max_health(char_id):
-	sql_str = """SELECT Character_Max_HP
+def get_stat_data(char_id : int, character_field : str, item_field : str):
+	sql_str = """SELECT """ + character_field + """
 			FROM Character
 			WHERE User_ID = ? AND Character_ID = ?;
 			"""
@@ -218,7 +222,7 @@ def get_max_health(char_id):
 	if query_result is None:
 		return jsonify(current_value=0, base=0)
 
-	base_max_hp = query_result['Character_Max_HP']
+	base_stat = query_result[character_field]
 
 	
 
@@ -229,208 +233,77 @@ def get_max_health(char_id):
 	characters = query_db(sql_str, (char_id,), True, True)
 
 	item_id_list = [
-		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
-		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
+		characters['Character_Head'], characters['Character_Shoulder'], characters['Character_Torso'],
+		characters['Character_Hand'],characters['Character_Leg'],characters['Character_Foot'],
 		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
+		characters['Character_Ring2'],characters['Character_Item1'],characters['Character_Item2'],
 		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
 		characters['Character_Weapon4']
 	]
 
-	health_additional = 0
+	stat_additional = 0
 
 	for i in item_id_list:
-		sql_str = """SELECT Item_Health_Bonus
+		sql_str = """SELECT """ + item_field + """
 				FROM Items
 				WHERE Item_ID = ?;
 				""" 
 		item = query_db(sql_str, (i,), True, True)
 		if item is not None:
-			health_additional += item['Item_Health_Bonus']
+			stat_additional += item[item_field]
 
 
-	return jsonify(additional=health_additional, base=base_max_hp)
+	return jsonify(additional=stat_additional, base=base_stat)
+
+@bp.route('getMaxHealth/<int:char_id>')
+@login_required
+def get_max_health(char_id):
+	return get_stat_data(char_id, 'Character_Max_HP', 'Item_Health_Bonus')
 
 @bp.route('getAC/<int:char_id>')
 @login_required
 def get_AC(char_id):
-	sql_str = """SELECT Character_AC
-			FROM Character
-			WHERE User_ID = ? AND Character_ID = ?;
-			"""
-	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
-
-	if query_result is None:
-		return jsonify(current_value=0, base=0)
-
-	base_ac = query_result['Character_AC']
-
-	
-
-	sql_str = """SELECT *
-			FROM Character
-			WHERE Character_ID = ?;
-			"""
-	characters = query_db(sql_str, (char_id,), True, True)
-
-	item_id_list = [
-		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
-		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
-		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
-		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
-		characters['Character_Weapon4']
-	]
-
-	ac_additional = 0
-
-	for i in item_id_list:
-		sql_str = """SELECT Item_AC_Bonus
-				FROM Items
-				WHERE Item_ID = ?;
-				""" 
-		item = query_db(sql_str, (i,), True, True)
-		if item is not None:
-			ac_additional += item['Item_AC_Bonus']
-
-
-	return jsonify(additional=ac_additional, base=base_ac)
+	return get_stat_data(char_id, 'Character_AC', 'Item_AC_Bonus')
 
 @bp.route('getInitiative/<int:char_id>')
 @login_required
 def get_initiative(char_id):
-	sql_str = """SELECT Character_Initiative
-			FROM Character
-			WHERE User_ID = ? AND Character_ID = ?;
-			"""
-	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
-
-	if query_result is None:
-		return jsonify(current_value=0, base=0)
-
-	base_initiative = query_result['Character_Initiative']
-
+	return get_stat_data(char_id, 'Character_Initiative', 'Item_Initiative_Bonus')
 	
-
-	sql_str = """SELECT *
-			FROM Character
-			WHERE Character_ID = ?;
-			"""
-	characters = query_db(sql_str, (char_id,), True, True)
-
-	item_id_list = [
-		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
-		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
-		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
-		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
-		characters['Character_Weapon4']
-	]
-
-	initiative_additional = 0
-
-	for i in item_id_list:
-		sql_str = """SELECT Item_Initiative_Bonus
-				FROM Items
-				WHERE Item_ID = ?;
-				""" 
-		item = query_db(sql_str, (i,), True, True)
-		if item is not None:
-			initiative_additional += item['Item_Initiative_Bonus']
-
-
-	return jsonify(additional=initiative_additional, base=base_initiative)
-
 @bp.route('getAttackBonus/<int:char_id>')
 @login_required
 def get_attack_bonus(char_id):
-	sql_str = """SELECT Character_Attack_Bonus
-			FROM Character
-			WHERE User_ID = ? AND Character_ID = ?;
-			"""
-	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
-
-	if query_result is None:
-		return jsonify(current_value=0, base=0)
-
-	base_stat = query_result['Character_Attack_Bonus']
-
-	
-
-	sql_str = """SELECT *
-			FROM Character
-			WHERE Character_ID = ?;
-			"""
-	characters = query_db(sql_str, (char_id,), True, True)
-
-	item_id_list = [
-		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
-		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
-		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
-		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
-		characters['Character_Weapon4']
-	]
-
-	stat_additional = 0
-
-	for i in item_id_list:
-		sql_str = """SELECT Item_Attack_Bonus
-				FROM Items
-				WHERE Item_ID = ?;
-				""" 
-		item = query_db(sql_str, (i,), True, True)
-		if item is not None:
-			stat_additional += item['Item_Attack_Bonus']
-
-
-	return jsonify(additional=stat_additional, base=base_stat)
-
+	return get_stat_data(char_id, 'Character_Attack_Bonus', 'Item_Attack_Bonus')
 
 @bp.route('getStr/<int:char_id>')
 @login_required
 def get_str(char_id):
-	sql_str = """SELECT Character_Strength
-			FROM Character
-			WHERE User_ID = ? AND Character_ID = ?;
-			"""
-	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
+	return get_stat_data(char_id, 'Character_Strength', 'Item_Str_Bonus')
 
-	if query_result is None:
-		return jsonify(current_value=0, base=0)
+@bp.route('getDex/<int:char_id>')
+@login_required
+def get_dex(char_id):
+	return get_stat_data(char_id, 'Character_Dexterity', 'Item_Dex_Bonus')
 
-	base_stat = query_result['Character_Strength']
+@bp.route('getCon/<int:char_id>')
+@login_required
+def get_con(char_id):
+	return get_stat_data(char_id, 'Character_Constitution', 'Item_Con_Bonus')
 
-	
+@bp.route('getInt/<int:char_id>')
+@login_required
+def get_int(char_id):
+	return get_stat_data(char_id, 'Character_Intelligence', 'Item_Int_Bonus')
 
-	sql_str = """SELECT *
-			FROM Character
-			WHERE Character_ID = ?;
-			"""
-	characters = query_db(sql_str, (char_id,), True, True)
+@bp.route('getWis/<int:char_id>')
+@login_required
+def get_wis(char_id):
+	return get_stat_data(char_id, 'Character_Wisdom', 'Item_Wis_Bonus')
 
-	item_id_list = [
-		characters['Character_Helmet'], characters['Character_Shoulders'], characters['Character_Chest'],
-		characters['Character_Gloves'],characters['Character_Leggings'],characters['Character_Boots'],
-		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-		characters['Character_Ring2'],characters['Character_Magic_Item1'],characters['Character_Magic_Item2'],
-		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
-		characters['Character_Weapon4']
-	]
-
-	stat_additional = 0
-
-	for i in item_id_list:
-		sql_str = """SELECT Item_Str_Bonus
-				FROM Items
-				WHERE Item_ID = ?;
-				""" 
-		item = query_db(sql_str, (i,), True, True)
-		if item is not None:
-			stat_additional += item['Item_Str_Bonus']
-
-
-	return jsonify(additional=stat_additional, base=base_stat)
+@bp.route('getCha/<int:char_id>')
+@login_required
+def get_cha(char_id):
+	return get_stat_data(char_id, 'Character_Charisma', 'Item_Cha_Bonus')
 
 @bp.route('getCurrency/<int:char_id>')
 @login_required
@@ -450,6 +323,144 @@ def get_currency(char_id):
 def dummy_call():
 	return jsonify(response='I\'m a dummy')
 
+
+@bp.route('getItemList/<int:item_slot>')
+@login_required
+def get_item_list(item_slot):
+	field_names = [
+		'Item_ID',
+		'Item_Name',
+		'Item_Picture',
+		'Rarities_Color'
+	]
+
+	sql_str = """SELECT """
+
+	for name in field_names:
+		sql_str += name
+		if name != field_names[-1]:
+			sql_str += ','
+		
+		sql_str += ' '
+
+	sql_str += """\nFROM Items
+			INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID
+			WHERE Item_Slot = ?;
+			"""
+
+	query_result = query_db(sql_str, (item_slot,), True)
+
+	item_list = []
+
+	for item in query_result:
+		item_data = {}
+		for key in field_names:
+			item_data[key] = item[key]
+
+		item_list.append(item_data)
+
+	sql_str = """SELECT Slots_Name
+			FROM SLOTS
+			WHERE Slots_ID = ?;
+			"""
+	slot_name = query_db(sql_str, (item_slot,), True, True)['Slots_Name']
+
+	output = {
+		'slot_name' : slot_name,
+		'items' : item_list
+	}	
+
+	return jsonify(output)
+
+@bp.route('getItemsInSlot/<int:char_id>/<string:item_slot>')
+@login_required
+def get_items_in_slot(char_id, item_slot):
+	sql_str = """SELECT * 
+			FROM Character
+			WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	characters = query_db(sql_str, (session['user_id'], char_id), True, True)
+	if characters is None:
+		return 'NULL'
+
+	items = []	
+
+	item_id_list = [
+		characters['Character_Head'], characters['Character_Shoulder'], characters['Character_Torso'],
+		characters['Character_Hand'],characters['Character_Leg'],characters['Character_Foot'],
+		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+		characters['Character_Ring2'],characters['Character_Item1'],characters['Character_Item2'],
+		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+		characters['Character_Weapon4']
+	] 
+
+	#sql_str = """SELECT * 
+	#			FROM SLOTS
+	#			WHERE Slots_Name = ?;
+	#	"""
+	#slot = query_db(sql_str, (item_slot,))
+	
+	sql_str = """SELECT Items.Item_ID, Items.Item_Weight, Items.Item_Name, Rarities.Rarities_Color, Slots.Slots_Name, Inventory.Amount
+				FROM Inventory
+				INNER JOIN Items on Inventory.Item_ID=Items.Item_ID
+				INNER JOIN Rarities on Rarities.Rarities_ID=Items.Rarity_ID
+				INNER JOIN Slots on Items.Item_Slot=Slots.Slots_ID
+				WHERE Inventory.Character_ID = ? AND Slots.Slots_Name = ?;
+			"""
+	query_result = query_db(sql_str, (char_id, item_slot), True)
+
+	for q in query_result:
+		#if q['Slots_Name'] not in items.keys():
+		#	items[q['Slots_Name']] = []
+		
+		item_fields = {
+			'Item_ID' : q['Item_ID'],
+			'Item_Weight' : q['Item_Weight'],
+			'Item_Name' : escape(q['Item_Name']),
+			'Rarities_Color' : q['Rarities_Color'],
+			'Amount' : q['Amount'],
+			#'Slots_Name' : q['Slots_Name'],
+			#'Slots_ID' : q['Slots_ID'],
+			'Is_Equiped' : True if q['Item_ID'] in item_id_list else False
+		}
+
+		items.append(item_fields)
+
+	print(items)
+
+	return jsonify(items)
+
+@bp.route('getItemAmount/<int:char_id>/<int:item_id>')
+@login_required
+def getItemAmount(char_id, item_id):
+	sql_str = """SELECT *
+				FROM Character
+				WHERE Character.User_ID = ? AND Character.Character_ID = ?;
+				"""
+
+	characters = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if characters is None:
+		# Error
+		return redirect(url_for('character.character_select'))
+
+
+	sql_str = """SELECT Inventory.Item_ID, Amount, Items.Item_Slot, Slots.Slots_Name
+			FROM Inventory
+			LEFT JOIN Items ON Inventory.Item_ID = Items.Item_ID
+			LEFT JOIN Slots ON Items.Item_Slot = Slots.Slots_ID
+			WHERE Character_ID = ? AND Inventory.Item_ID = ?;
+			"""
+	query_result = query_db(sql_str, (char_id, item_id), True, True)
+
+
+	return jsonify(
+		current_value = query_result['Amount'],
+		item_id = query_result['Item_ID'],
+		slot_name = query_result['Slots_Name']
+	)
+
+
 @bp.route('/imageserver/user/<string:image_name>')
 @login_required
 def getUserImage(image_name):
@@ -464,6 +475,8 @@ def getUserImage(image_name):
 @login_required
 def getItemImage(image_name):
 	# TODO: Read the docs on how to improve this for server
-	
-	return send_from_directory(os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'items'), image_name, as_attachment=False)
+	path = os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'items')
+
+	return send_from_directory(path, image_name, as_attachment=False)
+
 	
