@@ -2,15 +2,15 @@ from flask import (
 	Blueprint, g, redirect, render_template, request, session, url_for, current_app, jsonify
 )
 
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 
 import os
 
-from ..db import get_db, query_db
+from db import get_db, query_db
 
-from .auth import login_required
+from blueprints.auth import login_required
 
-from ..image_sever import convert_image_to_base64
+from image_sever import convert_image_to_base64
 
 import math
 
@@ -100,7 +100,7 @@ def character_page(char_id):
 
 	stat_bonus = sumation_stats(item_id_list)
 
-	image_data = convert_image_to_base64(os.path.join(current_app.config['IMAGE_UPLOAD'], characters['Character_Image']))
+	#image_data = convert_image_to_base64(os.path.join(current_app.config['IMAGE_UPLOAD'], characters['Character_Image']))
 	#image_data = convert_image_to_base64(characters['Character_Image'])
 	image_data = url_for('static', filename='images/no_image.png')
 

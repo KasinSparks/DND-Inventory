@@ -2,9 +2,9 @@ import base64
 
 from flask import url_for
 
-from .blueprints.auth import login_required
+from blueprints.auth import login_required
 
-from PIL import Image
+#from PIL import Image
 
 import os
 

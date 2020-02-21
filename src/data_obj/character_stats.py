@@ -1,4 +1,4 @@
-from ..db import query_db
+from db import query_db
 
 from flask import session
 

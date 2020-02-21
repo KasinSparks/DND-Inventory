@@ -4,12 +4,12 @@ from flask import (
 	Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, send_from_directory, current_app
 )
 
-from ..image_sever import convert_image_to_base64
+from image_sever import convert_image_to_base64
 
-from werkzeug import secure_filename, escape
+from werkzeug.utils import secure_filename, escape
 
-from ..db import get_db, query_db
-from .auth import login_required
+from db import get_db, query_db
+from blueprints.auth import login_required
 
 import os
 

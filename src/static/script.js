@@ -846,9 +846,9 @@ function updateInvCategoryHelper(char_id, response, category_name){
 		itemString += '</div>';
 
 		if(item.Is_Equiped){
-			itemString += '<div class="inv_unequip_item_button clickable" onclick="unequipItem(' + char_id + ', ' + item.Item_ID + ',' + category_name + ');"></div >';
+			itemString += '<div class="inv_unequip_item_button clickable" onclick="unequipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\');"></div >';
 		}else{
-			itemString += '<div class="inv_equip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ',' + category_name +  ');"></div >';
+			itemString += '<div class="inv_equip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name +  '\');"></div >';
 			//itemString += '<div class="inv_equip_item_button clickable"></div >';
 		}
 
@@ -896,8 +896,9 @@ function unequipItem(char_id, item_id){
 	submitUnequipChange('/character/test', '', '');
 }
 
-function equipItem(char_id, item_id, slot_name){
-	slot_num = 0;
+function equipItem(char_id, item_id, slot_name=0){
+	// TODO: change later
+	is_multiple_slots = false;
 	if(is_multiple_slots){
 		// Determine which slot to add the item to
 	} else {

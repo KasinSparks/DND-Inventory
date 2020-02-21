@@ -1,8 +1,26 @@
 Check For Running Virtual Env:
-1.) run pip -V
+1.) Run pip -V
 2.) Check enviroment's location path
-	a.) If path is inside of DND_Inv... then python virtual enviroment is active, else proceed to section "Start Python Virtual Env"
+	a.) If path is inside of DND_Inv... then python virtual enviroment is active,
+		else proceed to section "Start Python Virtual Env"
 
 Start Python Virtual Env:
 1.) run source venv/bin/activate
 2.) proceed to section "Check For Running Virtual Env" for verification.
+
+Run Flask in a development enviroment:
+1.) Complete section "Check For Running Virtual Env".
+2.) Change directories into DND_Inventory_System
+3.) Run the following commands: 
+	a.) export FLASK_APP=src
+	b.) export FLASK_ENV=development
+	c.) export PYTHONPATH=current/path/to/src 
+
+	-------------------------------------------------------------------------
+	|						START OF EXAMPLE...								|
+	|	DO NOT RUN THE FOLLOWING... INTENDED AS AN EXAMPLE ONLY...			|
+	|(example: export PYTHONPATH=/home/user's name/DND_Inventory_System/src)|
+	|						END OF EXAMPLE.									|
+	-------------------------------------------------------------------------
+
+	d.) flask run

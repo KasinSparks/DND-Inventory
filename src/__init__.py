@@ -16,7 +16,7 @@ def create_app(test_config=None):
 		pass
 
 	# database
-	from . import db
+	import db
 	db.init_app(app)
 
 	#---------------------------------------------------------------#
@@ -24,13 +24,13 @@ def create_app(test_config=None):
 	#---------------------------------------------------------------#
 	
 	# auth
-	from .blueprints import auth
+	from blueprints import auth
 	app.register_blueprint(auth.bp)
 	# data_server
-	from .blueprints import data_server
+	from blueprints import data_server
 	app.register_blueprint(data_server.bp)
 	# character
-	from .blueprints import character
+	from blueprints import character
 	app.register_blueprint(character.bp)
 
 	# a simple page that says hello
