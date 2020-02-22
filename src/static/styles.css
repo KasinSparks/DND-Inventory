@@ -940,3 +940,22 @@ table td{
 	width: 20%;
 	margin: 4px auto;
 }
+
+.inv_multi_options{
+	position: relative;
+	display: inline-block;
+	width: 31px;
+	height: 31px;
+}
+
+.inv_multi_options h4{
+	margin: 0;
+	padding-bottom: 2px;
+	color: #424242;
+}
+
+.inv_multi_options_inner{
+	display: flex;
+	position: absolute;
+	z-index: 1;
+}

@@ -72,10 +72,10 @@ def character_page(char_id):
 		'ring2' : item_short_data(characters['Character_Ring2'], 'Ring', 'Item_img_ring.png'),
 		'item1' : item_short_data(characters['Character_Item1'], 'Item', 'Item_img_item.png'),
 		'item2' : item_short_data(characters['Character_Item2'], 'Item', 'Item_img_item.png'),
-		'weapon1' : item_short_data(characters['Character_Weapon1'], 'Main Hand', 'Item_img_weapon.png'),
-		'offhand1' : item_short_data(characters['Character_Weapon2'], 'Off Hand', 'Item_img_offhand.png'),
-		'weapon2' : item_short_data(characters['Character_Weapon3'], 'Main Hand', 'Item_img_weapon.png'),
-		'offhand2' : item_short_data(characters['Character_Weapon4'], 'Off Hand', 'Item_img_offhand.png')
+		'weapon1' : item_short_data(characters['Character_Weapon1'], 'Weapn1', 'Item_img_weapon.png'),
+		'offhand1' : item_short_data(characters['Character_Weapon2'], 'Weapon2', 'Item_img_offhand.png'),
+		'weapon2' : item_short_data(characters['Character_Weapon3'], 'Weapon3', 'Item_img_weapon.png'),
+		'offhand2' : item_short_data(characters['Character_Weapon4'], 'Weapon4', 'Item_img_offhand.png')
 	}
 
 	sql_str = """SELECT Class_Name
@@ -1012,11 +1012,13 @@ def item_equip(char_id, item_id, slot_number = 0):
 
 	slot_name = query_db(sql_str, (item_id,), True, True)['Slots_Name']
 
+	modified_slot_name = slot_name
+
 	if slot_number > 0 and slot_number < 4:
-		slot_name += str(slot_number)
+		modified_slot_name += str(slot_number)
 
 	sql_str = """UPDATE Character 
-			SET Character_""" + slot_name + """=?
+			SET Character_""" + modified_slot_name + """=?
 			WHERE Character_ID = ?;
 			"""
 
@@ -1083,5 +1085,110 @@ def item_equip(char_id, item_id, slot_number = 0):
 		character_data = character_data,
 		stat_modifiers = stat_modifiers,
 		slot_name = slot_name,
+		modified_slot_name = modified_slot_name,
 		item_data = item_data_dict
+	)
+
+@bp.route('item/unequip/<int:char_id>/<int:item_id>/<int:slot_number>', methods=('GET', 'POST'))
+@login_required
+def item_unequip(char_id, item_id, slot_number = 0):
+	# Check for user_id associated with char_id
+	sql_str = """SELECT *
+				FROM Character
+				WHERE Character.User_ID = ? AND Character.Character_ID = ?;
+				"""
+
+	characters = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if characters is None:
+		# Error
+		return redirect(url_for('character.character_select'))
+	
+	sql_str = """SELECT *
+				FROM Inventory
+				WHERE Character_ID = ? AND Item_ID = ?;
+			"""
+	item = query_db(sql_str, (char_id, item_id), True, True)
+	if item is None:
+		return redirect(url_for('character.character_select'))
+
+	sql_str = """SELECT Slots.Slots_Name
+			FROM Items
+			INNER JOIN Slots ON Items.Item_Slot=Slots.Slots_ID
+			WHERE Items.Item_ID = ?;
+			"""
+
+	slot_name = query_db(sql_str, (item_id,), True, True)['Slots_Name']
+
+	modified_slot_name = slot_name
+
+	if slot_number > 0 and slot_number < 5:
+		modified_slot_name += str(slot_number)
+
+	sql_str = """UPDATE Character 
+			SET Character_""" + modified_slot_name + """=?
+			WHERE Character_ID = ?;
+			"""
+
+	query_db(sql_str, (-1, char_id,), False)
+
+	sql_str = """SELECT *
+				FROM Character
+				WHERE Character.User_ID = ? AND Character.Character_ID = ?;
+				"""
+
+	characters = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	#item_data_dict = {
+	#	'picture' : item_data['Item_Picture'],
+	#	'name' : shorten_string(item_data['Item_Name'], 17),
+	#	'color' : item_data['Rarities_Color']
+	#}
+
+
+	item_id_list = [
+		characters['Character_Head'], characters['Character_Shoulder'], characters['Character_Torso'],
+		characters['Character_Hand'],characters['Character_Leg'],characters['Character_Foot'],
+		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
+		characters['Character_Ring2'],characters['Character_Item1'],characters['Character_Item2'],
+		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
+		characters['Character_Weapon4']
+	] 
+
+	print(item_id_list)
+
+
+	stat_bonus = sumation_stats(item_id_list)
+
+	character_data = {
+		'max_hp' : convert_form_field_data_to_int(characters['Character_Max_HP']) + stat_bonus['health'],
+		'ac' : convert_form_field_data_to_int(characters['Character_AC']) + stat_bonus['ac'],
+		'initiative' : convert_form_field_data_to_int(characters['Character_Initiative']) + stat_bonus['initiative'],
+		'attack_bonus' : convert_form_field_data_to_int(characters['Character_Attack_Bonus']) + stat_bonus['attack'],
+		'weight' : convert_form_field_data_to_int(characters['Character_Base_Carrying_Cap']),
+		#'max_weight' : convert_form_field_data_to_int(characters['Character_Max_Carry_Weight']),
+		'max_weight' : 15 * (convert_form_field_data_to_int(characters['Character_Strength']) + stat_bonus['str']),
+		'str' : convert_form_field_data_to_int(characters['Character_Strength']) + stat_bonus['str'],
+		'dex' : convert_form_field_data_to_int(characters['Character_Dexterity']) + stat_bonus['dex'],
+		'con' : convert_form_field_data_to_int(characters['Character_Constitution']) + stat_bonus['con'],
+		'int' : convert_form_field_data_to_int(characters['Character_Intelligence']) + stat_bonus['int'],
+		'wis' : convert_form_field_data_to_int(characters['Character_Wisdom']) + stat_bonus['wis'],
+		'cha' : convert_form_field_data_to_int(characters['Character_Charisma']) + stat_bonus['cha'],
+	}
+
+	stat_modifiers = {
+		'str_mod' :	calculate_modifier(character_data['str']), 
+		'dex_mod' :	calculate_modifier(character_data['dex']),
+		'con_mod' :	calculate_modifier(character_data['con']),
+		'int_mod' :	calculate_modifier(character_data['int']),
+		'wis_mod' :	calculate_modifier(character_data['wis']),
+		'cha_mod' :	calculate_modifier(character_data['cha'])
+	}
+	return jsonify(
+		character_data = character_data,
+		stat_modifiers = stat_modifiers,
+		slot_name = slot_name,
+		modified_slot_name = modified_slot_name,
+		item_data = 'null'
+ 		#item_data = item_data_dict
 	)

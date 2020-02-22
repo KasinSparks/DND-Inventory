@@ -845,10 +845,22 @@ function updateInvCategoryHelper(char_id, response, category_name){
 
 		itemString += '</div>';
 
+		
+
 		if(item.Is_Equiped){
-			itemString += '<div class="inv_unequip_item_button clickable" onclick="unequipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\');"></div >';
+			// TODO: add support for multiple slots
+			if(category_name == 'Ring' || category_name == 'Item' || category_name == 'Trinket' || category_name == 'Weapon'){
+				itemString += '<div class="inv_unequip_item_button clickable" onclick="unequipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\', 0, true);"></div >';
+			} else {
+				itemString += '<div class="inv_unequip_item_button clickable" onclick="unequipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\');"></div >';
+			}
 		}else{
-			itemString += '<div class="inv_equip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name +  '\');"></div >';
+			if(category_name == 'Ring' || category_name == 'Item' || category_name == 'Trinket' || category_name == 'Weapon'){
+				itemString += '<div class="inv_equip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\', 0, true);"></div >';
+			} else {
+				itemString += '<div class="inv_equip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\');"></div >';
+			}
+			//itemString += '<div class="inv_equip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name +  '\');"></div >';
 			//itemString += '<div class="inv_equip_item_button clickable"></div >';
 		}
 
@@ -891,24 +903,104 @@ function submitAddItemData(url, params, field_id_name='', char_id, slot_name){
 	http.send(params);
 }
 
-function unequipItem(char_id, item_id){
-	// Send update to server
-	submitUnequipChange('/character/test', '', '');
-}
 
-function equipItem(char_id, item_id, slot_name=0){
+function unequipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=false){
+	console.log('slot_num: ' + slot_num);
 	// TODO: change later
-	is_multiple_slots = false;
 	if(is_multiple_slots){
 		// Determine which slot to add the item to
+		try {
+			displayMultiSlot(char_id, item_id, slot_name, true);
+		} catch(e) {
+			console.error(e);
+		}
 	} else {
-		equipItemChangeSubmit('/character/item/equip/', char_id, item_id);
+		equipItemChangeSubmit('/character/item/unequip/', char_id, item_id, slot_num);
 	}
 }
 
-function multipleSlotsInsert(url_prefix, char_id, item_id, slot_num){
+const multi_slot_name_map = new Map([
+	['Trinket', 0],
+	['Ring', 1],
+	['Item', 2],
+	['Weapon', 3]
+])
 
+function equipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=false){
+	console.log('slot_num: ' + slot_num);
+	// TODO: change later
+	if(is_multiple_slots){
+		// Determine which slot to add the item to
+		try {
+			displayMultiSlot(char_id, item_id, slot_name);
+		} catch(e) {
+			console.error(e);
+		}
+	} else {
+		equipItemChangeSubmit('/character/item/equip/', char_id, item_id, slot_num);
+	}
 }
+
+function displayMultiSlot(char_id, item_id, slot_name, is_unequip=false){
+	var multi_slot_num = multi_slot_name_map.get(slot_name);
+
+	// I would perfer to use a enum here in the future....
+	switch(multi_slot_num){
+		case 0: case 1: case 2:
+			multipleSlotsInsert(char_id, item_id, 2, is_unequip);
+			break;
+		case 3:
+			multipleSlotsInsert(char_id, item_id, 4, is_unequip);
+			break;
+		default:
+			throw "Invaild slot name";
+	}
+}
+
+
+function multipleSlotsInsert(char_id, item_id, number_of_slots, is_unequip=false){
+	var parentElement = document.getElementById('inv_item_' + item_id).parentElement;
+
+	var buttonElement = null;
+	if(parentElement.getElementsByClassName('inv_unequip_item_button')[0] != null){
+		buttonElement = parentElement.getElementsByClassName('inv_unequip_item_button')[0].remove();
+	} else if(parentElement.getElementsByClassName('inv_equip_item_button')[0] != null){
+		buttonElement = parentElement.getElementsByClassName('inv_equip_item_button')[0].remove();
+	} else {
+		throw "No inventory equip or unequip item buttons found.";
+	}
+
+	if(number_of_slots < 1 || number_of_slots === 3 || number_of_slots > 4){
+		throw "Invaild number of slots passed.";
+	}
+
+	var offset = new Map([
+		[1, 0],
+		[2, 50],
+		[4, 200]
+	])
+
+	var html_string = '<div class="inv_multi_options">\
+		<div class="inv_multi_options_inner" style="margin-left: ' + -1 * offset.get(number_of_slots) + '%">';
+	
+	for(var i = 1; i < number_of_slots + 1; ++i){
+		html_string += '<div>\
+			<h4>Item' + i + '</h4>\
+			<div class="inv_' + (is_unequip ? 'un' : '') + 'equip_item_button clickable" onclick="';
+			if(is_unequip){
+				html_string += 'unequipItem';
+			} else {
+				html_string += 'equipItem';
+			}
+		html_string += '(' + char_id + ',' + item_id + ', null, ' + i + ');"></div ></div>';
+	}
+		
+	
+	html_string += '</div></div>';
+
+	parentElement.innerHTML += html_string;
+}
+
 
 function equipItemChangeSubmit(url_prefix, char_id, item_id, slot_num=0){
 	// Send update to server
@@ -944,11 +1036,14 @@ function submitEquipChange(url, char_id, item_id){
 }
 
 function updateEquipedItemPicture(response, use_default_image = false){
-	var img_element = document.getElementById('equipment_' + response.slot_name + '_image');
+	var img_element = document.getElementById('equipment_' + response.modified_slot_name + '_image');
 
 	var new_src = '/static/images/no_image.png';
 
-	if(!use_default_image){
+	/* if(!use_default_image){
+		new_src = '/dataserver/imageserver/item/' + response.item_data['picture'];
+	} */
+	if(response.item_data != 'null'){
 		new_src = '/dataserver/imageserver/item/' + response.item_data['picture'];
 	}
 	
@@ -956,12 +1051,16 @@ function updateEquipedItemPicture(response, use_default_image = false){
 }
 
 function updateEquipedItemName(response, use_default_data=false){
-	var name_element = document.getElementById('equipment_' + response.slot_name + '_text');
+	var name_element = document.getElementById('equipment_' + response.modified_slot_name + '_text');
 
 	var new_name = response.slot_name;
 	var color = '#606060';
 
-	if(!use_default_data){
+	/* if(!use_default_data){
+		new_name = response.item_data['name'];
+		color = response.item_data['color'];
+	} */
+	if(response.item_data != 'null'){
 		new_name = response.item_data['name'];
 		color = response.item_data['color'];
 	}

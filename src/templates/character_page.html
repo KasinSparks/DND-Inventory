@@ -108,84 +108,84 @@
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Trinket1');">
 									<div class="equipment_right_item equipment_item">
 										<div class="equipment_right_item_name">
-											<h2 
+											<h2  id="equipment_Trinket1_text"
 												{% if equiped_item['trinket1']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['trinket1']['rarity_color'] }}"
 												{% endif %}
 											>{{ equiped_item['trinket1']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="{{ equiped_item['trinket1']['image'] }}" alt="Trinket Item 1" />
+											<img id="equipment_Trinket1_image" src="{{ equiped_item['trinket1']['image'] }}" alt="Trinket Item 1" />
 										</div>
 									</div>
 								</div>
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Trinket2');">
 									<div class="equipment_right_item equipment_item">
 										<div class="equipment_right_item_name">
-											<h2 
+											<h2  id="equipment_Trinket2_text"
 												{% if equiped_item['trinket2']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['trinket2']['rarity_color'] }}"
 												{% endif %}
 											>{{ equiped_item['trinket2']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="{{ equiped_item['trinket2']['image'] }}" alt="Trinket Item 2" />
+											<img id="equipment_Trinket2_image" src="{{ equiped_item['trinket2']['image'] }}" alt="Trinket Item 2" />
 										</div>
 									</div>
 								</div>
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Ring1');">
 									<div class="equipment_right_item equipment_item">
 										<div class="equipment_right_item_name">
-											<h2 
+											<h2 id="equipment_Ring1_text" 
 												{% if equiped_item['ring1']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['ring1']['rarity_color'] }}"
 												{% endif %}
 											>{{ equiped_item['ring1']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="{{ equiped_item['ring1']['image'] }}" alt="Ring Item 1" />
+											<img id="equipment_Ring1_image" src="{{ equiped_item['ring1']['image'] }}" alt="Ring Item 1" />
 										</div>
 									</div>
 								</div>
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Ring2');">
 									<div class="equipment_right_item equipment_item">
 										<div class="equipment_right_item_name">
-											<h2 
+											<h2  id="equipment_Ring2_text"
 												{% if equiped_item['ring2']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['ring2']['rarity_color'] }}"
 												{% endif %}
 											>{{ equiped_item['ring2']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="{{ equiped_item['ring2']['image'] }}" alt="Ring Item 2" />
+											<img id="equipment_Ring2_image" src="{{ equiped_item['ring2']['image'] }}" alt="Ring Item 2" />
 										</div>
 									</div>
 								</div>
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Item1');">
 									<div class="equipment_right_item equipment_item">
 										<div class="equipment_right_item_name">
-											<h2 
+											<h2  id="equipment_Item1_text"
 												{% if equiped_item['item1']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['item1']['rarity_color'] }}"
 												{% endif %}
 											>{{ equiped_item['item1']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="{{ equiped_item['item1']['image'] }}" alt="Magic Item 2" />
+											<img id="equipment_Item1_image" src="{{ equiped_item['item1']['image'] }}" alt="Magic Item 2" />
 										</div>
 									</div>
 								</div>
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Item2');">
 									<div class="equipment_right_item equipment_item">
 										<div class="equipment_right_item_name">
-											<h2 
+											<h2  id="equipment_Item2_text"
 												{% if equiped_item['item2']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['item2']['rarity_color'] }}"
 												{% endif %}
 											>{{ equiped_item['item2']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="{{ equiped_item['item2']['image'] }}" alt="Magic Item 2" />
+											<img id="equipment_Item2_image" src="{{ equiped_item['item2']['image'] }}" alt="Magic Item 2" />
 										</div>
 									</div>
 								</div>
@@ -203,10 +203,10 @@
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Weapon1');">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
-											<img src="{{ equiped_item['weapon1']['image'] }}" alt="Main Hand 1" />
+											<img id="equipment_Weapon1_image" src="{{ equiped_item['weapon1']['image'] }}" alt="Main Hand 1" />
 										</div>
 										<div class="equipment_left_item_name">
-											<h2 
+											<h2  id="equipment_Weapon1_text"
 												{% if equiped_item['weapon1']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['weapon1']['rarity_color'] }}"
 												{% endif %}
@@ -217,10 +217,10 @@
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Weapon2');">
 									<div class="equipment_left_item equipment_item">
 										<div class="equipment_left_img">
-											<img src="{{ equiped_item['offhand1']['image'] }}" alt="Offhand 1" />
+											<img id="equipment_Weapon2_image" src="{{ equiped_item['offhand1']['image'] }}" alt="Offhand 1" />
 										</div>
 										<div class="equipment_left_item_name">
-											<h2 
+											<h2  id="equipment_Weapon2_text"
 												{% if equiped_item['offhand1']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['offhand1']['rarity_color'] }}"
 												{% endif %}
@@ -233,28 +233,28 @@
 								<div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Weapon3');">
 									<div class="equipment_right_item equipment_item">
 										<div class="equipment_right_item_name">
-											<h2 
+											<h2  id="equipment_Weapon3_text"
 												{% if equiped_item['weapon2']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['weapon2']['rarity_color'] }}"
 												{% endif %}
 											>{{ equiped_item['weapon2']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="{{ equiped_item['weapon2']['image'] }}" alt="Main Hand 2" />
+											<img id="equipment_Weapon3_image" src="{{ equiped_item['weapon2']['image'] }}" alt="Main Hand 2" />
 										</div>
 									</div>
 								</div>
 								<div class="equipment_row tooltip" onclick="equipmentItemDetails({{ char_id }}, 'Weapon4');">
 									<div class="equipment_right_item equipment_item">
 										<div class="equipment_right_item_name">
-											<h2 
+											<h2  id="equipment_Weapon4_text"
 												{% if equiped_item['offhand2']['rarity_color'] is not none %}
 													style="color: {{ equiped_item['offhand2']['rarity_color'] }}"
 												{% endif %}
 											>{{ equiped_item['offhand2']['name']|e }}</h2>
 										</div>
 										<div class="equipment_right_img">
-											<img src="{{ equiped_item['offhand2']['image'] }}" alt="Offhand 2" />
+											<img id="equipment_Weapon4_image" src="{{ equiped_item['offhand2']['image'] }}" alt="Offhand 2" />
 										</div>
 									</div>
 								</div>
@@ -476,9 +476,21 @@
 											{% endif %}
 										</div>
 										{% if item['Is_Equiped'] %}
-											<div class="inv_unequip_item_button clickable" onclick="unequipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}');"></div >
+											<div class="inv_unequip_item_button clickable" onclick="
+											{% if ii == 'Ring' or ii == 'Item' or ii == 'Trinket' or ii == 'Weapon' %}
+												unequipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}', 0, true);
+											{% else %}
+												unequipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}');
+											{% endif %}
+											"></div >
 										{% else %}
-											<div class="inv_equip_item_button clickable" onclick="equipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }})');"></div >
+											<div class="inv_equip_item_button clickable" onclick="
+											{% if ii == 'Ring' or ii == 'Item' or ii == 'Trinket' or ii == 'Weapon' %}
+												equipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}', 0, true);
+											{% else %}
+												equipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}');
+											{% endif %}
+											"></div >
 										{% endif %}
 									</div>	
 								</div>
