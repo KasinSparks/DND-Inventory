@@ -1,16 +1,5 @@
 var saveForLater = new Map([["", ""]]);
 
-function test(str){
-	var hmtlInner = document.getElementsByClassName('equipment')[0];
-	console.debug('here');
-	saveForLater[0] = [str, hmtlInner.innerHTML];
-	console.debug(saveForLater);
-	hmtlInner.innerHTML = '<p>test</p><div style="width: 30%; min-width: 290px; max-width: 302px; height: 100%; background-color: #FFFFFF;" onclick="test2();"><div style="width: 100%; height: 100%;">test asdfsaa</div></div>';
-	return;
-}
-
-
-
 function equipmentItemDetails(charId, equipmentItemStr){
 	var hmtlInner = document.getElementsByClassName('eq_container')[0];
 	console.log(saveForLater[0]);
@@ -87,8 +76,22 @@ function getEquipmentItemDetailsHTML(jsonData){
 			<table class="stats_table">\
 				<tr>\
 					<td colspan=4><h2 style="color: ' + jsonData.rarity_color + ';">' + jsonData.rarity + '</h2></td>\
-				</tr>\
-				<tr>\
+				</tr>';
+				
+				if(jsonData.slot === 10){	
+					equipmentItemDetailsHTML += '<tr>\
+						<td colspan=2><h2>Damage:</h2></td>\
+						<td colspan=2><h2>' + jsonData.item_damage_num_of_dice_sides + ' d ' + jsonData.item_damage_num_of_dices + '</h2></td>\
+					</tr>'
+				} else if(jsonData.slot === 3){
+					equipmentItemDetailsHTML += '<tr>\
+						<td colspan=2><h2>AC:</h2></td>\
+						<td colspan=2><h2>' + jsonData.ac + '</h2></td>\
+					</tr>'
+
+				}
+				 
+	equipmentItemDetailsHTML += '<tr>\
 					<td><h2>STR:</h2></td>\
 					<td><h2>' + jsonData.str_bonus + '</h2></td>\
 					<td><h2>DEX:</h2></td>\
@@ -107,10 +110,8 @@ function getEquipmentItemDetailsHTML(jsonData){
 					<td><h2>' + jsonData.cha_bonus + '</h2></td>\
 				</tr>\
 				<tr>\
-					<td></td>\
-					<td><h2 class="weight">Weight:</h2></td>\
-					<td><h2 class="weight">' + jsonData.weight + '</h2></td>\
-					<td></td>\
+					<td colspan=2><h2 class="weight">Weight:</h2></td>\
+					<td colspan=2><h2 class="weight">' + jsonData.weight + '</h2></td>\
 				</tr>\
 				<tr>\
 					<td colspan=2><h2>' + jsonData.effect1_name + ':</h2></td>\
@@ -119,14 +120,6 @@ function getEquipmentItemDetailsHTML(jsonData){
 				<tr>\
 					<td colspan=2><h2>' + jsonData.effect2_name + ':</h2></td>\
 					<td colspan=2><h2>' + jsonData.effect2_description + '</h2></td>\
-				</tr>\
-				<tr>\
-					<td colspan=2><h2>Number of Damage Dices:</h2></td>\
-					<td colspan=2><h2>' + jsonData.item_damage_num_of_dices + '</h2></td>\
-				</tr>\
-				<tr>\
-					<td colspan=2><h2>Number of Damage Dice Sides:</h2></td>\
-					<td colspan=2><h2>' + jsonData.item_damage_num_of_dice_sides + '</h2></td>\
 				</tr>\
 			</table>\
 		</div>\
@@ -910,7 +903,8 @@ function unequipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=
 	if(is_multiple_slots){
 		// Determine which slot to add the item to
 		try {
-			displayMultiSlot(char_id, item_id, slot_name, true);
+			//displayMultiSlot(char_id, item_id, slot_name, true);
+			displayMultiSlot(char_id, item_id, slot_name, slot_num);
 		} catch(e) {
 			console.error(e);
 		}
@@ -932,7 +926,8 @@ function equipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=fa
 	if(is_multiple_slots){
 		// Determine which slot to add the item to
 		try {
-			displayMultiSlot(char_id, item_id, slot_name);
+			//displayMultiSlot(char_id, item_id, slot_name);
+			displayMultiSlot(char_id, item_id, slot_name, slot_num);
 		} catch(e) {
 			console.error(e);
 		}
@@ -941,16 +936,16 @@ function equipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=fa
 	}
 }
 
-function displayMultiSlot(char_id, item_id, slot_name, is_unequip=false){
+function displayMultiSlot(char_id, item_id, slot_name, slot_num=0, is_unequip=false){
 	var multi_slot_num = multi_slot_name_map.get(slot_name);
 
 	// I would perfer to use a enum here in the future....
 	switch(multi_slot_num){
 		case 0: case 1: case 2:
-			multipleSlotsInsert(char_id, item_id, 2, is_unequip);
+			multipleSlotsInsert(char_id, item_id, 2, slot_num, is_unequip);
 			break;
 		case 3:
-			multipleSlotsInsert(char_id, item_id, 4, is_unequip);
+			multipleSlotsInsert(char_id, item_id, 4, slot_num, is_unequip);
 			break;
 		default:
 			throw "Invaild slot name";
@@ -958,29 +953,30 @@ function displayMultiSlot(char_id, item_id, slot_name, is_unequip=false){
 }
 
 
-function multipleSlotsInsert(char_id, item_id, number_of_slots, is_unequip=false){
+function multipleSlotsInsert(char_id, item_id, number_of_slots, slot_num, is_unequip=false){
 	var parentElement = document.getElementById('inv_item_' + item_id).parentElement;
 
-	var buttonElement = null;
-	if(parentElement.getElementsByClassName('inv_unequip_item_button')[0] != null){
-		buttonElement = parentElement.getElementsByClassName('inv_unequip_item_button')[0].remove();
-	} else if(parentElement.getElementsByClassName('inv_equip_item_button')[0] != null){
-		buttonElement = parentElement.getElementsByClassName('inv_equip_item_button')[0].remove();
+	/*var buttonElement = null;
+	if(parentElement.getElementsByClassName('inv_equip_unequip_item_button')[0] != null){
+		buttonElement = parentElement.getElementsByClassName('inv_equip_unequip_item_button')[0].remove();
 	} else {
-		throw "No inventory equip or unequip item buttons found.";
-	}
+		throw "No inventory equip/unequip item button found.";
+	} */
 
 	if(number_of_slots < 1 || number_of_slots === 3 || number_of_slots > 4){
 		throw "Invaild number of slots passed.";
 	}
 
-	var offset = new Map([
+	/* var offset = new Map([
 		[1, 0],
 		[2, 50],
 		[4, 200]
-	])
+	]) */
 
-	var html_string = '<div class="inv_multi_options">\
+	var ccd = new ChangeData(char_id, '/dataserver/getItemList/' + slot_num, 'json', '', '');
+	ccd.dataCall(changeNameLater);
+
+	/* var html_string = '<div class="inv_multi_options">\
 		<div class="inv_multi_options_inner" style="margin-left: ' + -1 * offset.get(number_of_slots) + '%">';
 	
 	for(var i = 1; i < number_of_slots + 1; ++i){
@@ -998,7 +994,57 @@ function multipleSlotsInsert(char_id, item_id, number_of_slots, is_unequip=false
 	
 	html_string += '</div></div>';
 
-	parentElement.innerHTML += html_string;
+	parentElement.innerHTML += html_string; */
+}
+
+function changeNameLater(char_id, response, a=null, b=null){
+	var items_html = '';
+
+	response.items.forEach(element => {
+		items_html += '\
+			<div class="equipment_left_item equipment_item">\
+				<div class="equipment_left_img">\
+					<img id="equipment_Weapon_image" src="/dataserver/imageserver/item/' + element.Item_Picture + '" alt="Weapon" />\
+				</div>\
+				<div class="equipment_left_item_name">\
+					<h2  id="equipment_Weapon_text"	style="color: ' + element.Rarities_Color + ';">\
+						' + element.Item_Name + '\
+					</h2>\
+				</div>\
+			</div>'
+			/* <div class="inv_add_item_row_item">\
+				<div class="inv_add_item_input">\
+					<p>asdfasdfasdfasdfasdf</p\
+					<input type="checkbox" name="' + element.Item_ID + '" onclick="enable_input(\'' + element.Item_ID + '.amount\');">\
+					<input type="number" name="' + element.Item_ID + '.amount" min="1" value="1" disabled>\
+				</div>\
+				<div class="inv_add_item_data">\
+					<img src="/dataserver/imageserver/item/' + element.Item_Picture + '"/>\
+					<h2 style="color:' + element.Rarities_Color + ';">' + element.Item_Name + '</h2>\
+				</div>\
+			</div>\
+		' */
+	});
+
+
+	var html = '\
+		<div class="inv_add_item_container">\
+			<div class="inv_add_item_header">\
+				<h1>' + response.slot_name + '<h1>\
+			</div>\
+			' + items_html + '\
+			<div class="inv_add_item_buttons">\
+				<div class="clickable" onclick="invAddSubmit(' + char_id + ',\'' + response.slot_name + '\');">\
+					<h4 style="color: white;">Submit</h4>\
+				</div>\
+				<div class="clickable" onclick="cancelAddItem();">\
+					<h4 style="color: white;">Cancel</h4>\
+				</div>\
+			</div>\
+		</div>\
+		';
+
+	document.getElementsByClassName('inv_container')[0].innerHTML += html;
 }
 
 
@@ -1038,7 +1084,28 @@ function submitEquipChange(url, char_id, item_id){
 function updateEquipedItemPicture(response, use_default_image = false){
 	var img_element = document.getElementById('equipment_' + response.modified_slot_name + '_image');
 
-	var new_src = '/static/images/no_image.png';
+	var static_item_loc = '/static/images/items/';
+	var extention_type = '.png';
+
+	var new_src = static_item_loc + response.slot_name + extention_type;
+
+	if(response.slot_name === 'Weapon'){
+		try{
+			var s = String(response.modified_slot_name);
+			var l = s.length
+			var temp = s.substr(l - 1, l);
+			var image_name = '';
+			if(temp % 2 === 0){
+				image_name = 'Off_Hand';
+			} else {
+				image_name = 'Main_Hand'; 
+			}
+
+			new_src = static_item_loc + image_name + extention_type; 
+		} catch (e){
+			console.error(e);
+		}
+	}
 
 	/* if(!use_default_image){
 		new_src = '/dataserver/imageserver/item/' + response.item_data['picture'];
@@ -1054,6 +1121,26 @@ function updateEquipedItemName(response, use_default_data=false){
 	var name_element = document.getElementById('equipment_' + response.modified_slot_name + '_text');
 
 	var new_name = response.slot_name;
+
+	if(response.slot_name === 'Weapon'){
+		try{
+			var s = String(response.modified_slot_name);
+			var l = s.length
+			var temp = s.substr(l - 1, l);
+			var end_num = (Math.floor(temp / 3) + 1);
+			var slot_name_main_string = '';
+			if(temp % 2 === 0){
+				slot_name_main_string = 'Off Hand ';
+			} else {
+				slot_name_main_string = 'Main Hand '; 
+			}
+
+			new_name = slot_name_main_string + end_num; 
+		} catch (e){
+			console.error(e);
+		}
+	}
+
 	var color = '#606060';
 
 	/* if(!use_default_data){
@@ -1085,6 +1172,12 @@ function updateCharacterStats(response){
 		console.log(fullId + ', ' + response.character_data[id]);
 		document.getElementById(fullId).innerHTML = response.character_data[id];
 	});	
+
+	mod_ids.forEach(id => {
+		var fullId = prefix + id;
+		console.log(fullId + ', ' + response.character_data[id]);
+		document.getElementById(fullId).innerHTML = response.stat_modifiers[id];
+	})
 }
 
 function invertEquipButton(char_id, item_id){

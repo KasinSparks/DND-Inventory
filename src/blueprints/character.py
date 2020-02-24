@@ -60,22 +60,22 @@ def character_page(char_id):
 	# Query DB for character's items and equipment
 
 	equiped_item_short_data = {
-		'head' : item_short_data(characters['Character_Head'], 'Head', 'Item_img.png'),
-		'shoulder' : item_short_data(characters['Character_Shoulder'], 'Shoulder', 'Item_img_Shoulder.png'),
-		'Torso' : item_short_data(characters['Character_Torso'], 'Torso', 'Item_img_torso.png'),
-		'hand' : item_short_data(characters['Character_Hand'], 'Hand', 'Item_img_hand.png'),
-		'leg' : item_short_data(characters['Character_Leg'], 'Leg', 'Item_img_leg.png'),
-		'Foot' : item_short_data(characters['Character_Foot'], 'Foot', 'Item_img_foot.png'),
-		'trinket1' : item_short_data(characters['Character_Trinket1'], 'Trinket', 'Item_img_trinket.png'),
-		'trinket2' : item_short_data(characters['Character_Trinket2'], 'Trinket', 'Item_img_trinket.png'),
-		'ring1' : item_short_data(characters['Character_Ring1'], 'Ring', 'Item_img_ring.png'),
-		'ring2' : item_short_data(characters['Character_Ring2'], 'Ring', 'Item_img_ring.png'),
-		'item1' : item_short_data(characters['Character_Item1'], 'Item', 'Item_img_item.png'),
-		'item2' : item_short_data(characters['Character_Item2'], 'Item', 'Item_img_item.png'),
-		'weapon1' : item_short_data(characters['Character_Weapon1'], 'Weapn1', 'Item_img_weapon.png'),
-		'offhand1' : item_short_data(characters['Character_Weapon2'], 'Weapon2', 'Item_img_offhand.png'),
-		'weapon2' : item_short_data(characters['Character_Weapon3'], 'Weapon3', 'Item_img_weapon.png'),
-		'offhand2' : item_short_data(characters['Character_Weapon4'], 'Weapon4', 'Item_img_offhand.png')
+		'head' : item_short_data(characters['Character_Head'], 'Head', 'Head.png'),
+		'shoulder' : item_short_data(characters['Character_Shoulder'], 'Shoulder', 'Shoulder.png'),
+		'Torso' : item_short_data(characters['Character_Torso'], 'Torso', 'Torso.png'),
+		'hand' : item_short_data(characters['Character_Hand'], 'Hand', 'Hand.png'),
+		'leg' : item_short_data(characters['Character_Leg'], 'Leg', 'Leg.png'),
+		'Foot' : item_short_data(characters['Character_Foot'], 'Foot', 'Foot.png'),
+		'trinket1' : item_short_data(characters['Character_Trinket1'], 'Trinket', 'Trinket.png'),
+		'trinket2' : item_short_data(characters['Character_Trinket2'], 'Trinket', 'Trinket.png'),
+		'ring1' : item_short_data(characters['Character_Ring1'], 'Ring', 'Ring.png'),
+		'ring2' : item_short_data(characters['Character_Ring2'], 'Ring', 'Ring.png'),
+		'item1' : item_short_data(characters['Character_Item1'], 'Item', 'Item.png'),
+		'item2' : item_short_data(characters['Character_Item2'], 'Item', 'Item.png'),
+		'weapon1' : item_short_data(characters['Character_Weapon1'], 'Main Hand 1', 'Main_Hand.png'),
+		'offhand1' : item_short_data(characters['Character_Weapon2'], 'Off Hand 1', 'Off_Hand.png'),
+		'weapon2' : item_short_data(characters['Character_Weapon3'], 'Main Hand 2', 'Main_Hand.png'),
+		'offhand2' : item_short_data(characters['Character_Weapon4'], 'Off Hand 2', 'Off_Hand.png')
 	}
 
 	sql_str = """SELECT Class_Name
@@ -172,7 +172,7 @@ def get_inv_items(char_id : int, equiped_items_ids):
 			'items' : []
 		}
 	
-	sql_str = """SELECT Items.Item_ID, Items.Item_Weight, Items.Item_Name, Rarities.Rarities_Color, Slots.Slots_Name, Inventory.Amount
+	sql_str = """SELECT Items.Item_ID, Items.Item_Weight, Items.Item_Name, Items.Item_Slot, Rarities.Rarities_Color, Slots.Slots_Name, Inventory.Amount
 				FROM Inventory
 				INNER JOIN Items on Inventory.Item_ID=Items.Item_ID
 				INNER JOIN Rarities on Rarities.Rarities_ID=Items.Rarity_ID
@@ -193,7 +193,8 @@ def get_inv_items(char_id : int, equiped_items_ids):
 			'Amount' : q['Amount'],
 			#'Slots_Name' : q['Slots_Name'],
 			#'Slots_ID' : q['Slots_ID'],
-			'Is_Equiped' : True if q['Item_ID'] in equiped_items_ids else False
+			'Is_Equiped' : True if q['Item_ID'] in equiped_items_ids else False,
+			'Item_Slot' : q['Item_Slot']
 		}
 
 		items[q['Slots_Name']]['items'].append(item_fields)
@@ -261,7 +262,7 @@ def item_short_data(item_id, default_name, defalut_image_name):
 	item_data = {
 		'name' : default_name,
 		#'image' : convert_image_to_base64(os.path.join('src', 'static', 'images', defalut_image_name)),
-		'image' : url_for('static', filename='images/' + defalut_image_name),
+		'image' : url_for('static', filename='images/items/' + defalut_image_name),
 		'rarity_color' : None 
 	}
 
@@ -670,14 +671,14 @@ def edit_health(char_id):
 		except:
 			new_val = 0
 
-		sql_str = """SELECT Character_Max_HP
-					FROM Character
-					WHERE User_ID = ? AND Character_ID = ?;
-				"""
-		max_hp = query_db(sql_str, (session['user_id'], char_id), True, True)['Character_Max_HP']
+		#sql_str = """SELECT Character_Max_HP
+		#			FROM Character
+		#			WHERE User_ID = ? AND Character_ID = ?;
+		#		"""
+		#max_hp = query_db(sql_str, (session['user_id'], char_id), True, True)['Character_Max_HP']
 
-		if new_val > max_hp:
-			new_val = max_hp
+		#if new_val > max_hp:
+		#	new_val = max_hp
 
 		sql_str = """UPDATE	Character
 				SET Character_HP = ?
@@ -1014,7 +1015,7 @@ def item_equip(char_id, item_id, slot_number = 0):
 
 	modified_slot_name = slot_name
 
-	if slot_number > 0 and slot_number < 4:
+	if slot_number > 0 and slot_number < 5:
 		modified_slot_name += str(slot_number)
 
 	sql_str = """UPDATE Character 

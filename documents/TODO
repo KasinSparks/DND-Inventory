@@ -3,7 +3,11 @@ Server Side Items
         [] Generate a solid key
         [] Change paths for Server
         []
+    [] Change the docker image from ubuntu to alpine image
+    [] Work on the create instance app
 
 Code Items
     [] Change site name in code from 'site name here' to actual site name.
-    []
+    
+    [] Refactor
+        []

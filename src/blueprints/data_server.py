@@ -63,8 +63,9 @@ def equipmentItemDetails(char_id, equipment_slot):
 			'Item_Effect1' : None,
 			'Item_Effect2' : None,
 			'Item_Damage_Num_Of_Dices' : 0,
-			'Item_Damage_Num_Of_Dice_Sides' : 0
-			}
+			'Item_Damage_Num_Of_Dice_Sides' : 0,
+			'Item_AC_Bonus' : 0
+		}
 
 	# Check if item has an effect on it
 	if itemQueryResult is not None and itemQueryResult['Item_Effect1'] is not None and itemQueryResult['Item_Effect1'] > 0:	
@@ -114,7 +115,8 @@ def equipmentItemDetails(char_id, equipment_slot):
 		effect2_name=effect2QueryResult['Effect_Name'],
 		effect2_description=effect2QueryResult['Effect_Description'],
 		item_damage_num_of_dices=itemQueryResult['Item_Damage_Num_Of_Dices'],
-		item_damage_num_of_dice_sides=itemQueryResult['Item_Damage_Num_Of_Dice_Sides']
+		item_damage_num_of_dice_sides=itemQueryResult['Item_Damage_Num_Of_Dice_Sides'],
+		ac=itemQueryResult['Item_AC_Bonus']
 	)
 
 

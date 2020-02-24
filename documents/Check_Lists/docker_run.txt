@@ -1,0 +1,18 @@
+Start Docker:
+1.) Change directories to DND-Inventory
+2.) Run the following commands:
+	a) docker image build --tag=[image_repo_name]:[version.minor_version] .
+	b) docker container run --name=[container_name] -p [server_port]:[container_port] -it [image_repo_name:version.minor_version]
+3.) Proceed to section "Config Webserver"
+
+Config Webserver:
+1.) Change directories to /site_data
+2.) install a text editor and modify the following fields in 'production.cfg'
+	a.) SECRET_KEY... Look up on Flask website on a good way to generate a secret SECRET_KEY
+	b.) DATABASE... Change path to where database is located 
+	c.) IMAGE_UPLOAD... Change path to where image uploads folder is located
+
+
+Start Apache2:
+1.) Run the following command(s)
+	a.) service apache2 start

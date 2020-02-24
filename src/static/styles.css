@@ -85,7 +85,7 @@ body{
 .tab h1{
 	margin: 0px;
 	text-align: center;
-	padding-top: 7px;
+	padding-top: 3px;
 	color: #606060;
 }
 
@@ -718,7 +718,7 @@ table td{
 
 
 .inv_container_menu_button_inactive{
-	background-color: #252525;
+	background-color: #1b1b1b;
 }
 
 .inv_container_menu_button_active{
@@ -800,6 +800,12 @@ table td{
 
 .inv_unequip_item_button{
 	background-image: url(./images/inv_unequip.png);
+	width: 31px;
+	height: 31px;
+}
+
+.inv_equip_unequip_item_button{
+	background-image: url(./images/inv_equip_unequip.png);
 	width: 31px;
 	height: 31px;
 }
@@ -891,6 +897,7 @@ table td{
 	left: 0px;
 	z-index: 1;
 	text-align: center;
+
 }
 
 .inv_add_item_container h1{
@@ -910,17 +917,21 @@ table td{
 
 .inv_add_item_row_item{
 	margin: 10px auto;
-	width: 100%;
+	width: 70%;
 	display: flex;
 	flex-direction: row;
 }
 
 .inv_add_item_input{
+	display: flex;
+	flex-direction: row;
 	margin: 0 5%;
+	max-height: 32px;
 }
 
 .inv_add_item_data{
 	display: flex;
+	margin: 0 auto;
 }
 
 .inv_add_item_data > img{

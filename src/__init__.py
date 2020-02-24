@@ -2,12 +2,18 @@ import os
 
 from flask import Flask, render_template
 
-def create_app(test_config=None):
+def create_app(test_config=None, is_development_env=True, instance_path=None):
 	# create and configure the app
-	app = Flask(__name__, instance_relative_config=True)
+	if instance_path is None:
+		app = Flask(__name__, instance_relative_config=True)
+	else:
+		app = Flask(__name__, instance_path=str(instance_path))
 
+	config_filename = 'production'
+	if is_development_env:
+		config_filename = 'debug'
 	# get the app's config	
-	app.config.from_json('debug.cfg')
+	app.config.from_json(os.path.join(app.instance_path, config_filename + '.cfg'))
 
 	# ensure the instance folder exists
 	try:

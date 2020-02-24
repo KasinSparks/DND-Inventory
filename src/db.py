@@ -38,3 +38,9 @@ def query_db(query, args=(), returnDataQuery=True, one=False):
 		cur.close()
 	
 	return
+
+def init_db():
+    db = get_db()
+
+    with current_app.open_resource('schema.sql') as f:
+        db.executescript(f.read().decode('utf8'))

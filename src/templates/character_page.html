@@ -475,22 +475,20 @@
 												<h3>x{{ item['Amount'] }}</h3>
 											{% endif %}
 										</div>
-										{% if item['Is_Equiped'] %}
-											<div class="inv_unequip_item_button clickable" onclick="
-											{% if ii == 'Ring' or ii == 'Item' or ii == 'Trinket' or ii == 'Weapon' %}
-												unequipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}', 0, true);
+										{% if inv_items[ii]['equipable'] %}
+											{% if item['Is_Equiped'] %}
+												{% if ii == 'Ring' or ii == 'Item' or ii == 'Trinket' or ii == 'Weapon' %}
+													<div class="inv_equip_unequip_item_button clickable" onclick="unequipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}', {{ item['Item_Slot'] }}, true);"></div>
+												{% else %}
+													<div class="inv_unequip_item_button clickable" onclick="unequipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}');"></div>
+												{% endif %}
 											{% else %}
-												unequipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}');
+												{% if ii == 'Ring' or ii == 'Item' or ii == 'Trinket' or ii == 'Weapon' %}
+													<div class="inv_equip_unequip_item_button clickable" onclick="equipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}', {{ item['Item_Slot'] }}, true);"></div>
+												{% else %}
+													<div class="inv_equip_item_button clickable" onclick="equipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}');"></div>
+												{% endif %}
 											{% endif %}
-											"></div >
-										{% else %}
-											<div class="inv_equip_item_button clickable" onclick="
-											{% if ii == 'Ring' or ii == 'Item' or ii == 'Trinket' or ii == 'Weapon' %}
-												equipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}', 0, true);
-											{% else %}
-												equipItem({{ char_id }}, {{ item['Item_ID'] }}, '{{ ii }}');
-											{% endif %}
-											"></div >
 										{% endif %}
 									</div>	
 								</div>
