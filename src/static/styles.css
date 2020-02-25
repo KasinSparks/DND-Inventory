@@ -832,6 +832,7 @@ table td{
 	margin: 0 auto;
 	display: flex;
 	flex-direction: row;
+	width: 70%;
 }
 
 .clickable{

@@ -120,6 +120,105 @@ def equipmentItemDetails(char_id, equipment_slot):
 	)
 
 
+# Equipment Data 
+@bp.route('/inventoryItemDetails/<int:char_id>/<int:item_id>', methods=('GET', 'POST'))
+@login_required
+def inventoryItemDetails(char_id, item_id):
+	# Get the character's item piece
+	queryStr = """SELECT * 
+				FROM Inventory 
+				WHERE Character_ID=? AND Item_ID=?;
+				"""
+	try:
+		items = query_db(queryStr, (char_id, item_id), True, True)
+		item_id = items['Item_ID']
+	except:
+		print("ERROR: Item was not found")
+		return ""
+
+	# Items query
+	queryStr = """SELECT *
+				FROM Items
+				LEFT JOIN Rarities ON Items.Rarity_ID=Rarities.Rarities_ID
+				WHERE Items.Item_ID=?;"""
+	# Check to see if ID has been assigned
+	
+	itemQueryResult = query_db(queryStr, (item_id,), True, True)
+
+	if itemQueryResult is None:
+		itemQueryResult = {
+			'Item_Description' : 'null',
+			'Item_Name' : 'null',
+			'Item_Picture' : 'no_image.png',
+			'Rarities_Name' : 'null',
+			'Rarities_Color' : 'white',
+			'Item_Slot' : 'null',
+			'Item_Weight' : 'null',
+			'Item_Str_Bonus' : 0,
+			'Item_Dex_Bonus' : 0,
+			'Item_Con_Bonus' : 0,
+			'Item_Int_Bonus' : 0,
+			'Item_Wis_Bonus' : 0,
+			'Item_Cha_Bonus' : 0,
+			'Item_Effect1' : None,
+			'Item_Effect2' : None,
+			'Item_Damage_Num_Of_Dices' : 0,
+			'Item_Damage_Num_Of_Dice_Sides' : 0,
+			'Item_AC_Bonus' : 0
+		}
+
+	# Check if item has an effect on it
+	if itemQueryResult is not None and itemQueryResult['Item_Effect1'] is not None and itemQueryResult['Item_Effect1'] > 0:	
+		# Effect1 query
+		queryStr = """SELECT *
+					FROM Effects 
+					WHERE Effect_ID=?;"""
+		# Check to see if ID has been assigned
+		
+		effect1QueryResult = query_db(queryStr, (itemQueryResult['Item_Effect1'],), True, True)
+	else:
+		effect1QueryResult = {'Effect_Name' : 'Effect1', 'Effect_Description' : 'None'}
+
+	# Check if item has an effect on it
+	if itemQueryResult is not None and itemQueryResult['Item_Effect2'] is not None and itemQueryResult['Item_Effect2'] > 0:	
+		# Effect2 query
+		queryStr = """SELECT *
+					FROM Effects 
+					WHERE Effect_ID=?;"""
+		# Check to see if ID has been assigned
+		
+		effect2QueryResult = query_db(queryStr, (itemQueryResult['Item_Effect2'],), True, True)
+	else:
+		effect2QueryResult = {'Effect_Name' : 'Effect2', 'Effect_Description' : 'None'}
+
+	image = url_for('static', filename='images/no_image.png')
+
+	if itemQueryResult['Item_Picture'] is not None and itemQueryResult['Item_Picture'] != '' and itemQueryResult['Item_Picture'] != 'no_image.png':
+		image = '/dataserver/imageserver/item/' + itemQueryResult['Item_Picture']
+
+	return jsonify(
+		description=itemQueryResult['Item_Description'],
+		name=itemQueryResult['Item_Name'],
+		image=image,
+		rarity=itemQueryResult['Rarities_Name'],
+		rarity_color=itemQueryResult['Rarities_Color'],
+		slot=itemQueryResult['Item_Slot'],
+		weight=itemQueryResult['Item_Weight'],
+		str_bonus=itemQueryResult['Item_Str_Bonus'],
+		dex_bonus=itemQueryResult['Item_Dex_Bonus'],
+		con_bonus=itemQueryResult['Item_Con_Bonus'],
+		int_bonus=itemQueryResult['Item_Int_Bonus'],
+		wis_bonus=itemQueryResult['Item_Wis_Bonus'],
+		cha_bonus=itemQueryResult['Item_Cha_Bonus'],
+		effect1_name=effect1QueryResult['Effect_Name'],
+		effect1_description=effect1QueryResult['Effect_Description'],
+		effect2_name=effect2QueryResult['Effect_Name'],
+		effect2_description=effect2QueryResult['Effect_Description'],
+		item_damage_num_of_dices=itemQueryResult['Item_Damage_Num_Of_Dices'],
+		item_damage_num_of_dice_sides=itemQueryResult['Item_Damage_Num_Of_Dice_Sides'],
+		ac=itemQueryResult['Item_AC_Bonus']
+	)
+
 @bp.route('/characterInfo/<int:char_id>/<string:field>', methods=('GET', 'POST'))
 @login_required
 def character_info_field(char_id, field):
@@ -329,6 +428,54 @@ def dummy_call():
 @bp.route('getItemList/<int:item_slot>')
 @login_required
 def get_item_list(item_slot):
+	field_names = [
+		'Item_ID',
+		'Item_Name',
+		'Item_Picture',
+		'Rarities_Color'
+	]
+
+	sql_str = """SELECT """
+
+	for name in field_names:
+		sql_str += name
+		if name != field_names[-1]:
+			sql_str += ','
+		
+		sql_str += ' '
+
+	sql_str += """\nFROM Items
+			INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID
+			WHERE Item_Slot = ?;
+			"""
+
+	query_result = query_db(sql_str, (item_slot,), True)
+
+	item_list = []
+
+	for item in query_result:
+		item_data = {}
+		for key in field_names:
+			item_data[key] = item[key]
+
+		item_list.append(item_data)
+
+	sql_str = """SELECT Slots_Name
+			FROM SLOTS
+			WHERE Slots_ID = ?;
+			"""
+	slot_name = query_db(sql_str, (item_slot,), True, True)['Slots_Name']
+
+	output = {
+		'slot_name' : slot_name,
+		'items' : item_list
+	}	
+
+	return jsonify(output)
+
+@bp.route('getCurrentEquipedItems/<int:char_id>/<int:item_slot>')
+@login_required
+def get_current_equiped_items(item_slot):
 	field_names = [
 		'Item_ID',
 		'Item_Name',

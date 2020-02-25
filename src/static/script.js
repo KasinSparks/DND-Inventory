@@ -59,7 +59,7 @@ function test2(){
 	return;
 }
 
-function getEquipmentItemDetailsHTML(jsonData){
+function getEquipmentItemDetailsHTML(jsonData, function_call='test2()'){
 	//var jsonResponse = JSON.parse(jsonData);
 	//console.log(jsonResponse);
 	console.log(jsonData);
@@ -123,7 +123,7 @@ function getEquipmentItemDetailsHTML(jsonData){
 				</tr>\
 			</table>\
 		</div>\
-		<div class="item_info_footer" onclick="test2();">\
+		<div class="item_info_footer" onclick="' + function_call + ';">\
 			<h1>X</h1>\
 		</div>\
 	</div>\
@@ -601,6 +601,25 @@ function add_item_to_inv(char_id, item_slot){
 	var ccd = new ChangeData(char_id, '/dataserver/getItemList/' + item_slot, 'json', '', '');
 	ccd.dataCall(inv_item_add_pop_up);
 	return; 
+}
+
+function show_inv_item_details(char_id, item_id){
+	var ccd = new ChangeData(char_id, '/dataserver/inventoryItemDetails/' + char_id + '/' + item_id, 'json', '', '');
+	ccd.dataCall(inv_item_details_pop_up);
+	return; 
+}
+
+var inv_items_save_for_later = '';
+
+function inv_item_details_pop_up(char_id, response, a=null, b=null){
+	var inner = document.getElementsByClassName('inv_container')[0].getElementsByClassName('inner_container')[0];
+	inv_items_save_for_later = inner.innerHTML;	
+	inner.innerHTML += getEquipmentItemDetailsHTML(response, 'close_inv_item_details()');
+}
+
+function close_inv_item_details(){
+	var inner = document.getElementsByClassName('inv_container')[0].getElementsByClassName('inner_container')[0];
+	inner.innerHTML = inv_items_save_for_later;
 }
 
 function enable_input(input_name){

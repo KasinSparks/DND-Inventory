@@ -466,10 +466,10 @@
 								</div>
 							</div>
 							{% for item in inv_items[ii]['items'] %}
-								<div class="inv_line_item clickable">
+								<div class="inv_line_item">
 									<div class="inv_line_inner">
 										<div id="inv_item_{{ item['Item_ID'] }}" class="inv_remove_item_button clickable" onclick="removeItem({{ char_id }}, {{ item['Item_ID'] }});"></div >
-										<div class="inv_item_text">
+										<div class="inv_item_text clickable" onclick="show_inv_item_details({{ char_id }}, {{ item['Item_ID'] }});">
 											<h2 style="color: {{ item['Rarities_Color'] }}">{{ item['Item_Name']|e }}</h2>
 											{% if item['Amount'] > 1 %}
 												<h3>x{{ item['Amount'] }}</h3>

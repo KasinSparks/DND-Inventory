@@ -1,13 +1,16 @@
 Server Side Items
-    [] Change the cfg file for production
-        [] Generate a solid key
-        [] Change paths for Server
-        []
-    [] Change the docker image from ubuntu to alpine image
-    [] Work on the create instance app
+	[] Change the cfg file for production
+		[] Generate a solid key
+		[] Change paths for Server
+		[]
+	[] Change the docker image from ubuntu to alpine image
+	[] Work on the create instance app
 
 Code Items
-    [] Change site name in code from 'site name here' to actual site name.
-    
-    [] Refactor
-        []
+	[] Change site name in code from 'site name here' to actual site name.
+	
+	[] Refactor
+		[] Optimize DOM loading of objects.
+			Example inventory items do not need to all be loaded at start up,
+			rather when they are in or close to being in veiwable area do they need to 
+			be rendered and data queried from server.
