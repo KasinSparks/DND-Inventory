@@ -347,7 +347,6 @@ def create_character_submit():
 			'alignment_name' : request.form['alignment'],
 			'alignment_id' : None,
 			'level' : convert_form_field_data_to_int(request.form['level']), 
-			'base_carrying_cap' : convert_form_field_data_to_int(request.form['base_carrying_cap']),
 			'strength' : convert_form_field_data_to_int(request.form['strength']),
 			'dexerity' : convert_form_field_data_to_int(request.form['dexerity']),
 			'constitution' : convert_form_field_data_to_int(request.form['constitution']),
@@ -437,13 +436,13 @@ def create_character_submit():
 
 			sql_str = """INSERT INTO Character
 						(User_ID, Character_Name, Character_Class, Character_Race,
-						Character_Level, Character_Base_Carrying_Cap, Character_Strength,
+						Character_Level, Character_Strength,
 						Character_Dexterity, Character_Constitution, Character_Intelligence,
 						Character_Wisdom, Character_Charisma, Character_HP, Character_Max_HP, Character_Alignment)
-						VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+						VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 					"""
 			query_db(sql_str, (session['user_id'], request.form['name'], data['class_id'], data['race_id'],
-								data['level'], data['base_carrying_cap'], data['strength'],
+								data['level'], data['strength'],
 								data['dexerity'], data['constitution'], data['intelligence'],
 								data['wisdom'], data['charisma'], data['health_points'],
 								data['health_points'], data['alignment_id']), False)

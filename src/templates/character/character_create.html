@@ -1,74 +1,95 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <head>
-	<title>Character Select</title>
+	<title>Character Create</title>
 	<link rel="stylesheet" href="../static/styles.css">
 	<script src="../static/script.js"></script>
 </head>
 <body>
 	<div class="panels">
-		<form class="create_character_form" action="create/submit" method="POST">
-			<label for="name">Name:</label>
-			<input name="name" type="text" placeholder="Character Name" maxlength="25" required>
-			<br/>
-			<label for="race">Race:</label>
-			<select name="race" required>
-				<option value="" onclick="select_standard_button('race_other');" selected>Race</option>
-				{% for r in races %}
-					<option value="{{ r['Race_Name'] }}" onclick="select_standard_button('race_other');">{{ r['Race_Name'] }}</option>
-				{% endfor %}
-				<option value="OTHER" onclick="select_other_button('race_other');">Other</option>
-			</select>
-			<input name="race_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
-			<br/>
-			<label for="class">Class:</label>
-			<select name="class" required>
-				<option value="" onclick="select_standard_button('class_other');" selected>Class</option>
-				{% for c in classes %}
-					<option value="{{ c['Class_Name'] }}" onclick="select_standard_button('class_other');">{{ c['Class_Name'] }}</option>
-				{% endfor %}
-				<option value="OTHER" onclick="select_other_button('class_other');">Other</option>
-			</select>
-			<input name="class_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
-			<br/>
-			<label for="alignment">Alignment:</label>
-			<select name="alignment" required>
-				<option value="" onclick="select_standard_button('alignment_other');" selected>Alignment</option>
-				{% for a in alignments %}
-					<option value="{{ a['Alignment_Name'] }}" onclick="select_standard_button('alignment_other');">{{ a['Alignment_Name'] }}</option>
-				{% endfor %}
-				<option value="OTHER" onclick="select_other_button('alignment_other');">Other</option>
-			</select>
-			<input name="alignment_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
-			<br/>
-			<label for="level">Level</label>
-			<input name="level" type="number" min="0" max="999" placeholder="0">
-			<br/>
-			<label for="base_carrying_cap">Base Carrying Capacity:</label>
-			<input name="base_carrying_cap" type="number" min="0" max="9999" placeholder="0">
-			<br/>
-			<label for="health_points">Health Points:</label>
-			<input name="health_points" type="number" min="0" placeholder="0">
-			<br/>
-			<label for="strength">Strength:</label>
-			<input name="strength" type="number" min="0" max="99" placeholder="0">
-			<br/>
-			<label for="dexerity">Dexerity:</label>
-			<input name="dexerity" type="number" min="0" max="99" placeholder="0">
-			<br/>
-			<label for="constitution">Constitution:</label>
-			<input name="constitution" type="number" min="0" max="99" placeholder="0">
-			<br/>
-			<label for="intelligence">Intelligence:</label>
-			<input name="intelligence" type="number" min="0" max="99" placeholder="0">
-			<br/>
-			<label for="wisdom">Wisdom:</label>
-			<input name="wisdom" type="number" min="0" max="99" placeholder="0">
-			<br/>
-			<label for="charisma">Charisma:</label>
-			<input name="charisma" type="number" min="0" max="99" placeholder="0">
-			<br/>
-			<input type="submit" value="Submit">
-		</form>	
+		<div class="create_character_container">
+			<div class="inner_container">
+				<div class="tab">
+					<h1>Site Name</h1>
+				</div>
+				<form class="create_character_form" action="create/submit" method="POST">
+					<div class="input_item">
+						<label for="name">Name:</label>
+						<input name="name" type="text" placeholder="Character Name" maxlength="25" required>
+					</div>
+					<div class="input_item">
+						<label for="race">Race:</label>
+						<select name="race" required>
+							<option value="" onclick="select_standard_button('race_other');" selected>Race</option>
+							{% for r in races %}
+								<option value="{{ r['Race_Name'] }}" onclick="select_standard_button('race_other');">{{ r['Race_Name'] }}</option>
+							{% endfor %}
+							<option value="OTHER" onclick="select_other_button('race_other');">Other</option>
+						</select>
+						<input name="race_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
+					</div>
+					<div class="input_item">
+						<label for="class">Class:</label>
+						<select name="class" required>
+							<option value="" onclick="select_standard_button('class_other');" selected>Class</option>
+							{% for c in classes %}
+								<option value="{{ c['Class_Name'] }}" onclick="select_standard_button('class_other');">{{ c['Class_Name'] }}</option>
+							{% endfor %}
+							<option value="OTHER" onclick="select_other_button('class_other');">Other</option>
+						</select>
+						<input name="class_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
+					</div>
+					<div class="input_item">
+						<label for="alignment">Alignment:</label>
+						<select name="alignment" required>
+							<option value="" onclick="select_standard_button('alignment_other');" selected>Alignment</option>
+							{% for a in alignments %}
+								<option value="{{ a['Alignment_Name'] }}" onclick="select_standard_button('alignment_other');">{{ a['Alignment_Name'] }}</option>
+							{% endfor %}
+							<option value="OTHER" onclick="select_other_button('alignment_other');">Other</option>
+						</select>
+						<input name="alignment_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
+					</div>
+					<div class="input_item">
+						<label for="level">Level:</label>
+						<input name="level" type="number" min="0" max="999" placeholder="0">
+					</div>
+					<div class="input_item">
+						<label for="health_points">Health Points:</label>
+						<input name="health_points" type="number" min="0" placeholder="0">
+					</div>
+					<div class="input_item">
+						<label for="strength">Strength:</label>
+						<input name="strength" type="number" min="0" max="99" placeholder="0">
+					</div>
+					<div class="input_item">
+						<label for="dexerity">Dexerity:</label>
+						<input name="dexerity" type="number" min="0" max="99" placeholder="0">
+					</div>
+					<div class="input_item">
+						<label for="constitution">Constitution:</label>
+						<input name="constitution" type="number" min="0" max="99" placeholder="0">
+					</div>
+					<div class="input_item">
+						<label for="intelligence">Intelligence:</label>
+						<input name="intelligence" type="number" min="0" max="99" placeholder="0">
+					</div>
+					<div class="input_item">
+						<label for="wisdom">Wisdom:</label>
+						<input name="wisdom" type="number" min="0" max="99" placeholder="0">
+					</div>
+					<div class="input_item">
+						<label for="charisma">Charisma:</label>
+						<input name="charisma" type="number" min="0" max="99" placeholder="0">
+					</div>
+					<div class="input_item">
+						<input id="submit_button" type="submit" value="Submit">
+					</div>
+				</form>
+				<div class="login_footer">
+					<p>Copyright - Created by Kasin and Jerin</p>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>

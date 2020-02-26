@@ -50,7 +50,7 @@ body{
 	margin-bottom: 20px;
 }
 
-/* Equipment containter */
+/* Equipment container */
 .eq_container{
 	width: 59%;
 	height: 100%;
@@ -58,6 +58,48 @@ body{
 	padding: 4px;
 	min-width: 300px;
 }
+
+/* Create Character container */
+.create_character_container{
+	margin: auto;
+	width: 355px;
+	height: 738px;
+	background-color: #424242;
+	padding: 4px;
+	text-align: center;
+}
+
+.create_character_container .tab{
+	height: 55px;
+}
+
+.create_character_container .tab h1{
+	color: #c1c1c1; 
+}
+
+.create_character_container label{
+	color: white;
+	margin: 0 auto;
+}
+
+.create_character_container input{
+	background-color: #d1d1d1;
+	color: #1b1b1b;
+	margin: 0 auto;
+}
+
+.create_character_container select{
+	background-color: #d1d1d1;
+	color: #1b1b1b;
+}
+
+.input_item{
+	width: 100%;
+	padding: 3px 0px;
+}
+
+.input_item #submit_button{}
+
 
 /* Inner container */
 .inner_container{

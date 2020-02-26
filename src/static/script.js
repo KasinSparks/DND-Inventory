@@ -851,7 +851,7 @@ function updateInvCategoryHelper(char_id, response, category_name, keep_open){
 			<div class="inv_line_item clickable">\
 				<div class="inv_line_inner">\
 					<div id="inv_item_' + item.Item_ID + '" class="inv_remove_item_button clickable" onclick="removeItem(' + char_id + ', ' + item['Item_ID'] + ');"></div >\
-					<div class="inv_item_text">\
+					<div class="inv_item_text" onclick="show_inv_item_details(' + char_id + ', ' + item.Item_ID + ');">\
 						<h2 style="color: ' + item.Rarities_Color + '">' + item.Item_Name + '</h2>';
 	
 		if(item.Amount > 1){
@@ -1292,23 +1292,55 @@ function invertEquipButton(char_id, item_id){
 }
 
 function updateMultiSlotItem(item_id, category_name, slot_position_number, is_unequiping=false){
+	itemDetails(item_id, updateMultiSlotItemHelper, category_name, slot_position_number, is_unequiping);	
+}
+
+function itemDetails(item_id, callbackFunction, category_name, slot_position_number, is_unequiping){
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function(){
+		if(this.readyState == 4 && this.status == 200){
+			//itemInfo(element, this.responseText);
+			callbackFunction(this.response, category_name, slot_position_number, is_unequiping);
+			return
+		}
+	};
+	
+	const webpage = '/dataserver/itemDetails/' + item_id;
+	xhttp.open("GET", webpage, true);
+	
+	xhttp.responseType = 'json';
+
+	xhttp.send();
+}
+
+function updateMultiSlotItemHelper(response, category_name, slot_position_number, is_unequiping){
 	var idString = 'equipment_multi_' + category_name + slot_position_number;
 	console.log(idString);
 	var el = document.getElementById(idString);
-	el.getElementsByTagName('img')[0].src = '/dataserver/imageserver/item/' + item_id;
-	var innerText = 'Equiped...';
+	var innerText = response.name;
+	var textElement = el.getElementsByTagName('h2')[0];
+	var imageElement = el.getElementsByTagName('img')[0];
+	textElement.setAttribute('style', 'color: ' + response.color);
 	if(is_unequiping){
 		var endNum = slot_position_number;
 		var prefix = category_name;
+		var image_name = category_name + '.png';
 		if(category_name === 'Weapon'){
 			endNum = Math.ceil(slot_position_number / 2);
 			if(slot_position_number % 2 == 0){
 				prefix = 'Off Hand';
+				image_name = 'Off_Hand.png'
 			} else {
 				prefix = 'Main Hand';
+				image_name = 'Main_Hand.png'
 			}
 		}
 		innerText = prefix + ' ' + endNum;
+		textElement.setAttribute('style', 'color: #606060');
+		imageElement.src = '/static/images/items/' + image_name;
+	} else {
+		imageElement.src = '/dataserver/imageserver/item/' + response.picture;
 	}
-	el.getElementsByTagName('h2')[0].innerText = innerText;
+	textElement.innerText = innerText;
+	
 }

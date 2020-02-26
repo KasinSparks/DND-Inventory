@@ -665,12 +665,13 @@ def get_current_equiped_items(char_id, item_slot):
 					WHERE Item_ID = ?;
 				"""
 		item_data_result = query_db(sql_str, (i,), True, True)
-		print(item_data_result)
 		if item_data_result is None:
-			break
+			count += 1
+			continue	
 		#item_data_result['internal_slot_num'] = 
 		temp_data = {}
 		for name in field_names:
+			print('item_data_result[' + name + ']: ' + str(item_data_result[name]))
 			temp_data[name] = item_data_result[name]
 		
 		item_list[count] = temp_data 
@@ -805,16 +806,32 @@ def getItemImage(image_name):
 	return send_from_directory(path, image_name, as_attachment=False)
 
 
-@bp.route('/imageserver/item/<int:item_id>')
-@login_required
-def getItemImageById(item_id):
+#@bp.route('/imageserver/item/<int:item_id>')
+#@login_required
+#def getItemImageById(item_id):
 	# TODO: Read the docs on how to improve this for server
-	path = os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'items')
+#	path = os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'items')
 
-	sql_str = """SELECT Item_Picture
+#	sql_str = """SELECT Item_Picture
+#				FROM Items
+#				WHERE Item_ID = ?;
+#			"""
+#	image_name = query_db(sql_str, (item_id,), True, True)['Item_Picture']
+
+#	return send_from_directory(path, image_name, as_attachment=False)	
+
+@bp.route('/itemDetails/<int:item_id>')
+@login_required
+def getItemDetails(item_id):
+	sql_str = """SELECT Item_Name, Item_Picture, Rarities.Rarities_Color
 				FROM Items
+				INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID
 				WHERE Item_ID = ?;
 			"""
-	image_name = query_db(sql_str, (item_id,), True, True)['Item_Picture']
+	result = query_db(sql_str, (item_id, ), True, True)
 
-	return send_from_directory(path, image_name, as_attachment=False)	
+	return jsonify(
+		name=result['Item_name'],
+		picture=result['Item_Picture'],
+		color=result['Rarities_Color']
+	)
