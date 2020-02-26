@@ -832,7 +832,7 @@ table td{
 	margin: 0 auto;
 	display: flex;
 	flex-direction: row;
-	width: 70%;
+	max-width: 70%;
 }
 
 .clickable{
@@ -908,6 +908,10 @@ table td{
 
 .inv_add_item_container h2{
 	color: white;
+}
+
+.inv_add_item_header h2{
+	color: white;
 	margin: 0 auto;
 }
 
@@ -970,4 +974,13 @@ table td{
 	display: flex;
 	position: absolute;
 	z-index: 1;
+}
+
+.inv_multi_item_equip_container{
+	display: flex;
+	flex-direction: row;
+}
+
+.inv_multi_item_equip_container_button{
+	margin: 0 auto;
 }

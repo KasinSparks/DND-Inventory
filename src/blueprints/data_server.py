@@ -1,5 +1,7 @@
 import functools
 
+import math
+
 from flask import (
 	Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, send_from_directory, current_app
 )
@@ -124,6 +126,16 @@ def equipmentItemDetails(char_id, equipment_slot):
 @bp.route('/inventoryItemDetails/<int:char_id>/<int:item_id>', methods=('GET', 'POST'))
 @login_required
 def inventoryItemDetails(char_id, item_id):
+	sql_str = """SELECT *
+				FROM Character
+				WHERE Character.User_ID = ? AND Character.Character_ID = ?;
+				"""
+
+	characters = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if characters is None:
+		# Error
+		return redirect(url_for('character.character_select'))
 	# Get the character's item piece
 	queryStr = """SELECT * 
 				FROM Inventory 
@@ -475,7 +487,59 @@ def get_item_list(item_slot):
 
 @bp.route('getCurrentEquipedItems/<int:char_id>/<int:item_slot>')
 @login_required
-def get_current_equiped_items(item_slot):
+def get_current_equiped_items(char_id, item_slot):
+	sql_str = """SELECT *
+				FROM Character
+				WHERE Character.User_ID = ? AND Character.Character_ID = ?;
+				"""
+
+	characters = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if characters is None:
+		# Error
+		return redirect(url_for('character.character_select'))
+
+	sql_str = """SELECT Slots_Name
+				FROM Slots
+				WHERE Slots_ID = ?;
+			"""	
+	slot_name = query_db(sql_str, (item_slot,), True, True)['Slots_Name']
+
+	multiple = {
+		'Weapon' : 4,
+		'Ring' : 2,
+		'Item' : 2,
+		'Trinket' : 2
+	}
+
+	sql_str = """SELECT """
+
+	r = 1
+
+	slots = []
+
+	if slot_name in multiple.keys():
+		r = int(multiple[slot_name])
+		for i in range(r):
+			field_name = "Character_" + slot_name + str(i + 1)
+			slots.append(field_name)
+			sql_str += field_name
+
+			if i < r - 1:
+				sql_str += ", "
+			else:
+				sql_str += "\n"
+	else:
+		sql_str +=  "Character_" + slot_name + "\n"
+
+	sql_str += """FROM Character
+			WHERE Character_ID = ?;
+			"""
+
+	item_ids = query_db(sql_str, (char_id,), True, True)
+	#item_ids = query_db(sql_str, (char_id,), True)
+
+
 	field_names = [
 		'Item_ID',
 		'Item_Name',
@@ -492,21 +556,127 @@ def get_current_equiped_items(item_slot):
 		
 		sql_str += ' '
 
-	sql_str += """\nFROM Items
-			INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID
-			WHERE Item_Slot = ?;
-			"""
+	#sql_str += """\nFROM Items
+	#		INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID
+	#		WHERE 
+	#		"""
 
-	query_result = query_db(sql_str, (item_slot,), True)
+	temp = 0
+
+	#query_args = []
+
+	#for i in item_ids:
+	#	if temp > 0:
+	#		sql_str += """ OR """
+	#	else:
+	#		temp = 1
+		
+	#	sql_str += """ Item_ID = ?"""
+	#	query_args.append(i)
+		
+	#sql_str += """;"""
+
+	#full = {}
+	#query_args = [] 
+
+	#for s in slots:
+	#	print(s)
+	#	print(item_ids[s])
+	#	if temp > 0:
+	#		sql_str += """ OR """
+	#	else:
+	#		temp = 1
+		
+	#	sql_str += """ Item_ID = ?"""
+	#	full[item_ids[s]] = s
+	#	query_args.append(item_ids[s])
+		
+	#sql_str += """;"""
+
+	#query_result = query_db(sql_str, tuple(query_args), True)
 
 	item_list = []
 
-	for item in query_result:
-		item_data = {}
-		for key in field_names:
-			item_data[key] = item[key]
+	item_defaults = {
+		'Ring' : {
+			'item_name' : 'Ring',
+			'picture' : 'Ring.png'
+		},
+		'Item' : {
+			'item_name' : 'Item',
+			'picture' : 'Item.png'
+		},
+		'Trinket' : {
+			'item_name' : 'Trinket',
+			'picture' : 'Trinket.png'
+		}
+	}
 
-		item_list.append(item_data)
+	for i in range(r):
+		temp_dict = {}
+
+		temp_dict['Item_ID'] = -1
+
+
+
+		if slot_name == 'Weapon':
+			if i % 2 == 1:
+				temp_dict['Item_Name'] = 'Off Hand '
+				temp_dict['Item_Picture'] = 'Off_Hand.png'
+			else:
+				temp_dict['Item_Name'] = 'Main Hand '
+				temp_dict['Item_Picture'] = 'Main_Hand.png'
+			temp_dict['Item_Name'] += str(math.ceil((i + 1) / 2))
+		else:
+			temp_dict['Item_Name'] = item_defaults[slot_name]['item_name']
+			temp_dict['Item_Picture'] = item_defaults[slot_name]['picture']
+
+		temp_dict['Rarities_Color'] = '#606060'
+
+
+		item_list.append(temp_dict)
+
+	#for item in query_result:
+	#	print(item)
+	#	item_data = {}
+	#	for key in field_names:
+	#		print(key)
+	#		print(item[key])
+	#		item_data[key] = item[key]
+
+	#for item in query_result:
+	#	item_data = {}
+		# get number of time id occurs
+	#	num_of_occurances = query_args.count(item['Item_ID'])
+	#	for i in range(num_of_occurances):
+	#		for key in field_names:
+	#			item_data[key] = item[key] 
+
+
+	#		item_data['internal_slot_num'] = int(full[item['Item_ID']][-1])
+			#item_list.append(item_data)
+	#		item_list[item_data['internal_slot_num'] - 1] = item_data
+
+	count = 0
+	for i in item_ids:
+		sql_str = """SELECT Item_ID, Item_Name, Item_Picture, Rarities.Rarities_Color
+					FROM Items
+					INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID
+					WHERE Item_ID = ?;
+				"""
+		item_data_result = query_db(sql_str, (i,), True, True)
+		print(item_data_result)
+		if item_data_result is None:
+			break
+		#item_data_result['internal_slot_num'] = 
+		temp_data = {}
+		for name in field_names:
+			temp_data[name] = item_data_result[name]
+		
+		item_list[count] = temp_data 
+		count += 1
+		
+
 
 	sql_str = """SELECT Slots_Name
 			FROM SLOTS
@@ -514,10 +684,16 @@ def get_current_equiped_items(item_slot):
 			"""
 	slot_name = query_db(sql_str, (item_slot,), True, True)['Slots_Name']
 
+
+	#for i in item_ids:
+	#	if 
+
 	output = {
 		'slot_name' : slot_name,
-		'items' : item_list
+		'items' : item_list,
+		'num_of_slots' : r
 	}	
+
 
 	return jsonify(output)
 
@@ -549,7 +725,7 @@ def get_items_in_slot(char_id, item_slot):
 	#	"""
 	#slot = query_db(sql_str, (item_slot,))
 	
-	sql_str = """SELECT Items.Item_ID, Items.Item_Weight, Items.Item_Name, Rarities.Rarities_Color, Slots.Slots_Name, Inventory.Amount
+	sql_str = """SELECT Items.Item_ID, Items.Item_Weight, Items.Item_Name, Rarities.Rarities_Color, Slots.Slots_ID, Inventory.Amount
 				FROM Inventory
 				INNER JOIN Items on Inventory.Item_ID=Items.Item_ID
 				INNER JOIN Rarities on Rarities.Rarities_ID=Items.Rarity_ID
@@ -569,7 +745,7 @@ def get_items_in_slot(char_id, item_slot):
 			'Rarities_Color' : q['Rarities_Color'],
 			'Amount' : q['Amount'],
 			#'Slots_Name' : q['Slots_Name'],
-			#'Slots_ID' : q['Slots_ID'],
+			'Slots_ID' : int(q['Slots_ID']),
 			'Is_Equiped' : True if q['Item_ID'] in item_id_list else False
 		}
 
@@ -628,4 +804,17 @@ def getItemImage(image_name):
 
 	return send_from_directory(path, image_name, as_attachment=False)
 
-	
+
+@bp.route('/imageserver/item/<int:item_id>')
+@login_required
+def getItemImageById(item_id):
+	# TODO: Read the docs on how to improve this for server
+	path = os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'items')
+
+	sql_str = """SELECT Item_Picture
+				FROM Items
+				WHERE Item_ID = ?;
+			"""
+	image_name = query_db(sql_str, (item_id,), True, True)['Item_Picture']
+
+	return send_from_directory(path, image_name, as_attachment=False)	

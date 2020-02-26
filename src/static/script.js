@@ -799,7 +799,7 @@ function submitData(url, params, field_id_name='', is_json=false){
 	http.send(params);
 } */
 
-function updateInvCategory(callbackFunction = null, char_id, category_name, webpage){
+function updateInvCategory(callbackFunction = null, char_id, category_name, webpage, keep_open=false){
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function(){
 		if(this.readyState == 4 && this.status == 200){
@@ -812,7 +812,7 @@ function updateInvCategory(callbackFunction = null, char_id, category_name, webp
 				return this.response;
 			}
 			
-			callbackFunction(char_id, this.response, category_name);
+			callbackFunction(char_id, this.response, category_name, keep_open);
 			return;
 		}
 	};
@@ -826,7 +826,10 @@ function updateInvCategory(callbackFunction = null, char_id, category_name, webp
 	return;
 }
 
-function updateInvCategoryHelper(char_id, response, category_name){
+function updateInvCategoryHelper(char_id, response, category_name, keep_open){
+	if(keep_open){
+		return;
+	}
 	var parent = document.getElementById('inv_category_' + category_name);
 	var lineItems = parent.getElementsByClassName('inv_line_item');
 	
@@ -862,13 +865,13 @@ function updateInvCategoryHelper(char_id, response, category_name){
 		if(item.Is_Equiped){
 			// TODO: add support for multiple slots
 			if(category_name == 'Ring' || category_name == 'Item' || category_name == 'Trinket' || category_name == 'Weapon'){
-				itemString += '<div class="inv_unequip_item_button clickable" onclick="unequipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\', 0, true);"></div >';
+				itemString += '<div class="inv_equip_unequip_item_button clickable" onclick="unequipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\', ' + item.Slots_ID + ', true);"></div >';
 			} else {
 				itemString += '<div class="inv_unequip_item_button clickable" onclick="unequipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\');"></div >';
 			}
 		}else{
 			if(category_name == 'Ring' || category_name == 'Item' || category_name == 'Trinket' || category_name == 'Weapon'){
-				itemString += '<div class="inv_equip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\', 0, true);"></div >';
+				itemString += '<div class="inv_equip_unequip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\', ' + item.Slots_ID + ', true);"></div >';
 			} else {
 				itemString += '<div class="inv_equip_item_button clickable" onclick="equipItem(' + char_id + ', ' + item.Item_ID + ',\'' + category_name + '\');"></div >';
 			}
@@ -916,7 +919,7 @@ function submitAddItemData(url, params, field_id_name='', char_id, slot_name){
 }
 
 
-function unequipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=false){
+function unequipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=false, keep_open=false){
 	console.log('slot_num: ' + slot_num);
 	// TODO: change later
 	if(is_multiple_slots){
@@ -928,7 +931,8 @@ function unequipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=
 			console.error(e);
 		}
 	} else {
-		equipItemChangeSubmit('/character/item/unequip/', char_id, item_id, slot_num);
+		equipItemChangeSubmit('/character/item/unequip/', char_id, item_id, slot_num, keep_open);
+		updateMultiSlotItem(item_id, slot_name, slot_num, true);
 	}
 }
 
@@ -939,7 +943,7 @@ const multi_slot_name_map = new Map([
 	['Weapon', 3]
 ])
 
-function equipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=false){
+function equipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=false, keep_open=false){
 	console.log('slot_num: ' + slot_num);
 	// TODO: change later
 	if(is_multiple_slots){
@@ -951,7 +955,10 @@ function equipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=fa
 			console.error(e);
 		}
 	} else {
-		equipItemChangeSubmit('/character/item/equip/', char_id, item_id, slot_num);
+		equipItemChangeSubmit('/character/item/equip/', char_id, item_id, slot_num, keep_open);
+		if(keep_open){
+			updateMultiSlotItem(item_id, slot_name, slot_num);
+		}
 	}
 }
 
@@ -992,7 +999,7 @@ function multipleSlotsInsert(char_id, item_id, number_of_slots, slot_num, is_une
 		[4, 200]
 	]) */
 
-	var ccd = new ChangeData(char_id, '/dataserver/getItemList/' + slot_num, 'json', '', '');
+	var ccd = new ChangeData(char_id, '/dataserver/getCurrentEquipedItems/' + char_id + '/' + slot_num, 'json', item_id, '');
 	ccd.dataCall(changeNameLater);
 
 	/* var html_string = '<div class="inv_multi_options">\
@@ -1016,21 +1023,80 @@ function multipleSlotsInsert(char_id, item_id, number_of_slots, slot_num, is_une
 	parentElement.innerHTML += html_string; */
 }
 
-function changeNameLater(char_id, response, a=null, b=null){
-	var items_html = '';
+function changeNameLater(char_id, response, item_id, b=null){
+	var items_html = '<div style="display: flex; flex-direction: row;">';
 
-	response.items.forEach(element => {
+	/* for(var i = 0; i < response.num_of_slots; ++i){
 		items_html += '\
 			<div class="equipment_left_item equipment_item">\
 				<div class="equipment_left_img">\
-					<img id="equipment_Weapon_image" src="/dataserver/imageserver/item/' + element.Item_Picture + '" alt="Weapon" />\
+					<img id="equipment_image_' + i + '" src="/dataserver/imageserver/item/' + element.Item_Picture + '" alt="Weapon" />\
 				</div>\
 				<div class="equipment_left_item_name">\
-					<h2  id="equipment_Weapon_text"	style="color: ' + element.Rarities_Color + ';">\
+					<h2  id="equipment_text_' + i + '"	style="color: ' + element.Rarities_Color + ';">\
 						' + element.Item_Name + '\
 					</h2>\
 				</div>\
 			</div>'
+	} */
+	var i = 0;
+
+	response.items.forEach(element => {
+		var img_src_route = '/static/images/items/';
+		
+		if(element.Item_ID > 0){
+			img_src_route = '/dataserver/imageserver/item/';
+		}
+
+		var side = 'left';
+
+		if(i % 4 > 1)	{
+			side = 'right';
+		}	
+
+
+		if(i % 2 === 0){
+			items_html += '<div class="equipment_side" style="height: auto;">';
+		} 
+		
+		items_html += '\
+		<div class="equipment_row" style="display: flex; flex-direction: column; height: auto;">\
+			<div id="equipment_multi_' + response.slot_name + (i + 1) + '" class="equipment_' + side + '_item equipment_item">';
+
+		var equipment_item_img_html_temp = '<div class="equipment_' + side + '_img">\
+			<img id="equipment_Weapon_image" src="' + img_src_route + element.Item_Picture + '" alt="Weapon" />\
+		</div>';
+
+		if(side === 'left'){
+			items_html += equipment_item_img_html_temp;
+		}
+		
+		items_html += '<div class="equipment_' + side + '_item_name">\
+				<h2  id="equipment_Weapon_text"	style="color: ' + element.Rarities_Color + ';">\
+					' + element.Item_Name + '\
+				</h2>\
+			</div>'
+
+		if(side === 'right'){
+			items_html += equipment_item_img_html_temp;
+		}
+		items_html += '</div>';
+
+		items_html += '<div class="inv_multi_item_equip_container">\
+						<div class="inv_multi_item_equip_container_button inv_equip_item_button"\
+							onclick="equipItem(' + char_id + ',' + item_id + ',\'' + response.slot_name + '\',' + (i + 1) + ', ' + false + ', ' + true  + ');"\
+						></div>\
+						<div class="inv_multi_item_equip_container_button inv_unequip_item_button"\
+							onclick="unequipItem(' + char_id + ',' + item_id + ',\'' + response.slot_name + '\',' + (i + 1) + ', ' + false + ', ' + true  + ');"\
+						></div>\
+					</div>';
+
+		items_html += '</div>';
+
+
+		if(i % 2 == 1){
+			items_html += '</div>';
+		}	
 			/* <div class="inv_add_item_row_item">\
 				<div class="inv_add_item_input">\
 					<p>asdfasdfasdfasdfasdf</p\
@@ -1042,9 +1108,11 @@ function changeNameLater(char_id, response, a=null, b=null){
 					<h2 style="color:' + element.Rarities_Color + ';">' + element.Item_Name + '</h2>\
 				</div>\
 			</div>\
-		' */
+		'*/
+		i++;
 	});
-
+	
+	items_html += '</div>';
 
 	var html = '\
 		<div class="inv_add_item_container">\
@@ -1053,9 +1121,6 @@ function changeNameLater(char_id, response, a=null, b=null){
 			</div>\
 			' + items_html + '\
 			<div class="inv_add_item_buttons">\
-				<div class="clickable" onclick="invAddSubmit(' + char_id + ',\'' + response.slot_name + '\');">\
-					<h4 style="color: white;">Submit</h4>\
-				</div>\
 				<div class="clickable" onclick="cancelAddItem();">\
 					<h4 style="color: white;">Cancel</h4>\
 				</div>\
@@ -1067,12 +1132,12 @@ function changeNameLater(char_id, response, a=null, b=null){
 }
 
 
-function equipItemChangeSubmit(url_prefix, char_id, item_id, slot_num=0){
+function equipItemChangeSubmit(url_prefix, char_id, item_id, slot_num=0, keep_open=false){
 	// Send update to server
-	submitEquipChange(url_prefix + char_id + '/' + item_id + '/' + slot_num, char_id, item_id);
+	submitEquipChange(url_prefix + char_id + '/' + item_id + '/' + slot_num, char_id, item_id, keep_open);
 }
 
-function submitEquipChange(url, char_id, item_id){
+function submitEquipChange(url, char_id, item_id, keep_open){
 	var http = new XMLHttpRequest();
 	http.onreadystatechange = function(){ 
 		if(http.readyState == 4 && http.status == 200) {
@@ -1086,7 +1151,7 @@ function submitEquipChange(url, char_id, item_id){
 			console.log(this.response.slot_name);
 
 			// Change button to equip button
-			updateInvCategory(updateInvCategoryHelper, char_id, this.response.slot_name, '/dataserver/getItemsInSlot/' + char_id + '/' +  this.response.slot_name);
+			updateInvCategory(updateInvCategoryHelper, char_id, this.response.slot_name, '/dataserver/getItemsInSlot/' + char_id + '/' +  this.response.slot_name, keep_open);
 			//invertEquipButton(char_id, item_id);
 		}
 	}
@@ -1226,3 +1291,24 @@ function invertEquipButton(char_id, item_id){
 
 }
 
+function updateMultiSlotItem(item_id, category_name, slot_position_number, is_unequiping=false){
+	var idString = 'equipment_multi_' + category_name + slot_position_number;
+	console.log(idString);
+	var el = document.getElementById(idString);
+	el.getElementsByTagName('img')[0].src = '/dataserver/imageserver/item/' + item_id;
+	var innerText = 'Equiped...';
+	if(is_unequiping){
+		var endNum = slot_position_number;
+		var prefix = category_name;
+		if(category_name === 'Weapon'){
+			endNum = Math.ceil(slot_position_number / 2);
+			if(slot_position_number % 2 == 0){
+				prefix = 'Off Hand';
+			} else {
+				prefix = 'Main Hand';
+			}
+		}
+		innerText = prefix + ' ' + endNum;
+	}
+	el.getElementsByTagName('h2')[0].innerText = innerText;
+}
