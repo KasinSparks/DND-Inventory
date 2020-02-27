@@ -12,6 +12,8 @@ from blueprints.auth import login_required
 
 from image_sever import convert_image_to_base64
 
+from blueprints.admin import is_admin
+
 import math
 
 bp = Blueprint('character', __name__, url_prefix='/character')
@@ -28,21 +30,42 @@ def character_select():
 
 	characters = query_db(sql_str, (session['user_id'],))
 
+	character_list = []
+
+	for c in characters:
+		character_list.append(
+			{
+				'Character_Name' : shorten_string(c['Character_Name'], 17),
+				'Character_ID' : c['Character_ID']
+			}
+		) 
+
 	return render_template('character/character_select.html',
-							characters=characters)
+							characters=character_list)
 
 # Character page
 @bp.route('/<int:char_id>')
 @login_required
 def character_page(char_id):
 
-	# Check for user_id associated with char_id
-	sql_str = """SELECT *
-				FROM Character
-				WHERE Character.User_ID = ? AND Character.Character_ID = ?;
-				"""
+	
 
-	characters = query_db(sql_str, (session['user_id'], char_id), True, True)
+	characters = None
+
+	if is_admin():
+		sql_str = """SELECT *
+				FROM Character
+				WHERE Character.Character_ID = ?;
+				"""
+		characters = query_db(sql_str, (char_id,), True, True)
+	else:
+		# Check for user_id associated with char_id
+		sql_str = """SELECT *
+					FROM Character
+					WHERE Character.User_ID = ? AND Character.Character_ID = ?;
+					"""
+
+		characters = query_db(sql_str, (session['user_id'], char_id), True, True)
 
 	if characters is None:
 		# Error
@@ -271,6 +294,9 @@ def item_short_data(item_id, default_name, defalut_image_name):
 		return item_data
 	
 	item = item_short_query(item_id)
+
+	if item is None:
+		return item_data
 	
 	if item['Item_Name'] is not None and item['Item_Name'] != '':
 		item_data['name'] = shorten_string(item['Item_Name'], 17)
@@ -1192,3 +1218,4 @@ def item_unequip(char_id, item_id, slot_number = 0):
 		item_data = 'null'
  		#item_data = item_data_dict
 	)
+

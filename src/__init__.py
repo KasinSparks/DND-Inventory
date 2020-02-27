@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, session
 
 def create_app(test_config=None, is_development_env=True, instance_path=None):
 	# create and configure the app
@@ -38,16 +38,31 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
 	# character
 	from blueprints import character
 	app.register_blueprint(character.bp)
+	# admin
+	from blueprints import admin 
+	app.register_blueprint(admin.bp)
 
-	# a simple page that says hello
-	@app.route('/hello')
-	def hello():
-		return 'Hello, World!'
+
+	from blueprints.auth import login_required
+	from db import query_db
 
 	@app.route('/')
 	@app.route('/home')
+	@login_required	
 	def home():
-		return 'Change this later'
+		sql_str = """SELECT Is_Admin
+				FROM Users 
+				WHERE User_ID = ?;
+				"""
+
+		isAdmin = query_db(sql_str, (session['user_id'], ), True, True)['Is_Admin']
+
+		if isAdmin > 0:	
+			return render_template('auth/admin.html')
+
+
+
+		return render_template('auth/user.html')
 	
 
 	return app

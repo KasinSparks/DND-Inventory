@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<head>
+	<title>Character Create</title>
+	<link rel="stylesheet" href="../../static/styles.css">
+	<script src="../../static/script.js"></script>
+</head>
+<body>
+	<div class="panels">
+		<div class="create_character_container">
+			<div class="inner_container">
+				<div class="tab">
+					<h1>Site Name</h1>
+				</div>
+				<div class="item_create_container">
+					<form class="create_character_form" action="add/submit" method="POST">
+						<div class="input_item">
+							<label for="name">Name:</label>
+							<input name="name" type="text" placeholder="Item Name" maxlength="25" required>
+						</div> 
+						<div class="input_item">
+							<label for="picture">Picture:</label>
+							<input name="picture" type="file" placeholder="Picture" accept="image/*" required>
+						</div> 
+						<div class="input_item">
+							<label for="description">Description:</label>
+							<input name="description" type="text" placeholder="Item Description" required>
+						</div>
+						<div class="input_item">
+							<label for="slot">Slot:</label>
+							<select name="slot" required>
+								<option value="" selected>Slot</option>
+								{% for s in slots %}
+									<option value="{{ s['Slots_Name'] }}">{{ s['Slots_Name'] }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="input_item">
+							<label for="rarity">Rarity:</label>
+							<select name="rarity" required>
+								<option value="" selected>Rarity</option>
+								{% for r in rarities %}
+									<option value="{{ r['Rarities_Name'] }}">{{ r['Rarities_Name'] }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="input_item">
+							<label for="effect1">Effect 1:</label>
+							<select name="effect1" required>
+								<option value="" onclick="select_standard_button(['effect1_name', 'effect1_description']);" selected>None</option>
+								{% for e in effects %}
+									<option value="{{ e['Effect_Name'] }}" onclick="select_standard_button(['effect1_name', 'effect1_description']);">{{ e['Effect_Name'] }}</option>
+								{% endfor %}
+								<option value="OTHER" onclick="select_other_button(['effect1_name', 'effect1_description']);">Other</option>
+							</select>
+							<input name="effect1_name" type="text" style="display: none;" placeholder="Effect Name" maxlength="25">
+							<input name="effect1_description" type="text" style="display: none;" placeholder="Effect Description">
+						</div>
+						<div class="input_item">
+							<label for="effect2">Effect 2:</label>
+							<select name="effect2" required>
+								<option value="" onclick="select_standard_button(['effect2_name', 'effect2_description']);" selected>None</option>
+								{% for e in effects %}
+									<option value="{{ e['Effect_Name'] }}" onclick="select_standard_button(['effect2_name', 'effect2_description']);">{{ e['Effect_Name'] }}</option>
+								{% endfor %}
+								<option value="OTHER" onclick="select_other_button(['effect2_name', 'effect2_description']);">Other</option>
+							</select>
+							<input name="effect2_name" type="text" style="display: none;" placeholder="Effect Name" maxlength="25">
+							<input name="effect2_description" type="text" style="display: none;" placeholder="Effect Description">
+						</div>
+						<div class="input_item">
+							<label for="weight">Weight:</label>
+							<input name="weight" type="number" min="0" max="9999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="str_bonus">Strength Bonus:</label>
+							<input name="str_bonus" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="dex_bonus">Dexterity Bonus:</label>
+							<input name="dex_bonus" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="con_bonus">Constitution Bonus:</label>
+							<input name="con_bonus" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="int_bonus">Intelligence Bonus:</label>
+							<input name="int_bonus" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="wis_bonus">Wisdom Bonus:</label>
+							<input name="wis_bonus" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="cha_bonus">Charisma Bonus:</label>
+							<input name="cha_bonus" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="attack_bonus">Attack Bonus:</label>
+							<input name="attack_bonus" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="initiative_bonus">Inititaive Bonus:</label>
+							<input name="initiative_bonus" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="health_bonus">Health Bonus:</label>
+							<input name="health_bonus" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="ac_bonus">AC Bonus:</label>
+							<input name="ac_bonus" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="dnof">Number of Dices:</label>
+							<input name="dnof" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<label for="dnofs">Dice Sides:</label>
+							<input name="dnofs" type="number" min="0" max="999" placeholder="0">
+						</div>
+						<div class="input_item">
+							<input id="submit_button" type="submit" value="Submit">
+						</div>
+					</form>
+				</div>
+				<div class="character_select_bottom_buttons_container">
+					<div class="character_select_bottom_button_goback clickable" onclick="window.history.go(-1); return false;"></div>
+				</div>
+			</div>
+			<div class="footer">
+				<p>Copyright 2020</p>
+			</div>
+		</div>
+	</div>
+</body>

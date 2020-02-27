@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <head>
-	<title>Character Select</title>
+	<title>User Select</title>
 	<link rel="stylesheet" href="../static/styles.css">
 	<script src="../static/script.js"></script>
 </head>
@@ -13,14 +13,13 @@
 			</div>
 			<div class="character_select_inner_panel">
 				<div class="sub_inner_panel">
-					{% for c in characters %}
-						<div class="user_button_char_select clickable" onclick="location.href='/character/' + {{ c['Character_ID'] }};">
-							<h2>{{ c['Character_Name']|e }}</h2>
+					{% for u in users %}
+						<div class="user_button_char_select clickable" onclick="location.href='/admin/users/{{ u['Username'] }}';">
+							<h2>{{ u['Username']|e }}</h2>
 						</div>
 					{% endfor %}
 				</div>
 				<div class="character_select_bottom_buttons_container">
-					<div class="character_select_bottom_button_new clickable" onclick="location.href='/character/create';"></div>
 					<div class="character_select_bottom_button_goback clickable" onclick="window.history.go(-1); return false;"></div>
 				</div>
 <!-- 				<div class="user_button clickable" onclick="location.href='/character/create'">

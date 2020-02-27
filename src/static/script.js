@@ -209,15 +209,20 @@ function setToOption_Image(element, prevOption, option){
 	element.setAttribute('class', element.getAttribute('class').replace(prevOption, option));
 }
 
-function select_other_button(element_name){
-	select_button_helper(element_name, '');
+function select_other_button(element_name=[]){
+	element_name.forEach(element => {
+		select_button_helper(element, '');
+	});
 }
 
-function select_standard_button(element_name){
-	select_button_helper(element_name, 'display: none;');
+function select_standard_button(element_name=[]){
+	element_name.forEach(element => {
+		select_button_helper(element, 'display: none;');
+	});
 }
 
 function select_button_helper(element_name, style_attribute){
+	console.log(element_name)
 	document.getElementsByName(element_name)[0].setAttribute('style', style_attribute);
 }
 

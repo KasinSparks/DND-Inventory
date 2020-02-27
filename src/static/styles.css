@@ -1026,3 +1026,125 @@ table td{
 .inv_multi_item_equip_container_button{
 	margin: 0 auto;
 }
+
+.user_container{
+	margin: auto;
+	width: 355px;
+	height: 738px;
+	background-color: #424242;
+	padding: 4px;
+	text-align: center;
+}
+
+.user_button{
+	margin: 13px auto;
+/* 	background-color: #424242; */
+ 	background-color: #2e2e2e;
+	border: 3px black solid;
+	width: 250px;
+	height: 70px;
+}
+
+.user_button_char_select{
+	margin: 13px auto;
+	background-color: #424242;
+	border: 3px black solid;
+	width: 250px;
+	height: 70px;
+}
+
+.user_button_char_select:hover{
+	background-color: #252525;
+}
+
+.user_button_char_select h2{
+	text-align: center;
+	color: #d1d1d1;
+	width: 70%;
+	margin: 20px auto;
+}
+
+.user_button:hover{
+	background-color: #252525;
+}
+
+.user_button h2{
+	text-align: center;
+	color: #d1d1d1;
+}
+
+.footer{
+	margin-top: -12%;
+}
+
+.footer p{
+	color: #c1c1c1;
+}
+
+.character_select_inner_panel{
+	height: 100%;
+	width: 100%;
+}
+
+.sub_inner_panel{
+	margin: auto;
+	margin-top: 10px;
+	border-style: solid;
+	border-width: 1%;
+	border-color: black;
+	width: 80%;
+	height: 80%;
+	background-color: #2e2e2e;
+	display: flex;
+	flex-direction: column;
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+.character_select_bottom_buttons_container{
+	width: 80%;
+	height: 40px;
+	display: flex;
+	flex-direction: row;
+	margin: 10px auto;
+}
+
+
+.character_select_bottom_buttons_container div{
+	width: 31px;
+	height: 31px;
+	margin: 0 auto;
+}
+
+.user_button_char_select .small_buttons{
+	width: 31px;
+	height: 31px;
+	margin: 20px auto;
+}
+
+
+.character_select_bottom_button_goback{
+	background-image: url(images/goBack.png);
+}
+
+
+.character_select_bottom_button_new{
+	background-image: url(images/new.png);
+}
+
+.character_select_bottom_button_edit{
+	background-image: url(images/edit.png);
+}
+
+.character_select_bottom_button_remove{
+	background-image: url(images/remove.png);
+}
+
+.item_create_container{
+	height: 80%;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	overflow-y: scroll;
+	overflow-x: hidden;
+}

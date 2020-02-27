@@ -113,7 +113,7 @@ def login():
 				# User has not agreed
 				return redirect(url_for('auth.register_tos'))
 		
-			return redirect(url_for('character.character_select'))
+			return redirect(url_for('home'))
 
 		flash(error)
 
