@@ -14,7 +14,7 @@ COPY ./create_instance.py /tmp/
 COPY ./example.cfg /tmp/
 COPY ./schema.sql /tmp/
 
-#VOLUME /site_data
+VOLUME /site_data
 
 
 

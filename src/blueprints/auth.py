@@ -81,7 +81,7 @@ def login():
 		).fetchone()
 
 		# TODO: check for is verified
-		if user['Is_Verified'] < 1:
+		if user is not None and user['Is_Verified'] < 1:
 			return render_template('auth/not_verified.html',
 							header_text=header_text,
 							inner_text=None

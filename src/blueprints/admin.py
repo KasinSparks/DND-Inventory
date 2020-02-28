@@ -4,7 +4,7 @@ from flask import (
 
 import os
 
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 
 from db import get_db, query_db
 
