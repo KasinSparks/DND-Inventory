@@ -1154,6 +1154,10 @@ table td{
 	background-image: url(images/read.png);
 }
 
+.character_select_bottom_button_admin{
+	background-image: url(images/admin.png);
+}
+
 .item_create_container{
 	height: 80%;
 	width: 100%;

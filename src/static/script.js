@@ -1423,3 +1423,24 @@ function remove_user(user_id, username){
 		http.send(params);
 	}
 }
+
+function make_user_admin(user_id, username){
+	var un = prompt("Please enter the User's name, " + username + ", to promote to admin permanently.", "");
+	var params = 'user_id=' + user_id;
+	if(un != null && un === username){
+		var http = new XMLHttpRequest();
+		http.open('POST', '/admin/users/makeAdmin', true);
+
+		//Send the proper header information along with the request
+		http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+		http.onreadystatechange = function() {
+			//Call a function when the state changes.
+			if(http.readyState == 4 && http.status == 200) {
+				// do something here
+				document.getElementById('make_admin_button_' + username).remove();
+			}
+		}
+		http.send(params);
+	}
+}

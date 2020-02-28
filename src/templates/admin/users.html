@@ -24,6 +24,11 @@
 							<div class="clickable user_button_user_name" onclick="location.href='/admin/users/{{ u['Username'] }}';">
 								<h2>{{ u['Username']|e }}</h2>
 							</div>
+							<div class="verify_deny_buttons">
+								{% if u['Is_Admin'] < 1 %}
+									<div id="make_admin_button_{{ u['Username'] }}" class="small_buttons character_select_bottom_button_admin clickable" onclick="make_user_admin({{ u['User_ID'] }}, '{{ u['Username'] }}');"></div>
+								{% endif %}
+							</div>
 						</div>
 					{% endfor %}
 				</div>

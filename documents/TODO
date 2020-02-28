@@ -7,7 +7,7 @@ Server Side Items
 	[] Work on the create instance app
 
 Code Items
-	[] Change site name in code from 'site name here' to actual site name.
+	[x] Change site name in code from 'site name here' to actual site name.
 	
 	[] Refactor
 		[] Optimize DOM loading of objects.
@@ -25,5 +25,5 @@ Code Items
 	[] Change links to js and css in html files to use url_for
 
 Misc.
-	[] Update TOS
-	[] Re-export schema
+	[x] Update TOS
+	[x] Re-export schema

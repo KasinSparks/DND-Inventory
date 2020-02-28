@@ -41,7 +41,7 @@ def admin_users():
 
 	check_for_admin_status()
 
-	sql_str = """SELECT User_ID, Username, Is_Verified
+	sql_str = """SELECT User_ID, Username, Is_Verified, Is_Admin
 				FROM Users
 				WHERE NOT User_ID = ?;
 			"""
@@ -54,13 +54,15 @@ def admin_users():
 			{
 				'User_ID' : u['User_ID'],
 				'Username' : shorten_string(u['Username'], 16),
-				'Is_Verified' : u['Is_Verified']
+				'Is_Verified' : u['Is_Verified'],
+				'Is_Admin' : u['Is_Admin']
 			}
 		)
 
 	return render_template('admin/users.html',
 							users=user_data,
-							header_text=get_current_username())
+							header_text=get_current_username()
+							)
 
 
 
@@ -521,6 +523,7 @@ def admin_notifications():
 @bp.route('notifications/remove/<int:notification_id>')
 @login_required
 def admin_remove_notification(notification_id):
+	check_for_admin_status()
 	sql_str = """DELETE FROM Admin_Notifications
 				WHERE Note_ID=?;
 			"""
@@ -530,6 +533,7 @@ def admin_remove_notification(notification_id):
 @bp.route('notifications/markRead/<int:notification_id>')
 @login_required
 def admin_markRead_notification(notification_id):
+	check_for_admin_status()
 	sql_str = """UPDATE Admin_Notifications
 				SET Has_Been_Read = 1
 				WHERE Note_ID=?;
@@ -540,6 +544,7 @@ def admin_markRead_notification(notification_id):
 @bp.route('users/remove', methods=('GET', 'POST'))
 @login_required
 def admin_remove_user():
+	check_for_admin_status()
 	if request.method != 'POST':
 		return '400'
 
@@ -592,6 +597,23 @@ def admin_remove_user():
 
 	return '200'
 
+@bp.route('users/makeAdmin', methods=('GET', 'POST'))
+@login_required
+def make_user_admin():
+	check_for_admin_status()
+	
+	if request.method != 'POST':
+		return '400'
+
+	user_id = request.form['user_id']
+
+	sql_str = """UPDATE Users
+				SET Is_Admin = 1
+				WHERE User_ID = ?;
+			"""
+	query_db(sql_str, (user_id, ), False)
+
+	return '200'
 
 
 def allowed_file(filename):

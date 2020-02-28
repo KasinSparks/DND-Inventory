@@ -84,6 +84,7 @@ def login():
 		if user['Is_Verified'] < 1:
 			return render_template('auth/not_verified.html',
 							header_text=header_text,
+							inner_text=None
 							)
 
 		if user is not None and account_tries_remaining(user['User_ID']) < 1 and is_attempt_within_range(user['User_ID']):
@@ -194,7 +195,7 @@ def accept_tos():
 	notification_type = query_db(sql_str, ('New User',), True, True)
 
 	# Generate admin notification
-	sql_str = """INSERT INTO Admin_Notifications
+	sql_str = """INSERT INTO Admin_Notifications (User_ID, Notification_Type, Has_Been_Read)
 				VALUES (?, ?, 0);
 				"""
 
