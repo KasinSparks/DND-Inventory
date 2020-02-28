@@ -67,7 +67,7 @@ def register():
 # Login
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
-	header_text = 'Site Name Here'
+	header_text = 'Leone'
 	tries_remaining = 0
 	unlockout_time = {}
 	error = None
@@ -81,6 +81,10 @@ def login():
 		).fetchone()
 
 		# TODO: check for is verified
+		if user['Is_Verified'] < 1:
+			return render_template('auth/not_verified.html',
+							header_text=header_text,
+							)
 
 		if user is not None and account_tries_remaining(user['User_ID']) < 1 and is_attempt_within_range(user['User_ID']):
 			# Accout locked
@@ -163,7 +167,7 @@ def register_tos():
 	# TODO: if user has already accepted TOS
 
 	return render_template('auth/register_tos.html',
-							header_text='Site Name Here')
+							header_text=get_current_username())
 
 @bp.route('/register/tos/accept')
 @login_required
@@ -179,7 +183,7 @@ def accept_tos():
 	if has_accepted > 0:
 		# User has already accepted the TOS
 		return render_template('auth/accepted_tos.html',
-								header_text='Site Name Here',
+								header_text=get_current_username(),
 								inner_text='You have already accepted the Terms of Service')
 
 	sql_str = """SELECT Notification_ID 
@@ -214,6 +218,14 @@ def accept_tos():
 
 	# Redirect to next screen
 	return render_template('auth/accepted_tos.html',
-							header_text='Site Name Here',
+							header_text=get_current_username(),
 							inner_text=None,
 							username=username)
+
+@login_required
+def get_current_username():
+	sql_str = """SELECT Username
+				FROM Users
+				WHERE User_ID = ?;
+			"""
+	return query_db(sql_str, (session['user_id'],), True, True)['Username']

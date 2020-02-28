@@ -43,13 +43,14 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
 	app.register_blueprint(admin.bp)
 
 
-	from blueprints.auth import login_required
+	from blueprints.auth import login_required, get_current_username
 	from db import query_db
 
 	@app.route('/')
 	@app.route('/home')
 	@login_required	
 	def home():
+		header_text = get_current_username()
 		sql_str = """SELECT Is_Admin
 				FROM Users 
 				WHERE User_ID = ?;
@@ -57,12 +58,25 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
 
 		isAdmin = query_db(sql_str, (session['user_id'], ), True, True)['Is_Admin']
 
-		if isAdmin > 0:	
-			return render_template('auth/admin.html')
+		if isAdmin > 0:
+			sql_str = """SELECT Has_Been_Read
+						FROM Admin_Notifications
+						WHERE Has_Been_Read = 0;
+					"""	
+			notifications = query_db(sql_str, (), True, True)['Has_Been_Read']
+
+			has_unread = False
+			if notifications is not None:
+				has_unread = True 
+
+			return render_template('auth/admin.html',
+									header_text=header_text,
+									unread=has_unread)
 
 
 
-		return render_template('auth/user.html')
+		return render_template('auth/user.html',
+								header_text=header_text)
 	
 
 	return app

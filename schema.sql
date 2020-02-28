@@ -1,4 +1,11 @@
 BEGIN TRANSACTION;
+DROP TABLE IF EXISTS "Admin_Notifications";
+CREATE TABLE IF NOT EXISTS "Admin_Notifications" (
+	"Note_ID"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"User_ID"	INTEGER NOT NULL,
+	"Notification_Type"	INTEGER NOT NULL,
+	"Has_Been_Read"	INTEGER NOT NULL DEFAULT 0
+);
 DROP TABLE IF EXISTS "Character";
 CREATE TABLE IF NOT EXISTS "Character" (
 	"Character_ID"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -125,12 +132,6 @@ CREATE TABLE IF NOT EXISTS "Abilities" (
 	"Ability_Name"	TEXT NOT NULL,
 	"Ability_Description"	TEXT NOT NULL
 );
-DROP TABLE IF EXISTS "Admin_Notifications";
-CREATE TABLE IF NOT EXISTS "Admin_Notifications" (
-	"User_ID"	INTEGER NOT NULL,
-	"Notification_Type"	INTEGER NOT NULL,
-	"Has_Been_Read"	INTEGER NOT NULL DEFAULT 0
-);
 DROP TABLE IF EXISTS "Notification_Types";
 CREATE TABLE IF NOT EXISTS "Notification_Types" (
 	"Notification_ID"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -169,51 +170,4 @@ CREATE TABLE IF NOT EXISTS "Effects" (
 	"Effect_Name"	TEXT NOT NULL,
 	"Effect_Description"	TEXT
 );
-INSERT INTO "Slots" VALUES (1,'Head',1);
-INSERT INTO "Slots" VALUES (2,'Shoulder',1);
-INSERT INTO "Slots" VALUES (3,'Torso',0);
-INSERT INTO "Slots" VALUES (4,'Hand',1);
-INSERT INTO "Slots" VALUES (5,'Leg',1);
-INSERT INTO "Slots" VALUES (6,'Foot',1);
-INSERT INTO "Slots" VALUES (7,'Trinket',1);
-INSERT INTO "Slots" VALUES (8,'Ring',1);
-INSERT INTO "Slots" VALUES (9,'Item',1);
-INSERT INTO "Slots" VALUES (10,'Weapon',1);
-INSERT INTO "Slots" VALUES (11,'Misc.',1);
-INSERT INTO "Skills" VALUES (1,'Athletics',0,'Strength');
-INSERT INTO "Skills" VALUES (2,'Acrobatics',0,'Dexterity');
-INSERT INTO "Skills" VALUES (3,'Sleight of Hand',0,'Dexterity');
-INSERT INTO "Skills" VALUES (4,'Stealth',0,'Dexterity');
-INSERT INTO "Skills" VALUES (5,'Arcana',0,'Intelligence');
-INSERT INTO "Skills" VALUES (6,'History',0,'Intelligence');
-INSERT INTO "Skills" VALUES (7,'Investigation',0,'Intelligence');
-INSERT INTO "Skills" VALUES (8,'Nature',0,'Intelligence');
-INSERT INTO "Skills" VALUES (9,'Religion',0,'Intelligence');
-INSERT INTO "Skills" VALUES (10,'Animal Handling',0,'Wisdom');
-INSERT INTO "Skills" VALUES (11,'Insight',0,'Wisdom');
-INSERT INTO "Skills" VALUES (12,'Medicine',0,'Wisdom');
-INSERT INTO "Skills" VALUES (13,'Perception',0,'Wisdom');
-INSERT INTO "Skills" VALUES (14,'Survival',0,'Wisdom');
-INSERT INTO "Skills" VALUES (15,'Deception',0,'Charisma');
-INSERT INTO "Skills" VALUES (16,'Intimidation',0,'Charisma');
-INSERT INTO "Skills" VALUES (17,'Performance',0,'Charisma');
-INSERT INTO "Skills" VALUES (18,'Persuasion',0,'Charisma');
-INSERT INTO "Alignments" VALUES (1,'Lawful Good');
-INSERT INTO "Alignments" VALUES (2,'Lawful Neutral');
-INSERT INTO "Alignments" VALUES (3,'Lawful Evil');
-INSERT INTO "Alignments" VALUES (4,'Neutral Good');
-INSERT INTO "Alignments" VALUES (5,'True Neutral');
-INSERT INTO "Alignments" VALUES (6,'Neutral Evil');
-INSERT INTO "Alignments" VALUES (7,'Chaotic Good');
-INSERT INTO "Alignments" VALUES (8,'Chaotic Neutral');
-INSERT INTO "Alignments" VALUES (9,'Chaotic Evil');
-INSERT INTO "Notification_Types" VALUES (1,'New User');
-INSERT INTO "Rarities" VALUES (1,'Poor','#9d9d9d');
-INSERT INTO "Rarities" VALUES (2,'Common','#ffffff');
-INSERT INTO "Rarities" VALUES (3,'Uncommon','#1eff00');
-INSERT INTO "Rarities" VALUES (4,'Rare','#0070dd');
-INSERT INTO "Rarities" VALUES (5,'Epic','#a335ee');
-INSERT INTO "Rarities" VALUES (6,'Legendary','#ff8000');
-INSERT INTO "Rarities" VALUES (7,'Artifact','#e6cc80');
-INSERT INTO "Rarities" VALUES (8,'Heirloom','#00ccff');
 COMMIT;

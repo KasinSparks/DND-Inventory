@@ -12,7 +12,7 @@ from blueprints.auth import login_required
 
 from image_sever import convert_image_to_base64
 
-from blueprints.admin import is_admin
+from blueprints.admin import is_admin, get_current_username
 
 import math
 
@@ -41,7 +41,8 @@ def character_select():
 		) 
 
 	return render_template('character/character_select.html',
-							characters=character_list)
+							characters=character_list,
+							header_text=get_current_username())
 
 # Character page
 @bp.route('/<int:char_id>')
@@ -350,7 +351,8 @@ def create_character():
 	return render_template('character/character_create.html',
 							races=races,
 							classes=classes,
-							alignments=alignments)
+							alignments=alignments,
+							header_text=get_current_username())
 
 def convert_form_field_data_to_int(field_data):
 	return 0 if field_data is None or field_data == '' else int(field_data)

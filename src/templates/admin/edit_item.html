@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <head>
-	<title>Add Item</title>
-	<link rel="stylesheet" href="../../static/styles.css">
-	<script src="../../static/script.js"></script>
+	<title>Edit Item</title>
+<!-- 	<link rel="stylesheet" href="../../static/styles.css"> -->
+	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+	<script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
 	<div class="panels">
@@ -13,23 +14,24 @@
 					<h1>{{ header_text }}</h1>
 				</div>
 				<div class="item_create_container">
-					<form class="create_character_form" action="add/submit" method="POST" enctype="multipart/form-data">
+					<form class="create_character_form" action="submit" method="POST" enctype="multipart/form-data">
+						<input name="id" value="{{ item_id }}" hidden>
 						<div class="input_item">
 							<label for="name">Name:</label>
-							<input name="name" type="text" placeholder="Item Name" maxlength="25" required>
+							<input name="name" type="text" placeholder="Item Name" value="{{ items['Item_Name'] }}" maxlength="25" required>
 						</div> 
 						<div class="input_item">
 							<label for="picture">Picture:</label>
-							<input name="picture" type="file" placeholder="Picture" accept="image/*" required>
+							<input name="picture" type="file" placeholder="Picture" accept="image/*" value="{{ items['Item_Picture'] }}">
 						</div> 
 						<div class="input_item">
 							<label for="description">Description:</label>
-							<input name="description" type="text" placeholder="Item Description" required>
+							<input name="description" type="text" placeholder="Item Description" value="{{ items['Item_Description'] }}" required>
 						</div>
 						<div class="input_item">
 							<label for="slot">Slot:</label>
 							<select name="slot" required>
-								<option value="" selected>Slot</option>
+								<option value="{{ item_slots_name }}" selected>{{ item_slots_name }}</option>
 								{% for s in slots %}
 									<option value="{{ s['Slots_Name'] }}">{{ s['Slots_Name'] }}</option>
 								{% endfor %}
@@ -38,7 +40,7 @@
 						<div class="input_item">
 							<label for="rarity">Rarity:</label>
 							<select name="rarity" required>
-								<option value="" selected>Rarity</option>
+								<option  value="{{ items['Rarities_Name'] }}" selected>{{ items['Rarities_Name'] }}</option>
 								{% for r in rarities %}
 									<option value="{{ r['Rarities_Name'] }}">{{ r['Rarities_Name'] }}</option>
 								{% endfor %}
@@ -47,7 +49,7 @@
 						<div class="input_item">
 							<label for="effect1">Effect 1:</label>
 							<select name="effect1" required>
-								<option value="" onclick="select_standard_button(['effect1_name', 'effect1_description']);" selected>None</option>
+								<option value="{{ effect1_name }}" onclick="select_standard_button(['effect1_name', 'effect1_description']);" selected>{{ effect1_name }}</option>
 								{% for e in effects %}
 									<option value="{{ e['Effect_Name'] }}" onclick="select_standard_button(['effect1_name', 'effect1_description']);">{{ e['Effect_Name'] }}</option>
 								{% endfor %}
@@ -59,7 +61,7 @@
 						<div class="input_item">
 							<label for="effect2">Effect 2:</label>
 							<select name="effect2" required>
-								<option value="" onclick="select_standard_button(['effect2_name', 'effect2_description']);" selected>None</option>
+								<option  value="{{ effect2_name }}" onclick="select_standard_button(['effect2_name', 'effect2_description']);" selected>{{ effect2_name }}</option>
 								{% for e in effects %}
 									<option value="{{ e['Effect_Name'] }}" onclick="select_standard_button(['effect2_name', 'effect2_description']);">{{ e['Effect_Name'] }}</option>
 								{% endfor %}
@@ -70,55 +72,55 @@
 						</div>
 						<div class="input_item">
 							<label for="weight">Weight:</label>
-							<input name="weight" type="number" min="0" max="9999" placeholder="0">
+							<input name="weight" type="number" min="0" max="9999" value="{{ items['Item_Weight'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="str_bonus">Strength Bonus:</label>
-							<input name="str_bonus" type="number" min="0" max="999" placeholder="0">
+							<input name="str_bonus" type="number" min="0" max="999" value="{{ items['Item_Str_Bonus'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="dex_bonus">Dexterity Bonus:</label>
-							<input name="dex_bonus" type="number" min="0" max="999" placeholder="0">
+							<input name="dex_bonus" type="number" min="0" max="999" value="{{ items['Item_Dex_Bonus'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="con_bonus">Constitution Bonus:</label>
-							<input name="con_bonus" type="number" min="0" max="999" placeholder="0">
+							<input name="con_bonus" type="number" min="0" max="999" value="{{ items['Item_Con_Bonus'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="int_bonus">Intelligence Bonus:</label>
-							<input name="int_bonus" type="number" min="0" max="999" placeholder="0">
+							<input name="int_bonus" type="number" min="0" max="999" value="{{ items['Item_Int_Bonus'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="wis_bonus">Wisdom Bonus:</label>
-							<input name="wis_bonus" type="number" min="0" max="999" placeholder="0">
+							<input name="wis_bonus" type="number" min="0" max="999" value="{{ items['Item_Wis_Bonus'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="cha_bonus">Charisma Bonus:</label>
-							<input name="cha_bonus" type="number" min="0" max="999" placeholder="0">
+							<input name="cha_bonus" type="number" min="0" max="999" value="{{ items['Item_Cha_Bonus'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="attack_bonus">Attack Bonus:</label>
-							<input name="attack_bonus" type="number" min="0" max="999" placeholder="0">
+							<input name="attack_bonus" type="number" min="0" max="999" value="{{ items['Item_Attack_Bonus'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="initiative_bonus">Inititaive Bonus:</label>
-							<input name="initiative_bonus" type="number" min="0" max="999" placeholder="0">
+							<input name="initiative_bonus" type="number" min="0" max="999" value="{{ items['Item_Initiative_Bonus'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="health_bonus">Health Bonus:</label>
-							<input name="health_bonus" type="number" min="0" max="999" placeholder="0">
+							<input name="health_bonus" type="number" min="0" max="999" value="{{ items['Item_Health_Bonus'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="ac_bonus">AC Bonus:</label>
-							<input name="ac_bonus" type="number" min="0" max="999" placeholder="0">
+							<input name="ac_bonus" type="number" min="0" max="999" value="{{ items['Item_AC_Bonus'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="dnof">Number of Dices:</label>
-							<input name="dnof" type="number" min="0" max="999" placeholder="0">
+							<input name="dnof" type="number" min="0" max="999" value="{{ items['Item_Damage_Num_Of_Dices'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<label for="dnofs">Dice Sides:</label>
-							<input name="dnofs" type="number" min="0" max="999" placeholder="0">
+							<input name="dnofs" type="number" min="0" max="999" value="{{ items['Item_Damage_Num_Of_Dice_Sides'] }}" placeholder="0">
 						</div>
 						<div class="input_item">
 							<input id="submit_button" type="submit" value="Submit">

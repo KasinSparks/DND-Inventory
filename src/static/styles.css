@@ -1122,6 +1122,12 @@ table td{
 	margin: 20px auto;
 }
 
+.notifications .small_buttons{
+	width: 31px;
+	height: 31px;
+	margin: 20px auto;
+}
+
 
 .character_select_bottom_button_goback{
 	background-image: url(images/goBack.png);
@@ -1140,6 +1146,14 @@ table td{
 	background-image: url(images/remove.png);
 }
 
+.character_select_bottom_button_verify{
+	background-image: url(images/verify.png);
+}
+
+.character_select_bottom_button_read{
+	background-image: url(images/read.png);
+}
+
 .item_create_container{
 	height: 80%;
 	width: 100%;
@@ -1147,4 +1161,24 @@ table td{
 	flex-direction: column;
 	overflow-y: scroll;
 	overflow-x: hidden;
+}
+
+.user_button_user_name{
+	width: 75%;
+	margin: 0 auto;
+}
+
+.user_button_notification{
+	width: 75%;
+	margin: -15px auto;
+	overflow: hidden;
+}
+
+.verify_deny_buttons{
+	width: 31px;
+	margin: 0 auto;
+}
+
+.verify_deny_buttons .small_buttons{
+	margin: 1px auto;
 }

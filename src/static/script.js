@@ -1349,3 +1349,77 @@ function updateMultiSlotItemHelper(response, category_name, slot_position_number
 	textElement.innerText = innerText;
 	
 }
+
+function open_character_window(char_id){
+	var _window = window.open('/character/' + String(char_id), '_blank');
+	_window.focus();
+}
+
+function verify_user(user_id){
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function(){
+		if(this.readyState == 4 && this.status == 200){
+			//itemInfo(element, this.responseText);
+			document.getElementById('user_' + user_id).getElementsByClassName('small_buttons')[0].remove();	
+			return
+		}
+	};
+	
+	const webpage = '/admin/users/verify/' + user_id;
+	xhttp.open("GET", webpage, true);
+
+	xhttp.send();
+}
+
+function mark_read(note_id){
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function(){
+		if(this.readyState == 4 && this.status == 200){
+			//itemInfo(element, this.responseText);
+			document.getElementById('notification_read_' + note_id).remove();	
+			return
+		}
+	};
+	
+	const webpage = '/admin/notifications/markRead/' + note_id;
+	xhttp.open("GET", webpage, true);
+
+	xhttp.send();
+}
+
+function remove_note(note_id){
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function(){
+		if(this.readyState == 4 && this.status == 200){
+			//itemInfo(element, this.responseText);
+			document.getElementById('notification_' + note_id).remove();	
+			return
+		}
+	};
+	
+	const webpage = '/admin/notifications/remove/' + note_id;
+	xhttp.open("GET", webpage, true);
+
+	xhttp.send();
+}
+
+function remove_user(user_id, username){
+	var un = prompt("Please enter the User's name, " + username + ", to DELETE permanently.", "");
+	var params = 'user_id=' + user_id;
+	if(un != null && un === username){
+		var http = new XMLHttpRequest();
+		http.open('POST', '/admin/users/remove', true);
+
+		//Send the proper header information along with the request
+		http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+		http.onreadystatechange = function() {
+			//Call a function when the state changes.
+			if(http.readyState == 4 && http.status == 200) {
+				// do something here
+				document.getElementById('user_' + user_id).remove();
+			}
+		}
+		http.send(params);
+	}
+}

@@ -9,13 +9,21 @@
 	<div class="user_container">
 		<div class="inner_container">
 			<div class="tab">
-					<h1>Site Name</h1>
+					<h1>{{ header_text }}</h1>
 			</div>
 			<div class="character_select_inner_panel">
 				<div class="sub_inner_panel">
 					{% for u in users %}
-						<div class="user_button_char_select clickable" onclick="location.href='/admin/users/{{ u['Username'] }}';">
-							<h2>{{ u['Username']|e }}</h2>
+						<div id="user_{{ u['User_ID'] }}" class="user_button_char_select" style="display: flex; flex-direction: row;" >
+							<div class="verify_deny_buttons">
+								{% if u['Is_Verified'] < 1 %}
+									<div class="small_buttons character_select_bottom_button_verify clickable" onclick="verify_user({{ u['User_ID'] }});"></div>
+								{% endif %}
+								<div class="small_buttons character_select_bottom_button_remove clickable" onclick="remove_user({{ u['User_ID'] }}, '{{ u['Username'] }}');"></div>
+							</div>
+							<div class="clickable user_button_user_name" onclick="location.href='/admin/users/{{ u['Username'] }}';">
+								<h2>{{ u['Username']|e }}</h2>
+							</div>
 						</div>
 					{% endfor %}
 				</div>

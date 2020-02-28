@@ -21,3 +21,9 @@ Code Items
 		- https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
 
 	[] Image resizing
+
+	[] Change links to js and css in html files to use url_for
+
+Misc.
+	[] Update TOS
+	[] Re-export schema
