@@ -6,6 +6,8 @@ Start Docker:
 3.) Proceed to section "Config Webserver"
 
 Config Webserver:
+0.) Use the following command to move files and folders from /example_site_data
+	a.) mv /example_site_data/* /site_data
 1.) Change directories to /site_data
 2.) install a text editor and modify the following fields in 'production.cfg'
 	a.) SECRET_KEY... Look up on Flask website on a good way to generate a secret SECRET_KEY

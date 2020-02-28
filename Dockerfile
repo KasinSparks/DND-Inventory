@@ -10,19 +10,18 @@ COPY ./run.wsgi /var/www/src/
 
 COPY ./apache2_site.conf /etc/apache2/sites-available/
 
+VOLUME /site_data
+
 COPY ./create_instance.py /tmp/
 COPY ./example.cfg /tmp/
 COPY ./schema.sql /tmp/
 
-VOLUME /site_data
-
-
 
 RUN python3 /tmp/create_instance.py && \
-	sqlite3 /site_data/instance/database/db.sqlite < /tmp/schema.sql && \
-	chown -R www-data /site_data/instance/database && \
-	chown -R www-data /site_data/instance/uploads && \
-	cp /tmp/example.cfg /site_data/instance/production.cfg && \
+	sqlite3 /example_example_site_data/instance/database/db.sqlite < /tmp/schema.sql && \
+	chown -R www-data /example_site_data/instance/database && \
+	chown -R www-data /example_site_data/instance/uploads && \
+	cp /tmp/example.cfg /example_site_data/instance/production.cfg && \
 	service apache2 start && \ 
 	a2dissite 000-default && \ 
 	a2ensite apache2_site && \
