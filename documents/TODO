@@ -5,6 +5,7 @@ Server Side Items
 		[]
 	[] Change the docker image from ubuntu to alpine image
 	[] Work on the create instance app
+	[] Set a route for robots.txt
 
 Code Items
 	[x] Change site name in code from 'site name here' to actual site name.

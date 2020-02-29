@@ -6,8 +6,6 @@ from flask import (
 	Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, send_from_directory, current_app
 )
 
-from image_sever import convert_image_to_base64
-
 from werkzeug.utils import secure_filename, escape
 
 from db import get_db, query_db
@@ -787,38 +785,6 @@ def getItemAmount(char_id, item_id):
 	)
 
 
-@bp.route('/imageserver/user/<string:image_name>')
-@login_required
-def getUserImage(image_name):
-	# TODO: Read the docs on how to improve this for server
-	
-	return send_from_directory(os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'users', str(session['user_id'])), image_name, as_attachment=False)
-	
-	#return send_from_directory(os.path.join('..', 'src', 'static'), 'tree.jpg', as_attachment=False)
-	#return send_from_directory(os.path.join('..', 'src', 'static'), 'tree.jpg', as_attachment=False)
-
-@bp.route('/imageserver/item/<string:image_name>')
-@login_required
-def getItemImage(image_name):
-	# TODO: Read the docs on how to improve this for server
-	path = os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'items')
-
-	return send_from_directory(path, image_name, as_attachment=False)
-
-
-#@bp.route('/imageserver/item/<int:item_id>')
-#@login_required
-#def getItemImageById(item_id):
-	# TODO: Read the docs on how to improve this for server
-#	path = os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'items')
-
-#	sql_str = """SELECT Item_Picture
-#				FROM Items
-#				WHERE Item_ID = ?;
-#			"""
-#	image_name = query_db(sql_str, (item_id,), True, True)['Item_Picture']
-
-#	return send_from_directory(path, image_name, as_attachment=False)	
 
 @bp.route('/itemDetails/<int:item_id>')
 @login_required

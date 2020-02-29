@@ -41,6 +41,10 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
 	# admin
 	from blueprints import admin 
 	app.register_blueprint(admin.bp)
+	# image_server
+	from blueprints import image_server
+	app.register_blueprint(image_server.bp)
+
 
 
 	from blueprints.auth import login_required, get_current_username
@@ -59,20 +63,9 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
 		isAdmin = query_db(sql_str, (session['user_id'], ), True, True)['Is_Admin']
 
 		if isAdmin > 0:
-			sql_str = """SELECT Has_Been_Read
-						FROM Admin_Notifications
-						WHERE Has_Been_Read = 0;
-					"""	
-			notifications = query_db(sql_str, (), True, True)['Has_Been_Read']
-
-			has_unread = False
-			if notifications is not None:
-				has_unread = True 
-
 			return render_template('auth/admin.html',
 									header_text=header_text,
-									unread=has_unread)
-
+									unread=False)
 
 
 		return render_template('auth/user.html',

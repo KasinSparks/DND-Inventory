@@ -9,6 +9,7 @@ class Logger:
 		self.enabled = enabled
 		self._errorPrefix = 'ERROR: '
 		self.timestamp = timestamp
+		self._std_color = Fore.WHITE
 
 	def log(self, message, color=Fore.GREEN):
 		m = str(message)
@@ -16,7 +17,7 @@ class Logger:
 		if self.timestamp:
 			m = self._dateToStringFormat(datetime.now()) + m
 
-		print(color + m)
+		print(color + m + self._std_color)
 	
 	def error(self, message):
 		self.log(self._errorPrefix + str(message), Fore.RED)

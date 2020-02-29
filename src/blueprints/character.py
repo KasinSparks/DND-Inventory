@@ -10,8 +10,6 @@ from db import get_db, query_db
 
 from blueprints.auth import login_required
 
-from image_sever import convert_image_to_base64
-
 from blueprints.admin import is_admin, get_current_username
 
 import math
