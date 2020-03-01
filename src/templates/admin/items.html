@@ -23,7 +23,7 @@
 				</div>
 				<div class="character_select_bottom_buttons_container">
 					<div class="character_select_bottom_button_new clickable" onclick="location.href='/admin/creationKit/add'"></div>
-					<div class="character_select_bottom_button_goback clickable" onclick="window.history.go(-1); return false;"></div>
+					<div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('home') }}';"></div>
 				</div>
 <!-- 				<div class="user_button clickable" onclick="location.href='/character/create'">
 					<h2>Create New Character</h2>

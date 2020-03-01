@@ -19,34 +19,34 @@
 					</div>
 					<div class="input_item">
 						<label for="race">Race:</label>
-						<select name="race" required>
-							<option value="" onclick="select_standard_button(['race_other']);" selected>Race</option>
+						<select name="race" required onchange="select_other_button(['race_other'], this.value);">
+							<option value="" selected>Race</option>
 							{% for r in races %}
-								<option value="{{ r['Race_Name'] }}" onclick="select_standard_button(['race_other']);">{{ r['Race_Name'] }}</option>
+								<option value="{{ r['Race_Name'] }}">{{ r['Race_Name'] }}</option>
 							{% endfor %}
-							<option value="OTHER" onclick="select_other_button(['race_other']);">Other</option>
+							<option value="OTHER">Other</option>
 						</select>
 						<input name="race_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
 					</div>
 					<div class="input_item">
 						<label for="class">Class:</label>
-						<select name="class" required>
-							<option value="" onclick="select_standard_button(['class_other']);" selected>Class</option>
+						<select name="class" required onchange="select_other_button(['class_other'], this.value);">
+							<option value="" selected>Class</option>
 							{% for c in classes %}
-								<option value="{{ c['Class_Name'] }}" onclick="select_standard_button(['class_other']);">{{ c['Class_Name'] }}</option>
+								<option value="{{ c['Class_Name'] }}">{{ c['Class_Name'] }}</option>
 							{% endfor %}
-							<option value="OTHER" onclick="select_other_button(['class_other']);">Other</option>
+							<option value="OTHER">Other</option>
 						</select>
 						<input name="class_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
 					</div>
 					<div class="input_item">
 						<label for="alignment">Alignment:</label>
-						<select name="alignment" required>
-							<option value="" onclick="select_standard_button(['alignment_other']);" selected>Alignment</option>
+						<select name="alignment" required onchange="select_other_button(['alignment_other'], this.value);">
+							<option value="" selected>Alignment</option>
 							{% for a in alignments %}
-								<option value="{{ a['Alignment_Name'] }}" onclick="select_standard_button(['alignment_other']);">{{ a['Alignment_Name'] }}</option>
+								<option value="{{ a['Alignment_Name'] }}">{{ a['Alignment_Name'] }}</option>
 							{% endfor %}
-							<option value="OTHER" onclick="select_other_button(['alignment_other']);">Other</option>
+							<option value="OTHER">Other</option>
 						</select>
 						<input name="alignment_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
 					</div>
@@ -87,7 +87,7 @@
 					</div>
 				</form>
 				<div class="character_select_bottom_buttons_container">
-					<div class="character_select_bottom_button_goback clickable" onclick="window.history.go(-1); return false;"></div>
+					<div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('character.character_select') }}';"></div>
 				</div>
 			</div>
 			<div class="footer">

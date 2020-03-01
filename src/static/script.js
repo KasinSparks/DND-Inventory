@@ -209,9 +209,14 @@ function setToOption_Image(element, prevOption, option){
 	element.setAttribute('class', element.getAttribute('class').replace(prevOption, option));
 }
 
-function select_other_button(element_name=[]){
+function select_other_button(element_name=[], value){
+	console.log(value);
 	element_name.forEach(element => {
-		select_button_helper(element, '');
+		if(value === "OTHER"){
+			select_button_helper(element, '', 'true');
+		} else {
+			select_button_helper(element, 'display: none;');
+		}
 	});
 }
 
@@ -221,9 +226,17 @@ function select_standard_button(element_name=[]){
 	});
 }
 
-function select_button_helper(element_name, style_attribute){
-	console.log(element_name)
-	document.getElementsByName(element_name)[0].setAttribute('style', style_attribute);
+function select_button_helper(element_name, style_attribute, required='false'){
+	console.log(element_name);
+	el = document.getElementsByName(element_name)[0];
+	el.setAttribute('style', style_attribute);
+	if(required === 'false'){
+		el.removeAttribute('required');
+	} else {
+		el.setAttribute('required', 'true');
+	}
+	el.value = "";	
+	
 }
 
 class ChangeData{
