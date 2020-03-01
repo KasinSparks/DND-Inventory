@@ -48,24 +48,24 @@
 						</div>
 						<div class="input_item">
 							<label for="effect1">Effect 1:</label>
-							<select name="effect1" required>
-								<option value="{{ effect1_name }}" onclick="select_standard_button(['effect1_name', 'effect1_description']);" selected>{{ effect1_name }}</option>
+							<select name="effect1" onchange="select_other_button(['effect1_name', 'effect1_description'], this.value);" required>
+								<option value="{{ effect1_name }}" selected>{{ effect1_name }}</option>
 								{% for e in effects %}
-									<option value="{{ e['Effect_Name'] }}" onclick="select_standard_button(['effect1_name', 'effect1_description']);">{{ e['Effect_Name'] }}</option>
+									<option value="{{ e['Effect_Name'] }}">{{ e['Effect_Name'] }}</option>
 								{% endfor %}
-								<option value="OTHER" onclick="select_other_button(['effect1_name', 'effect1_description']);">Other</option>
+								<option value="OTHER">Other</option>
 							</select>
 							<input name="effect1_name" type="text" style="display: none;" placeholder="Effect Name" maxlength="25">
 							<input name="effect1_description" type="text" style="display: none;" placeholder="Effect Description">
 						</div>
 						<div class="input_item">
 							<label for="effect2">Effect 2:</label>
-							<select name="effect2" required>
-								<option  value="{{ effect2_name }}" onclick="select_standard_button(['effect2_name', 'effect2_description']);" selected>{{ effect2_name }}</option>
+							<select name="effect2" onchange="select_other_button(['effect2_name', 'effect2_description'], this.value);" required>
+								<option  value="{{ effect2_name }}" selected>{{ effect2_name }}</option>
 								{% for e in effects %}
-									<option value="{{ e['Effect_Name'] }}" onclick="select_standard_button(['effect2_name', 'effect2_description']);">{{ e['Effect_Name'] }}</option>
+									<option value="{{ e['Effect_Name'] }}">{{ e['Effect_Name'] }}</option>
 								{% endfor %}
-								<option value="OTHER" onclick="select_other_button(['effect2_name', 'effect2_description']);">Other</option>
+								<option value="OTHER">Other</option>
 							</select>
 							<input name="effect2_name" type="text" style="display: none;" placeholder="Effect Name" maxlength="25">
 							<input name="effect2_description" type="text" style="display: none;" placeholder="Effect Description">
