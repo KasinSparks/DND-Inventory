@@ -313,22 +313,26 @@ def admin_creationKit_add_submit():
 				"""
 		effect1_id = query_db(sql_str, (effect1_val,), True, True)
 		if effect1_id is None:
-			raise Exception('Not a valid effect1')
+			effect1_id = -1
+			#raise Exception('Not a valid effect1')
 		else:
 			effect1_id = int(effect1_id['Effect_ID'])
 
 		effect2_id = query_db(sql_str, (effect2_val,), True, True)
 		if effect2_id is None:
-			raise Exception('Not a valid effect2')
+			effect2_id = -1
+			#raise Exception('Not a valid effect2')
 		else:
 			effect2_id = int(effect2_id['Effect_ID'])
 
 		filename = 'no_image.png'
-		
-		if 'picture' not in request.files:
+
+		print("About to handle item picture file...")	
+		if 'picture' in request.files:
 			new_img = request.files['picture']
 
 			if new_img.filename == '':
+				print('ERROR: File name was blank')
 				return 'File name was blank'
 
 			if new_img and allowed_file(new_img.filename):
@@ -340,7 +344,11 @@ def admin_creationKit_add_submit():
 					os.mkdir(fullDirName, mode=0o770)
 
 				new_img.save(os.path.join(fullDirName, filename))
+			else:
+				print('ERROR: Either file was None or file extention was invalid.')
+				print('File name = ' + str(filename))
 
+			print('File uploaded successfully!')
 
 		query_db(insert_sql_str, 
 			(
@@ -438,11 +446,12 @@ def admin_creationKit_edit_submit():
 
 
 		filename = 'no_image.png'
-
-		if 'picture' not in request.files:
+		print("About to handle item picture file...")
+		if 'picture' in request.files:
 			new_img = request.files['picture']
 
 			if new_img.filename == '':
+				print('ERROR: File name was blank')
 				return 'File name was blank'
 
 			if new_img and allowed_file(new_img.filename):
@@ -460,6 +469,12 @@ def admin_creationKit_edit_submit():
 						os.mkdir(fullDirName, mode=0o770)
 
 					new_img.save(os.path.join(fullDirName, filename))
+				else:
+					print('ERROR: Either file was None or file extention was invalid.')
+					print('File name = ' + str(filename))
+
+				print('File uploaded successfully!')
+
 
 
 		query_db(insert_sql_str, 
