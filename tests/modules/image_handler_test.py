@@ -15,6 +15,7 @@ class ImageHandlerTest(Test):
 		self.tests.append(self._allowed_file_not_allowed())
 		self.tests.append(self._allowed_file_allowed())
 		self.tests.append(self._save_image_test())
+		self.tests.append(self._get_image_size_test())
 
 
 
@@ -68,21 +69,39 @@ class ImageHandlerTest(Test):
 		
 	def _save_image_test(self):
 		handler = image_handler.ImageHandler()
-		image_dir = os.path.abspath(os.path.join("tests", "test_assests")) 
-		filename = "no_image.png"
-		image = os.path.join(image_dir, filename)
-		save_dir = os.path.join(image_dir, "temp")
+		save_dir = os.path.join(self._get_test_image_dir(), "temp")
 
 
 		results = {
 			"name" : "Save Image Test",
 			"expected" : 1,
-			"actual" : handler.save_image(Image.open(image), save_dir)
+			"actual" : handler.save_image(self._get_test_image(), save_dir)
 		}
 
 		self._clean_temp_folder(save_dir)
 
 		return results 
+
+	def _get_image_size_test(self):
+		handler = image_handler.ImageHandler()
+		results = {
+			"name" : "Image Size",
+			"expected" : (256,256),
+			"actual" : handler._get_image_size(self._get_test_image())
+		}
+		return results
+
+
+	def _get_test_image(self):
+		filename = "no_image.png"
+		image_dir = self._get_test_image_dir()
+		image = os.path.join(image_dir, filename)
+		return Image.open(image)
+
+
+	def _get_test_image_dir(self):
+		return os.path.abspath(os.path.join("tests", "test_assests")) 
+
 
 	def _clean_temp_folder(self, temp_dir):
 		current_dir = os.path.split(temp_dir)
