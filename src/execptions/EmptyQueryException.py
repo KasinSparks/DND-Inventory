@@ -1,6 +1,6 @@
-class FileNotSuppliedException(Exception):
+class EmptyQueryException(Exception):
     def __init__(self): 
-        self.value = "No file was supplied." 
+        self.value = "The query string was either None or empty..." 
   
     # __str__ is to print() the value 
     def __str__(self): 

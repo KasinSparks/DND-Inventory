@@ -5,48 +5,20 @@ from flask import (
 import os
 
 from werkzeug.utils import secure_filename
-
-from db import get_db, query_db
-
 from blueprints.auth import login_required, get_current_username
+from modules.data.database.query_modules import select_query
+from modules.account.authentication_checks import check_for_admin_status
+from modules.data.string_shorten import shorten_string
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-def shorten_string(string : str, max_length : int):
-	shortened_name = string
-
-	if len(string) > max_length:
-		shortened_name = string[0:max_length] + '...'
-	
-	return shortened_name
-
-
-def is_admin():
-	sql_str = """SELECT Is_Admin
-				FROM Users
-				WHERE User_ID = ?;
-			"""
-	if query_db(sql_str, (session['user_id'],), True, True)['Is_Admin']	> 0:
-		return True
-
-	return False
-
-def check_for_admin_status():
-	if not is_admin():
-		return redirect(url_for('auth.login'))
 
 @bp.route('users')
 @login_required
 def admin_users():
-
 	check_for_admin_status()
 
-	sql_str = """SELECT User_ID, Username, Is_Verified, Is_Admin
-				FROM Users
-				WHERE NOT User_ID = ?;
-			"""
-	users = query_db(sql_str, (session['user_id'],), True)
-
+	users = select_query.select_user_data_except_cur_user()
 	user_data = []
 
 	for u in users:
@@ -65,23 +37,13 @@ def admin_users():
 							)
 
 
-
 @bp.route('users/<string:username>')
 @login_required
 def admin_users_characters(username):
 	check_for_admin_status()
 
-	sql_str = """SELECT User_ID
-				FROM Users
-				WHERE Username = ?;
-			"""
-	user_id = query_db(sql_str, (username,), True, True)['User_ID']
-
-	sql_str = """SELECT Character_Name, Character_ID
-				FROM Character
-				WHERE User_ID = ?;
-			"""
-	characters = query_db(sql_str, (user_id,), True)
+	user_id = select_query.get_user_id(username)
+	characters = select_query.select_char_name_and_id(user_id)
 
 	return render_template('admin/characters.html',
 							characters=characters,
@@ -92,11 +54,7 @@ def admin_users_characters(username):
 def admin_creationKit():
 	check_for_admin_status()
 
-	sql_str = """SELECT Item_Name, Item_ID
-				FROM Items;
-			"""
-	items = query_db(sql_str, (), True)
-
+	items = select_query.select_items_name_and_id()
 	items_mod = []
 
 	for i in items:
@@ -116,20 +74,10 @@ def admin_creationKit():
 @login_required
 def admin_creationKit_add():
 	check_for_admin_status()
-	sql_str = """SELECT Slots_Name
-				FROM SLOTS;
-			"""
-	slot_names = query_db(sql_str)
 
-	sql_str = """SELECT Rarities_Name
-				FROM Rarities;
-			"""
-	rarity_names = query_db(sql_str)
-
-	sql_str = """SELECT Effect_Name
-				FROM Effects;
-			"""
-	effect_names = query_db(sql_str)
+	slot_names = select_query.select_slot_names()
+	rarity_names = select_query.select_rarity_names()
+	effect_names = select_query.select_effect_names()
 
 	return render_template('admin/add_item.html',
 							slots=slot_names,
@@ -142,29 +90,11 @@ def admin_creationKit_add():
 def admin_creationKit_edit(item_id):
 	check_for_admin_status()
 
-	sql_str = """SELECT Slots_Name
-				FROM SLOTS;
-			"""
-	slot_names = query_db(sql_str)
+	slot_names = select_query.select_slot_names()
+	rarity_names = select_query.select_rarity_names()
+	effect_names = select_query.select_effect_names()
 
-	sql_str = """SELECT Rarities_Name
-				FROM Rarities;
-			"""
-	rarity_names = query_db(sql_str)
-
-	sql_str = """SELECT Effect_Name
-				FROM Effects;
-			"""
-	effect_names = query_db(sql_str)
-
-	# Items query
-	queryStr = """SELECT *
-				FROM Items
-				LEFT JOIN Rarities ON Items.Rarity_ID=Rarities.Rarities_ID
-				WHERE Items.Item_ID=?;"""
-	# Check to see if ID has been assigned
-	
-	itemQueryResult = query_db(queryStr, (item_id,), True, True)
+	itemQueryResult = select_query.select_items(item_id)
 
 	if itemQueryResult is None:
 		itemQueryResult = {
@@ -193,35 +123,18 @@ def admin_creationKit_edit(item_id):
 	item_effect2 = 'None'
 	item_slots_name = ''
 
-	# Check if item has an effect on it
-	if itemQueryResult is not None and itemQueryResult['Item_Effect1'] is not None and itemQueryResult['Item_Effect1'] > 0:	
-		# Effect1 query
-		queryStr = """SELECT Effect_Name 
-					FROM Effects 
-					WHERE Effect_ID=?;"""
-		# Check to see if ID has been assigned
-		
-		item_effect1 = query_db(queryStr, (itemQueryResult['Item_Effect1'],), True, True)['Effect_Name']
+	if itemQueryResult is not None:
+		# Check if item has an effect on it
+		if itemQueryResult['Item_Effect1'] is not None and itemQueryResult['Item_Effect1'] > 0:	
+			item_effect1 = select_query.select_effect_names(itemQueryResult['Item_Effect1'])['Effect_Name']
 
-	# Check if item has an effect on it
-	if itemQueryResult is not None and itemQueryResult['Item_Effect2'] is not None and itemQueryResult['Item_Effect2'] > 0:	
-		# Effect2 query
-		queryStr = """SELECT Effect_Name 
-					FROM Effects 
-					WHERE Effect_ID=?;"""
-		# Check to see if ID has been assigned
-		
-		item_effect2 = query_db(queryStr, (itemQueryResult['Item_Effect2'],), True, True)['Effect_Name']
+		# Check if item has an effect on it
+		if itemQueryResult['Item_Effect2'] is not None and itemQueryResult['Item_Effect2'] > 0:	
+			item_effect2 = select_query.select_effect_names(itemQueryResult['Item_Effect2'])['Effect_Name']
 
-	
-	if itemQueryResult is not None and itemQueryResult['Item_Slot'] is not None and itemQueryResult['Item_Slot'] > 0:	
-		# Effect2 query
-		queryStr = """SELECT Slots_Name 
-					FROM Slots 
-					WHERE Slots_ID=?;"""
-		# Check to see if ID has been assigned
 		
-		item_slots_name = query_db(queryStr, (itemQueryResult['Item_Slot'],), True, True)['Slots_Name']
+		if itemQueryResult['Item_Slot'] is not None and itemQueryResult['Item_Slot'] > 0:	
+			item_slots_name = select_query.select_slot_names(itemQueryResult['Item_Slot'])['Slots_Name']
 
 	image = url_for('static', filename='images/no_image.png')
 
@@ -525,8 +438,7 @@ def admin_notifications():
 	sql_str = """SELECT Note_ID, Admin_Notifications.User_ID, Type, Username, Has_Been_Read, Notification_ID
 				FROM Admin_Notifications
 				INNER JOIN Notification_Types ON Admin_Notifications.Notification_Type=Notification_Types.Notification_ID
-				INNER JOIN Users ON Admin_Notifications.User_ID=Users.User_ID
-				;
+				INNER JOIN Users ON Admin_Notifications.User_ID=Users.User_ID;
 			"""	
 	notifications = query_db(sql_str)
 
@@ -631,22 +543,5 @@ def make_user_admin():
 	return '200'
 
 
-def allowed_file(filename):
-	 return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
-def create_new_effect(effect_name, effect_description):
-	if effect_name is None or effect_name == '' or effect_description is None or effect_description == '':
-		raise Exception('Invalid effect')
 
-	sql_str = """INSERT INTO Effects (Effect_Name, Effect_Description)
-				VALUES (?, ?);
-			"""
-	query_db(sql_str, (effect_name, effect_description), False)
-
-def get_request_field_data(field_name):
-	print(str(field_name) + ' : ' + str(request.form[field_name]))
-	return request.form[field_name]
-
-def convert_form_field_data_to_int(field_data):
-	return 0 if field_data is None or field_data == '' else int(field_data)

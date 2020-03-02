@@ -110,6 +110,16 @@ def character_page(char_id):
 	else:
 		class_name = class_name['Class_Name'] 
 
+	sql_str = """SELECT Race_Name
+				From Races 
+				WHERE Race_ID = ?;
+			"""
+	race_name = query_db(sql_str, (characters['Character_Race'],), True, True)
+	if race_name is None or race_name == '':
+		race_name = 'No Race'
+	else:
+		race_name = race_name['Race_Name'] 
+
 	sql_str = """SELECT Alignment_Name
 				From Alignments
 				WHERE Alignment_ID = ?;
@@ -131,6 +141,7 @@ def character_page(char_id):
 
 	character_data = {
 		'name' : shorten_string(characters['Character_Name'], 20),
+		'race' : shorten_string(race_name, 12),
 		'class' : shorten_string(class_name, 12),
 		'level' : convert_form_field_data_to_int(characters['Character_Level']),
 		'hp' : convert_form_field_data_to_int(characters['Character_HP']),

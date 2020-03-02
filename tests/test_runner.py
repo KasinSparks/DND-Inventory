@@ -3,7 +3,7 @@ from logger.logger import Fore
 
 import flask
 
-from modules import image_handler_test 
+from test_modules import image_handler_test 
 
 class TestRunner():
 	def __init__(self):
@@ -21,6 +21,7 @@ class TestRunner():
 		return (num_passed, num_ran)
 
 	def run_tests(self):
+		self._logger.log("[START] Some of the following error messages will be generated from tests. Please ignore...", Fore.WHITE)
 		self._result_queue.append(image_handler_test.ImageHandlerTest().run_tests())
 	
 

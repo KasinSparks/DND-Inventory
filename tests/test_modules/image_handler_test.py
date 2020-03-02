@@ -16,6 +16,12 @@ class ImageHandlerTest(Test):
 		self.tests.append(self._allowed_file_allowed())
 		self.tests.append(self._save_image_test())
 		self.tests.append(self._get_image_size_test())
+		self.tests.append(self._largest_square_size_test(256, "no_image.png"))
+		self.tests.append(self._largest_square_size_test(682, "Tree.jpg"))
+		self.tests.append(self._largest_square_test((0,0,256,256), "no_image.png"))
+		self.tests.append(self._largest_square_test((171,0,853,682), "Tree.jpg"))
+		self.tests.append(self._crop_to_square_test("no_image.png"))
+		self.tests.append(self._crop_to_square_test("Tree.jpg"))
 
 
 
@@ -91,12 +97,44 @@ class ImageHandlerTest(Test):
 		}
 		return results
 
+	def _largest_square_size_test(self, size, image_filename="no_image.png"):
+		handler = image_handler.ImageHandler()
+		img_size = handler._get_image_size(self._get_test_image(image_filename))
+		results = {
+			"name" : "Largest Square Size",
+			"expected" : size,
+			"actual" : handler._largest_square_size(img_size)
+		}	
+		return results
 
-	def _get_test_image(self):
-		filename = "no_image.png"
+	def _largest_square_test(self, lis, image_filename="no_image.png"):
+		handler = image_handler.ImageHandler()
+		size = handler._get_image_size(self._get_test_image(image_filename))
+		results = {
+			"name" : "Largest Square",
+			"expected" : lis,
+			"actual" : handler._largest_square(size)
+		}	
+		return results
+
+	def _crop_to_square_test(self, image_filename="no_image.png"):
+		handler = image_handler.ImageHandler()
+		original_img_size = handler._get_image_size(self._get_test_image(image_filename))
+		s = handler._largest_square_size(original_img_size)
+		cropped_img = handler._crop_to_square(self._get_test_image(image_filename))
+		results = {
+			"name" : "Crop To Square",
+			"expected" : (s,s),
+			"actual" : handler._get_image_size(cropped_img)
+		}	
+		return results
+
+
+	def _get_test_image(self, filename="no_image.png"):
 		image_dir = self._get_test_image_dir()
 		image = os.path.join(image_dir, filename)
 		return Image.open(image)
+
 
 
 	def _get_test_image_dir(self):

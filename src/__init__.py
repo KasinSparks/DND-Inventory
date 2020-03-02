@@ -50,19 +50,15 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
 	from blueprints.auth import login_required, get_current_username
 	from db import query_db
 
+	from blueprints.admin import is_admin
+
 	@app.route('/')
 	@app.route('/home')
 	@login_required	
 	def home():
 		header_text = get_current_username()
-		sql_str = """SELECT Is_Admin
-				FROM Users 
-				WHERE User_ID = ?;
-				"""
 
-		isAdmin = query_db(sql_str, (session['user_id'], ), True, True)['Is_Admin']
-
-		if isAdmin > 0:
+		if is_admin():
 			return render_template('auth/admin.html',
 									header_text=header_text,
 									unread=False)
