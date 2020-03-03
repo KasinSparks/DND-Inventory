@@ -80,3 +80,32 @@ def select_items(item_id = -1):
 
 	return Query(sql_str, args, True, multi)	
 
+def get_item_id_from_name(item_name):
+	sql_str = """SELECT Item_ID
+				FROM Items
+				WHERE Item_Name = ?;
+			"""
+	return Query(sql_str, (item_name,))['Item_ID']
+
+def get_slot_id_from_name(slot_name):
+	sql_str = """SELECT Slot_ID
+				FROM Slots
+				WHERE Slot_Name = ?;
+			"""
+	return Query(sql_str, (slot_name,))['Slot_ID']
+
+def get_rarity_id_from_name(rarity_name):
+	sql_str = """SELECT Rarities_ID
+				FROM Rarities
+				WHERE Rarities_Name = ?;
+			"""
+	return Query(sql_str, (rarity_name,))['Rarities_ID']
+
+def get_effect_id_from_name(effect_name):
+	sql_str = """SELECT Effect_ID
+				FROM Effects
+				WHERE Effect_Name = ?;
+			"""
+	return Query(sql_str, (effect_name,))['Effect_ID']
+
+

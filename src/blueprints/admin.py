@@ -9,6 +9,8 @@ from blueprints.auth import login_required, get_current_username
 from modules.data.database.query_modules import select_query
 from modules.account.authentication_checks import check_for_admin_status
 from modules.data.string_shorten import shorten_string
+from modules.data.form_data import get_request_field_data, convert_form_field_data_to_int
+from modules.IO.file.image_handler import ImageHandler
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -33,8 +35,7 @@ def admin_users():
 
 	return render_template('admin/users.html',
 							users=user_data,
-							header_text=get_current_username()
-							)
+							header_text=get_current_username())
 
 
 @bp.route('users/<string:username>')
@@ -136,10 +137,10 @@ def admin_creationKit_edit(item_id):
 		if itemQueryResult['Item_Slot'] is not None and itemQueryResult['Item_Slot'] > 0:	
 			item_slots_name = select_query.select_slot_names(itemQueryResult['Item_Slot'])['Slots_Name']
 
-	image = url_for('static', filename='images/no_image.png')
+	#image = url_for('static', filename='images/no_image.png')
 
-	if itemQueryResult['Item_Picture'] is not None and itemQueryResult['Item_Picture'] != '' and itemQueryResult['Item_Picture'] != 'no_image.png':
-		image = '/dataserver/imageserver/item/' + itemQueryResult['Item_Picture']
+	#if itemQueryResult['Item_Picture'] is not None and itemQueryResult['Item_Picture'] != '' and itemQueryResult['Item_Picture'] != 'no_image.png':
+	#	image = '/dataserver/imageserver/item/' + itemQueryResult['Item_Picture']
 
 
 	return render_template('admin/edit_item.html',
@@ -178,113 +179,75 @@ def admin_creationKit_add_submit():
 								Item_Damage_Num_Of_Dice_Sides)
 							VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 				"""
-
-		sql_str = """SELECT Item_ID
-					FROM Items
-					WHERE Item_Name = ?;
-				"""
-		name_check = query_db(sql_str, (get_request_field_data('name'), ), True, True)
+		name_check = select_query.get_item_id_from_name(get_request_field_data('name'))
 		
 		if name_check is not None:
 			# Name already exist
 			return '[TODO: Change this later]\n\nItem name already exist... Please go back and try again.'
 
-		sql_str = """SELECT Slots_ID
-					FROM Slots
-					WHERE Slots_Name = ?;
-				"""
-		slot_id = query_db(sql_str, (request.form['slot'],), True, True)
+		slot_id = select_query.get_slot_id_from_name(get_request_field_data('slot'))
 		if slot_id is None:
 			raise Exception('Not a valid slot')
 		else:
-			slot_id = int(slot_id['Slots_ID'])
+			slot_id = int(slot_id)
 
-		sql_str = """SELECT Rarities_ID
-					FROM Rarities 
-					WHERE Rarities_Name = ?;
-				"""
-		rarity_id = query_db(sql_str, (request.form['rarity'],), True, True)
+		rarity_id = select_query.get_rarity_id_from_name(get_request_field_data('rarity'))
 		if rarity_id is None:
 			raise Exception('Not a valid rarity')
 		else:
-			rarity_id = int(rarity_id['Rarities_ID'])
+			rarity_id = int(rarity_id)
 
-		effect1_val = request.form['effect1']
-		effect2_val = request.form['effect2']
+		effect1_val = get_request_field_data('effect1')
+		effect2_val = get_request_field_data('effect2')
 
 		if effect1_val == 'OTHER':
-			create_new_effect(request.form['effect1_name'], request.form['effect1_description'])	
-			effect1_val = request.form['effect1_name']
+			effect1_val = get_request_field_data('effect1_name')
+			create_new_effect(effect1_val, get_request_field_data('effect1_description'))	
 
 		if effect2_val == 'OTHER':
-			create_new_effect(request.form['effect2_name'], request.form['effect2_description'])	
-			effect2_val = request.form['effect2_name']
+			effect2_val = get_request_field_data('effect2_name')
+			create_new_effect(effect2_val, get_request_field_data('effect2_description'))	
 
-		sql_str = """SELECT Effect_ID
-					FROM Effects
-					WHERE Effect_Name = ?;
-				"""
-		effect1_id = query_db(sql_str, (effect1_val,), True, True)
+		effect1_id = int(select_query.get_effect_id_from_name(effect1_val))
 		if effect1_id is None:
 			effect1_id = -1
-			#raise Exception('Not a valid effect1')
-		else:
-			effect1_id = int(effect1_id['Effect_ID'])
 
-		effect2_id = query_db(sql_str, (effect2_val,), True, True)
+		effect2_id = int(select_query.get_effect_id_from_name(effect2_val))
 		if effect2_id is None:
 			effect2_id = -1
-			#raise Exception('Not a valid effect2')
-		else:
-			effect2_id = int(effect2_id['Effect_ID'])
 
-		filename = 'no_image.png'
-
-		print("About to handle item picture file...")	
 		if 'picture' in request.files:
 			new_img = request.files['picture']
+			new_img = get_request_field_data('picture')
 
-			if new_img.filename == '':
-				print('ERROR: File name was blank')
-				return 'File name was blank'
+			fullDirName = os.path.join(current_app.config['IMAGE_UPLOAD'], "items")
+			saved_filename = ImageHandler().save_image(new_img, fullDirName)
 
-			if new_img and allowed_file(new_img.filename):
-				filename = secure_filename(new_img.filename)
-				dirName = 'items'
-				fullDirName = os.path.join(current_app.config['IMAGE_UPLOAD'], dirName)
-
-				if not os.path.exists(fullDirName):
-					os.mkdir(fullDirName, mode=0o770)
-
-				new_img.save(os.path.join(fullDirName, filename))
-			else:
-				print('ERROR: Either file was None or file extention was invalid.')
-				print('File name = ' + str(filename))
-
-			print('File uploaded successfully!')
-
+			if saved_filename is None:
+				saved_filename = "no_image.png"
+			
 		query_db(insert_sql_str, 
 			(
 				str(get_request_field_data('name')),
-				filename,	
+				saved_filename,	
 				str(get_request_field_data('description')),
 				slot_id,
 				rarity_id,
-				convert_form_field_data_to_int(get_request_field_data('weight')),
-				convert_form_field_data_to_int(get_request_field_data('str_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('dex_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('con_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('int_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('wis_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('cha_bonus')),
+				convert_form_field_data_to_int('weight'),
+				convert_form_field_data_to_int('str_bonus'),
+				convert_form_field_data_to_int('dex_bonus'),
+				convert_form_field_data_to_int('con_bonus'),
+				convert_form_field_data_to_int('int_bonus'),
+				convert_form_field_data_to_int('wis_bonus'),
+				convert_form_field_data_to_int('cha_bonus'),
 				effect1_id,
 				effect2_id,
-				convert_form_field_data_to_int(get_request_field_data('attack_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('initiative_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('health_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('ac_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('dnof')),
-				convert_form_field_data_to_int(get_request_field_data('dnofs')),
+				convert_form_field_data_to_int('attack_bonus'),
+				convert_form_field_data_to_int('initiative_bonus'),
+				convert_form_field_data_to_int('health_bonus'),
+				convert_form_field_data_to_int('ac_bonus'),
+				convert_form_field_data_to_int('dnof'),
+				convert_form_field_data_to_int('dnofs'),
 
 			),
 			False
@@ -362,6 +325,8 @@ def admin_creationKit_edit_submit():
 		print("About to handle item picture file...")
 		if 'picture' in request.files:
 			new_img = request.files['picture']
+
+			
 
 			if new_img.filename == '':
 				print('ERROR: File name was blank')
@@ -544,4 +509,11 @@ def make_user_admin():
 
 
 
+def create_new_effect(effect_name, effect_description):
+	if effect_name is None or effect_name == '' or effect_description is None or effect_description == '':
+		raise Exception('Invalid effect')
 
+	sql_str = """INSERT INTO Effects (Effect_Name, Effect_Description)
+				VALUES (?, ?);
+			"""
+	query_db(sql_str, (effect_name, effect_description), False)

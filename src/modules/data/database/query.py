@@ -1,12 +1,3 @@
-def create_new_effect(effect_name, effect_description):
-	if effect_name is None or effect_name == '' or effect_description is None or effect_description == '':
-		raise Exception('Invalid effect')
-
-	sql_str = """INSERT INTO Effects (Effect_Name, Effect_Description)
-				VALUES (?, ?);
-			"""
-	query_db(sql_str, (effect_name, effect_description), False)
-
 from modules.data.database.db import query_db
 from execptions import EmptyQueryException
 

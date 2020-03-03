@@ -10,6 +10,8 @@ from PIL import Image
 
 import os
 
+import datetime
+
 class ImageHandler():
 	def __init__(self):
 		self._logger = Logger()
@@ -20,22 +22,26 @@ class ImageHandler():
 				raise(FileNotSuppliedException('No file name found for the image. (File name was blank)'))
 
 			if self._allowed_file(image.filename):
-				filename = secure_filename(image.filename)
+				filename = self._append_date_to_filename(secure_filename(image.filename))
 
 				if not os.path.exists(save_dir_name):
 					os.mkdir(save_dir_name, mode=0o770)
 
 				image.save(os.path.join(save_dir_name, filename))
-			else:
-				return -3
+				return filename
 		except FileNotSuppliedException as e:
 			self._logger.error("save_image function encountered an error... " + str(e.value))
-			return -1 
 		except Exception:
 			self._logger.error("Invalid file, could not save.")
-			return -2 
 
-		return 1 
+		return None 
+
+	def _append_date_to_filename(self, filename):
+		cur_time = datetime.datetime.utcnow()
+		filename += "_" + str(cur_time.day) + str(cur_time.month) + \
+				str(cur_time.year) + "_" + str(cur_time.hour) + \
+				str(cur_time.minute) + str(cur_time.second) + str(cur_time.microsecond)
+		return filename
 
 	def _allowed_file(self, filename):
 		return '.' in filename and \
