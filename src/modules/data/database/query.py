@@ -6,7 +6,7 @@ class Query():
 		self.sql_str = sql_str
 		self.args = args
 		self.return_data = return_data
-		self.multiple = multiple
+		self.multiple = not multiple
 
 	def run_query(self):
 		if self.sql_str is None or self.sql_str == "":

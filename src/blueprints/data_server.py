@@ -8,7 +8,7 @@ from flask import (
 
 from werkzeug.utils import secure_filename, escape
 
-from db import get_db, query_db
+from modules.data.database.db import get_db, query_db
 from blueprints.auth import login_required
 
 import os
@@ -31,6 +31,7 @@ def equipmentItemDetails(char_id, equipment_slot):
 		return ""
 
 	try:
+		print(items)
 		item_id = items['Character_' + equipment_slot]
 	except:
 		print("ERROR: Item was not found")
@@ -64,7 +65,12 @@ def equipmentItemDetails(char_id, equipment_slot):
 			'Item_Effect2' : None,
 			'Item_Damage_Num_Of_Dices' : 0,
 			'Item_Damage_Num_Of_Dice_Sides' : 0,
-			'Item_AC_Bonus' : 0
+			'Item_AC_Bonus' : 0,
+			'Item_Bonus_Attack' : 0,
+			'Wield_Str' : 0,
+			'Wield_Dex' : 0,
+			'Wield_Wis' : 0,
+			'Wield_Int' : 0
 		}
 
 	# Check if item has an effect on it
@@ -94,7 +100,7 @@ def equipmentItemDetails(char_id, equipment_slot):
 	image = url_for('static', filename='images/no_image.png')
 
 	if itemQueryResult['Item_Picture'] is not None and itemQueryResult['Item_Picture'] != '' and itemQueryResult['Item_Picture'] != 'no_image.png':
-		image = '/dataserver/imageserver/item/' + itemQueryResult['Item_Picture']
+		image = '/imageserver/item/' + itemQueryResult['Item_Picture']
 
 	return jsonify(
 		description=itemQueryResult['Item_Description'],
@@ -116,7 +122,12 @@ def equipmentItemDetails(char_id, equipment_slot):
 		effect2_description=effect2QueryResult['Effect_Description'],
 		item_damage_num_of_dices=itemQueryResult['Item_Damage_Num_Of_Dices'],
 		item_damage_num_of_dice_sides=itemQueryResult['Item_Damage_Num_Of_Dice_Sides'],
-		ac=itemQueryResult['Item_AC_Bonus']
+		ac=itemQueryResult['Item_AC_Bonus'],
+		bonus_damage=itemQueryResult['Item_Bonus_Attack'],
+		wield_str=itemQueryResult['Wield_Str'],
+		wield_dex=itemQueryResult['Wield_Dex'],
+		wield_wis=itemQueryResult['Wield_Wis'],
+		wield_int=itemQueryResult['Wield_Int'],
 	)
 
 
@@ -174,7 +185,12 @@ def inventoryItemDetails(char_id, item_id):
 			'Item_Effect2' : None,
 			'Item_Damage_Num_Of_Dices' : 0,
 			'Item_Damage_Num_Of_Dice_Sides' : 0,
-			'Item_AC_Bonus' : 0
+			'Item_AC_Bonus' : 0,
+			'Item_Bonus_Attack' : 0,
+			'Wield_Str' : 0,
+			'Wield_Dex' : 0,
+			'Wield_Wis' : 0,
+			'Wield_Int' : 0
 		}
 
 	# Check if item has an effect on it
@@ -204,7 +220,7 @@ def inventoryItemDetails(char_id, item_id):
 	image = url_for('static', filename='images/no_image.png')
 
 	if itemQueryResult['Item_Picture'] is not None and itemQueryResult['Item_Picture'] != '' and itemQueryResult['Item_Picture'] != 'no_image.png':
-		image = '/dataserver/imageserver/item/' + itemQueryResult['Item_Picture']
+		image = '/imageserver/item/' + itemQueryResult['Item_Picture']
 
 	return jsonify(
 		description=itemQueryResult['Item_Description'],
@@ -226,7 +242,12 @@ def inventoryItemDetails(char_id, item_id):
 		effect2_description=effect2QueryResult['Effect_Description'],
 		item_damage_num_of_dices=itemQueryResult['Item_Damage_Num_Of_Dices'],
 		item_damage_num_of_dice_sides=itemQueryResult['Item_Damage_Num_Of_Dice_Sides'],
-		ac=itemQueryResult['Item_AC_Bonus']
+		ac=itemQueryResult['Item_AC_Bonus'],
+		bonus_damage=itemQueryResult['Item_Bonus_Attack'],
+		wield_str=itemQueryResult['Wield_Str'],
+		wield_dex=itemQueryResult['Wield_Dex'],
+		wield_wis=itemQueryResult['Wield_Wis'],
+		wield_int=itemQueryResult['Wield_Int'],
 	)
 
 @bp.route('/characterInfo/<int:char_id>/<string:field>', methods=('GET', 'POST'))
@@ -279,6 +300,38 @@ def get_class_options():
 		class_name_and_id.append({'id' : item['Class_ID'], 'name' : item['Class_Name']})
 
 	return jsonify(classes=class_name_and_id)
+
+@bp.route('getClassName/<int:char_id>')
+@login_required
+def get_class(char_id):
+	sql_str = """SELECT Class_Name 
+			FROM Character
+			INNER JOIN Class ON Class.Class_ID = Character.Character_Class
+			WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if query_result is None:
+		return jsonify(current_value="Error getting Class Name")
+
+	return jsonify(current_value=query_result["Class_Name"])
+
+
+@bp.route('getRaceName/<int:char_id>')
+@login_required
+def get_race(char_id):
+	sql_str = """SELECT Race_Name 
+			FROM Character
+			INNER JOIN Races ON Races.Race_ID = Character.Character_Race
+			WHERE User_ID = ? AND Character_ID = ?;
+			"""
+	query_result = query_db(sql_str, (session['user_id'], char_id), True, True)
+
+	if query_result is None:
+		return jsonify(current_value="Error getting Race Name")
+
+	return jsonify(current_value=query_result["Race_Name"])
+
 
 @bp.route('getAlignmentOptions')
 @login_required
@@ -535,8 +588,6 @@ def get_current_equiped_items(char_id, item_slot):
 			"""
 
 	item_ids = query_db(sql_str, (char_id,), True, True)
-	#item_ids = query_db(sql_str, (char_id,), True)
-
 
 	field_names = [
 		'Item_ID',
@@ -554,44 +605,7 @@ def get_current_equiped_items(char_id, item_slot):
 		
 		sql_str += ' '
 
-	#sql_str += """\nFROM Items
-	#		INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID
-	#		WHERE 
-	#		"""
-
 	temp = 0
-
-	#query_args = []
-
-	#for i in item_ids:
-	#	if temp > 0:
-	#		sql_str += """ OR """
-	#	else:
-	#		temp = 1
-		
-	#	sql_str += """ Item_ID = ?"""
-	#	query_args.append(i)
-		
-	#sql_str += """;"""
-
-	#full = {}
-	#query_args = [] 
-
-	#for s in slots:
-	#	print(s)
-	#	print(item_ids[s])
-	#	if temp > 0:
-	#		sql_str += """ OR """
-	#	else:
-	#		temp = 1
-		
-	#	sql_str += """ Item_ID = ?"""
-	#	full[item_ids[s]] = s
-	#	query_args.append(item_ids[s])
-		
-	#sql_str += """;"""
-
-	#query_result = query_db(sql_str, tuple(query_args), True)
 
 	item_list = []
 
@@ -634,27 +648,6 @@ def get_current_equiped_items(char_id, item_slot):
 
 		item_list.append(temp_dict)
 
-	#for item in query_result:
-	#	print(item)
-	#	item_data = {}
-	#	for key in field_names:
-	#		print(key)
-	#		print(item[key])
-	#		item_data[key] = item[key]
-
-	#for item in query_result:
-	#	item_data = {}
-		# get number of time id occurs
-	#	num_of_occurances = query_args.count(item['Item_ID'])
-	#	for i in range(num_of_occurances):
-	#		for key in field_names:
-	#			item_data[key] = item[key] 
-
-
-	#		item_data['internal_slot_num'] = int(full[item['Item_ID']][-1])
-			#item_list.append(item_data)
-	#		item_list[item_data['internal_slot_num'] - 1] = item_data
-
 	count = 0
 	for i in item_ids:
 		sql_str = """SELECT Item_ID, Item_Name, Item_Picture, Rarities.Rarities_Color
@@ -682,10 +675,6 @@ def get_current_equiped_items(char_id, item_slot):
 			WHERE Slots_ID = ?;
 			"""
 	slot_name = query_db(sql_str, (item_slot,), True, True)['Slots_Name']
-
-
-	#for i in item_ids:
-	#	if 
 
 	output = {
 		'slot_name' : slot_name,
@@ -717,12 +706,6 @@ def get_items_in_slot(char_id, item_slot):
 		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
 		characters['Character_Weapon4']
 	] 
-
-	#sql_str = """SELECT * 
-	#			FROM SLOTS
-	#			WHERE Slots_Name = ?;
-	#	"""
-	#slot = query_db(sql_str, (item_slot,))
 	
 	sql_str = """SELECT Items.Item_ID, Items.Item_Weight, Items.Item_Name, Rarities.Rarities_Color, Slots.Slots_ID, Inventory.Amount
 				FROM Inventory
@@ -734,8 +717,6 @@ def get_items_in_slot(char_id, item_slot):
 	query_result = query_db(sql_str, (char_id, item_slot), True)
 
 	for q in query_result:
-		#if q['Slots_Name'] not in items.keys():
-		#	items[q['Slots_Name']] = []
 		
 		item_fields = {
 			'Item_ID' : q['Item_ID'],

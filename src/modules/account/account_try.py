@@ -1,5 +1,5 @@
 import datetime
-from db import query_db
+from modules.data.database.db import query_db
 
 def add_account_try(user_id):
 

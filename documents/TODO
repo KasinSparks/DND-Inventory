@@ -25,6 +25,9 @@ Code Items
 
 	[] Change links to js and css in html files to use url_for
 
+	[] If an item get deleted or changed it needs to reflect updates.
+		(e.g. if an item is deleted, the item shall be removed from inv. and character)
+
 Misc.
 	[x] Update TOS
 	[x] Re-export schema

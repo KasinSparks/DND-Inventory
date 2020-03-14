@@ -6,11 +6,14 @@ from werkzeug.utils import secure_filename
 
 import os
 
-from db import get_db, query_db
+from modules.data.database.db import query_db
 
 from blueprints.auth import login_required
 
-from blueprints.admin import is_admin, get_current_username
+from blueprints.admin import get_current_username
+
+from modules.data.database.query_modules import select_query, insert_query
+from modules.account.authentication_checks import is_admin
 
 import math
 
@@ -21,12 +24,7 @@ bp = Blueprint('character', __name__, url_prefix='/character')
 @login_required
 def character_select():
 	# Query DB for a list of user's characters
-	sql_str = """SELECT Character_ID, Character_Name
-				FROM Character
-				WHERE Character.User_ID = ?;
-				"""
-
-	characters = query_db(sql_str, (session['user_id'],))
+	characters = select_query.select_char_name_and_id(session['user_id'])
 
 	character_list = []
 
@@ -42,45 +40,38 @@ def character_select():
 							characters=character_list,
 							header_text=get_current_username())
 
+def get_item_ids(character_data):
+	item_id_list = [
+		character_data['Character_Head'], character_data['Character_Shoulder'], character_data['Character_Torso'],
+		character_data['Character_Hand'],character_data['Character_Leg'],character_data['Character_Foot'],
+		 character_data['Character_Trinket1'], character_data['Character_Trinket2'],character_data['Character_Ring1'],
+		character_data['Character_Ring2'],character_data['Character_Item1'],character_data['Character_Item2'],
+		character_data['Character_Weapon1'], character_data['Character_Weapon2'], character_data['Character_Weapon3'],
+		character_data['Character_Weapon4']
+	]
+	return item_id_list
+
 # Character page
 @bp.route('/<int:char_id>')
 @login_required
 def character_page(char_id):
-
-	
-
 	characters = None
 
 	if is_admin():
-		sql_str = """SELECT *
-				FROM Character
-				WHERE Character.Character_ID = ?;
-				"""
-		characters = query_db(sql_str, (char_id,), True, True)
+		characters = select_query.select_character_data(char_id)
 	else:
 		# Check for user_id associated with char_id
-		sql_str = """SELECT *
-					FROM Character
-					WHERE Character.User_ID = ? AND Character.Character_ID = ?;
-					"""
-
-		characters = query_db(sql_str, (session['user_id'], char_id), True, True)
+		characters = select_query.select_character_data(char_id, session['user_id'])
 
 	if characters is None:
 		# Error
 		return redirect(url_for('character.character_select'))
 
-	item_id_list = [
-		characters['Character_Head'], characters['Character_Shoulder'], characters['Character_Torso'],
-		characters['Character_Hand'],characters['Character_Leg'],characters['Character_Foot'],
-		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-		characters['Character_Ring2'],characters['Character_Item1'],characters['Character_Item2'],
-		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
-		characters['Character_Weapon4']
-	] 
+	item_id_list = get_item_ids(characters)	
 
 	# Query DB for character's items and equipment
 
+	# TODO: Clean this up
 	equiped_item_short_data = {
 		'head' : item_short_data(characters['Character_Head'], 'Head', 'Head.png'),
 		'shoulder' : item_short_data(characters['Character_Shoulder'], 'Shoulder', 'Shoulder.png'),
@@ -100,44 +91,24 @@ def character_page(char_id):
 		'offhand2' : item_short_data(characters['Character_Weapon4'], 'Off Hand 2', 'Off_Hand.png')
 	}
 
-	sql_str = """SELECT Class_Name
-				From Class
-				WHERE Class_ID = ?;
-			"""
-	class_name = query_db(sql_str, (characters['Character_Class'],), True, True)
+	class_name = select_query.get_class_name(characters['Character_Class'])
 	if class_name is None or class_name == '':
 		class_name = 'No Class'
-	else:
-		class_name = class_name['Class_Name'] 
 
-	sql_str = """SELECT Race_Name
-				From Races 
-				WHERE Race_ID = ?;
-			"""
-	race_name = query_db(sql_str, (characters['Character_Race'],), True, True)
+	race_name = select_query.get_race_name(characters['Character_Race'])
 	if race_name is None or race_name == '':
 		race_name = 'No Race'
-	else:
-		race_name = race_name['Race_Name'] 
 
-	sql_str = """SELECT Alignment_Name
-				From Alignments
-				WHERE Alignment_ID = ?;
-			"""
-	alignment_name = query_db(sql_str, (characters['Character_Alignment'],), True, True)
+	alignment_name = select_query.get_alignment_name(characters['Character_Alignment'])
 	if alignment_name is None or alignment_name == '':
 		alignment_name = 'No Alignment'
-	else:
-		alignment_name = alignment_name['Alignment_Name']
 
 	stat_bonus = sumation_stats(item_id_list)
 
-	#image_data = convert_image_to_base64(os.path.join(current_app.config['IMAGE_UPLOAD'], characters['Character_Image']))
-	#image_data = convert_image_to_base64(characters['Character_Image'])
 	image_data = url_for('static', filename='images/no_image.png')
 
 	if characters['Character_Image'] is not None and characters['Character_Image'] != '' and characters['Character_Image'] != 'no_image.png':
-		image_data = '/dataserver/imageserver/user/' + characters['Character_Image']
+		image_data = '/imageserver/user/' + characters['Character_Image']
 
 	character_data = {
 		'name' : shorten_string(characters['Character_Name'], 20),
@@ -147,8 +118,8 @@ def character_page(char_id):
 		'hp' : convert_form_field_data_to_int(characters['Character_HP']),
 		'max_hp' : convert_form_field_data_to_int(characters['Character_Max_HP']) + stat_bonus['health'],
 		'ac' : convert_form_field_data_to_int(characters['Character_AC']) + stat_bonus['ac'],
-		'initiative' : convert_form_field_data_to_int(characters['Character_Initiative']) + stat_bonus['initiative'],
-		'attack_bonus' : convert_form_field_data_to_int(characters['Character_Attack_Bonus']) + stat_bonus['attack'],
+		#'initiative' : convert_form_field_data_to_int(characters['Character_Initiative']) + stat_bonus['initiative'],
+		#'attack_bonus' : convert_form_field_data_to_int(characters['Character_Attack_Bonus']) + stat_bonus['attack'],
 		'alignment' : shorten_string(alignment_name, 12),
 		'currency' : convert_form_field_data_to_int(characters['Character_Currency']),
 		'weight' : convert_form_field_data_to_int(characters['Character_Base_Carrying_Cap']),
@@ -178,10 +149,7 @@ def character_page(char_id):
 		for i in inv_items[k]['items']:
 			character_data['weight'] += int(i['Item_Weight']) * int(i['Amount'])
 
-	sql_str = """
-		"""
-
-	return render_template('character_page.html',
+	return render_template('character/character_page.html',
 							char_id=char_id,
 							equiped_item=equiped_item_short_data,
 							character_data=character_data,
@@ -193,10 +161,7 @@ def character_page(char_id):
 def get_inv_items(char_id : int, equiped_items_ids):
 	items = {}
 
-	sql_str = """SELECT *
-				FROM SLOTS;
-		"""
-	slots = query_db(sql_str)
+	slots = select_query.select_slots()
 
 	for slot in slots:
 		items[slot['Slots_Name']] = {
@@ -250,7 +215,7 @@ def item_short_query(item_id):
 def item_stat_query(item_id):
 	sql_str = """SELECT Items.Item_Str_Bonus, Items.Item_Dex_Bonus, Items.Item_Con_Bonus,
 				Items.Item_Int_Bonus, Items.Item_Wis_Bonus, Items.Item_Cha_Bonus,
-				Items.Item_Attack_Bonus, Items.Item_Initiative_Bonus, Items.Item_Health_Bonus,
+				Items.Item_Initiative_Bonus, Items.Item_Health_Bonus,
 				Items.Item_AC_Bonus, Items.Item_Damage_Num_Of_Dices, Items.Item_Damage_Num_Of_Dice_Sides
 				FROM Items
 				WHERE Items.Item_ID = ?;
@@ -282,8 +247,8 @@ def sumation_stats(item_id_list):
 			stat_bonus['int'] += convert_form_field_data_to_int(query_result['Item_Int_Bonus'])
 			stat_bonus['wis'] += convert_form_field_data_to_int(query_result['Item_Wis_Bonus'])
 			stat_bonus['cha'] += convert_form_field_data_to_int(query_result['Item_Cha_Bonus'])
-			stat_bonus['attack'] += convert_form_field_data_to_int(query_result['Item_Attack_Bonus'])
-			stat_bonus['initiative'] += convert_form_field_data_to_int(query_result['Item_Initiative_Bonus'])
+			#stat_bonus['attack'] += convert_form_field_data_to_int(query_result['Item_Attack_Bonus'])
+			#stat_bonus['initiative'] += convert_form_field_data_to_int(query_result['Item_Initiative_Bonus'])
 			stat_bonus['health'] += convert_form_field_data_to_int(query_result['Item_Health_Bonus'])
 			stat_bonus['ac'] += convert_form_field_data_to_int(query_result['Item_AC_Bonus'])
 			stat_bonus['num_of_dices'] += convert_form_field_data_to_int(query_result['Item_Damage_Num_Of_Dices'])
@@ -316,7 +281,7 @@ def item_short_data(item_id, default_name, defalut_image_name):
 	#else:
 	#	item_data['image'] = convert_image_to_base64(os.path.join('src', 'static', 'images', item['Item_Picture']))
 	if item['Item_Picture'] is not None and item['Item_Picture'] != '' and item['Item_Picture'] != 'no_image.png':
-		item_data['image'] = '/dataserver/imageserver/item/' + item['Item_Picture']
+		item_data['image'] = '/imageserver/item/' + item['Item_Picture']
 
 
 	if item['Rarities_Color'] is not None and item['Rarities_Color'] != '':
@@ -377,9 +342,11 @@ def create_character_submit():
 
 		## TODO: clean this up
 		data = {
-			'race_name' : request.form['race'],
+			#'race_name' : request.form['race'],
+			'race_name' : '',
 			'race_id' : None,
-			'class_name' : request.form['class'],
+			#'class_name' : request.form['class'],
+			'class_name' : '',
 			'class_id' : None,
 			'alignment_name' : request.form['alignment'],
 			'alignment_id' : None,
@@ -509,6 +476,49 @@ def check_if_user_has_character(user_id, char_id):
 	
 	return False
 
+#@bp.route('/edit/class/<int:char_id>', methods=('GET', 'POST'))
+#@login_required
+#def edit_class(char_id):
+	#if not check_if_user_has_character(session['user_id'], char_id):
+		#return '400'
+#
+#
+	#if request.method == 'POST':
+		#new_val = request.form['value']
+#
+		#sql_str = """SELECT Class_ID
+				#FROM Class;
+				#"""
+		#class_ids = query_db(sql_str)
+		#class_ids = [x['Class_ID'] for x in class_ids]
+#
+		#try:
+			#new_val = int(new_val)
+		#except:
+			#new_val = -1
+#
+		#if new_val not in class_ids:
+			#print('NO class with id. ')
+			#return '400'
+		#
+		#sql_str = """UPDATE	Character
+				#SET Character_Class = ?
+				#WHERE User_ID = ? AND Character_ID = ?; 
+				#"""
+		#query_db(sql_str, (new_val, session['user_id'], char_id), False)
+			#
+		#sql_str = """SELECT Class_Name
+					#FROM Class
+					#WHERE Class_ID = ?;
+				#"""
+		#class_name = query_db(sql_str, (new_val,), True, True)['Class_Name']
+		#return class_name
+#
+#
+#
+	#return '200'
+
+
 @bp.route('/edit/class/<int:char_id>', methods=('GET', 'POST'))
 @login_required
 def edit_class(char_id):
@@ -518,39 +528,69 @@ def edit_class(char_id):
 
 	if request.method == 'POST':
 		new_val = request.form['value']
-
 		sql_str = """SELECT Class_ID
-				FROM Class;
+				FROM Class
+				WHERE Class_Name = ?;
 				"""
-		class_ids = query_db(sql_str)
-		class_ids = [x['Class_ID'] for x in class_ids]
+		class_id = query_db(sql_str, (new_val,), True, True)
 
-		try:
-			new_val = int(new_val)
-		except:
-			new_val = -1
+		if class_id is None:
+			# class name does not already exist
+			insert_query.insert("Class", {"Class_Name" : new_val})			
 
-		if new_val not in class_ids:
-			print('NO class with id. ')
-			return '400'
+			sql_str = """SELECT Class_ID
+					FROM Class
+					WHERE Class_Name = ?;
+					"""
+			class_id = query_db(sql_str, (new_val,), True, True)
+
 		
 		sql_str = """UPDATE	Character
 				SET Character_Class = ?
 				WHERE User_ID = ? AND Character_ID = ?; 
 				"""
-		query_db(sql_str, (new_val, session['user_id'], char_id), False)
+		query_db(sql_str, (class_id['Class_ID'], session['user_id'], char_id), False)
 			
-		sql_str = """SELECT Class_Name
-					FROM Class
-					WHERE Class_ID = ?;
+		return jsonify(character_class=new_val)
+
+	return "Invalid request error."
+
+
+@bp.route('/edit/race/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+def edit_race(char_id):
+	if not check_if_user_has_character(session['user_id'], char_id):
+		return '400'
+
+
+	if request.method == 'POST':
+		new_val = request.form['value']
+		sql_str = """SELECT Race_ID
+				FROM Races
+				WHERE Race_Name = ?;
 				"""
-		class_name = query_db(sql_str, (new_val,), True, True)['Class_Name']
-		return class_name
+		race_id = query_db(sql_str, (new_val,), True, True)
 
+		if race_id is None:
+			# class name does not already exist
+			insert_query.insert("Races", {"Race_Name" : new_val})			
 
+			sql_str = """SELECT Race_ID 
+					FROM Races 
+					WHERE Race_Name = ?;
+					"""
+			race_id = query_db(sql_str, (new_val,), True, True)
 
-	return '200'
+		
+		sql_str = """UPDATE	Character
+				SET Character_Race = ?
+				WHERE User_ID = ? AND Character_ID = ?; 
+				"""
+		query_db(sql_str, (race_id['Race_ID'], session['user_id'], char_id), False)
+			
+		return jsonify(character_race=new_val)
 
+	return "Invalid request error."
 
 
 @bp.route('/edit/alignment/<int:char_id>', methods=('GET', 'POST'))
@@ -1032,6 +1072,8 @@ def item_equip(char_id, item_id, slot_number = 0):
 	if characters is None:
 		# Error
 		return redirect(url_for('character.character_select'))
+
+	error = "None"
 	
 	sql_str = """SELECT *
 				FROM Inventory
@@ -1053,6 +1095,33 @@ def item_equip(char_id, item_id, slot_number = 0):
 
 	if slot_number > 0 and slot_number < 5:
 		modified_slot_name += str(slot_number)
+
+	if slot_name == "Weapon":
+		# Check for dual wield
+		# Get the current equiped weapons
+		db_slot_name = "Character_" + modified_slot_name
+		sql_str = """SELECT *
+					FROM Character
+					WHERE Character_ID = ?;"""
+		cur_equip_weapons = query_db(
+			sql_str,
+			(char_id,),
+			True,
+			True	
+		)
+
+		if cur_equip_weapons is None:
+			return jsonify(error = "Server side error")
+		else:
+			print("Weapon id = " + str(cur_equip_weapons[db_slot_name]))
+			sql_str = """SELECT *
+						FROM Items
+						WHERE Item_ID = ?;
+					"""
+			item_data = query_db(sql_str, (cur_equip_weapons[db_slot_name],), True, True)
+
+			
+		
 
 	sql_str = """UPDATE Character 
 			SET Character_""" + modified_slot_name + """=?
@@ -1097,8 +1166,8 @@ def item_equip(char_id, item_id, slot_number = 0):
 	character_data = {
 		'max_hp' : convert_form_field_data_to_int(characters['Character_Max_HP']) + stat_bonus['health'],
 		'ac' : convert_form_field_data_to_int(characters['Character_AC']) + stat_bonus['ac'],
-		'initiative' : convert_form_field_data_to_int(characters['Character_Initiative']) + stat_bonus['initiative'],
-		'attack_bonus' : convert_form_field_data_to_int(characters['Character_Attack_Bonus']) + stat_bonus['attack'],
+		#'initiative' : convert_form_field_data_to_int(characters['Character_Initiative']) + stat_bonus['initiative'],
+		#'attack_bonus' : convert_form_field_data_to_int(characters['Character_Attack_Bonus']) + stat_bonus['attack'],
 		'weight' : convert_form_field_data_to_int(characters['Character_Base_Carrying_Cap']),
 		#'max_weight' : convert_form_field_data_to_int(characters['Character_Max_Carry_Weight']),
 		'max_weight' : 15 * (convert_form_field_data_to_int(characters['Character_Strength']) + stat_bonus['str']),
@@ -1123,7 +1192,8 @@ def item_equip(char_id, item_id, slot_number = 0):
 		stat_modifiers = stat_modifiers,
 		slot_name = slot_name,
 		modified_slot_name = modified_slot_name,
-		item_data = item_data_dict
+		item_data = item_data_dict,
+		error=error
 	)
 
 @bp.route('item/unequip/<int:char_id>/<int:item_id>/<int:slot_number>', methods=('GET', 'POST'))
@@ -1200,8 +1270,8 @@ def item_unequip(char_id, item_id, slot_number = 0):
 	character_data = {
 		'max_hp' : convert_form_field_data_to_int(characters['Character_Max_HP']) + stat_bonus['health'],
 		'ac' : convert_form_field_data_to_int(characters['Character_AC']) + stat_bonus['ac'],
-		'initiative' : convert_form_field_data_to_int(characters['Character_Initiative']) + stat_bonus['initiative'],
-		'attack_bonus' : convert_form_field_data_to_int(characters['Character_Attack_Bonus']) + stat_bonus['attack'],
+		#'initiative' : convert_form_field_data_to_int(characters['Character_Initiative']) + stat_bonus['initiative'],
+		#'attack_bonus' : convert_form_field_data_to_int(characters['Character_Attack_Bonus']) + stat_bonus['attack'],
 		'weight' : convert_form_field_data_to_int(characters['Character_Base_Carrying_Cap']),
 		#'max_weight' : convert_form_field_data_to_int(characters['Character_Max_Carry_Weight']),
 		'max_weight' : 15 * (convert_form_field_data_to_int(characters['Character_Strength']) + stat_bonus['str']),

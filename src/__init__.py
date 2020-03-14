@@ -22,8 +22,8 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
 		pass
 
 	# database
-	import db
-	db.init_app(app)
+	from modules.data.database.db import init_app	
+	init_app(app)
 
 	#---------------------------------------------------------------#
 	#							Blueprints							#
@@ -48,9 +48,8 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
 
 
 	from blueprints.auth import login_required, get_current_username
-	from db import query_db
 
-	from blueprints.admin import is_admin
+	from modules.account.authentication_checks import is_admin
 
 	@app.route('/')
 	@app.route('/home')

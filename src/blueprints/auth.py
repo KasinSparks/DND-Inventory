@@ -7,9 +7,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 import datetime
 
-from db import get_db, query_db
-
-from modules.account_try import add_account_try, account_tries_remaining, get_lockout_time, is_attempt_within_range
+from modules.account.account_try import add_account_try, account_tries_remaining, get_lockout_time, is_attempt_within_range
+from modules.data.form_data import get_request_field_data
+from modules.data.database.query_modules import select_query, insert_query, update_query
 
 import math
 
@@ -23,10 +23,9 @@ def register():
 	username = ""
 
 	if request.method == 'POST':
-		username = request.form['username']
-		password = request.form['password']
-		confirm_password = request.form['password_confirm']
-		db = get_db()
+		username = get_request_field_data('username')
+		password = get_request_field_data('password')
+		confirm_password = get_request_field_data('password_confirm')
 		error = None
 
 		if not username:
@@ -37,23 +36,13 @@ def register():
 			error = 'Passwords do not match.'
 		elif len(username) > 15:
 			error = 'Username MAX 15 characters'
-		elif db.execute(
-			# TODO
-			'SELECT User_ID FROM Users WHERE Username = ?', (username,)
-		).fetchone() is not None:
+		elif select_query.get_user_id(username) is not None:
 			error = '{} Taken.'.format(username)
 
 		if error is None:
-			db.execute(
-				# TODO
-				'INSERT INTO Users (Username, Password) VALUES (?, ?)',
-				(username, generate_password_hash(password))
-			)
-			db.commit()
-
+			insert_query.create_user(username, generate_password_hash(password))
 			session.clear()
-			session['user_id'] = query_db("SELECT User_ID FROM Users WHERE Username=?", (username,), True, True)['User_ID']
-
+			session['user_id'] = select_query.get_user_id(username)
 			return redirect(url_for('auth.register_tos'))
 			
 
@@ -73,48 +62,42 @@ def login():
 	error = None
 
 	if request.method == 'POST':
-		username = request.form['username']
-		password = request.form['password']
-		db = get_db()
-		user = db.execute(
-			'SELECT * FROM Users WHERE Username = ?', (username,)
-		).fetchone()
+		username = get_request_field_data('username')
+		password = get_request_field_data('password')
+		user = select_query.select_user_data(username)
 
-		# TODO: check for is verified
-		if user is not None and user['Is_Verified'] < 1:
-			return render_template('auth/not_verified.html',
-							header_text=header_text,
-							inner_text=None
-							)
+		if user is not None:
+			# Check for is verified
+			if user['Is_Verified'] < 1:
+				return render_template('auth/not_verified.html',
+								header_text=header_text,
+								inner_text=None
+								)
 
-		if user is not None and account_tries_remaining(user['User_ID']) < 1 and is_attempt_within_range(user['User_ID']):
-			# Accout locked
-			tries_remaining = 0
-			lockout_time = get_lockout_time(user['User_ID'])
-			time_until_unlocked = ((datetime.timedelta(hours=24) + lockout_time) - datetime.datetime.utcnow())
-			time_until_unlocked_hours = math.trunc(time_until_unlocked.seconds / 3600)
-			time_until_unlocked_minutes = math.trunc((time_until_unlocked.seconds / 3600 - math.trunc(time_until_unlocked.seconds / 3600)) * 60)
-			unlockout_time = {'Hours' : time_until_unlocked_hours, 'Minutes' : time_until_unlocked_minutes}
-			error = 'Account Locked'
-		elif user is None:
+			if account_tries_remaining(user['User_ID']) < 1 and is_attempt_within_range(user['User_ID']):
+				# Accout locked
+				# TODO: clean up
+				tries_remaining = 0
+				lockout_time = get_lockout_time(user['User_ID'])
+				time_until_unlocked = ((datetime.timedelta(hours=24) + lockout_time) - datetime.datetime.utcnow())
+				time_until_unlocked_hours = math.trunc(time_until_unlocked.seconds / 3600)
+				time_until_unlocked_minutes = math.trunc((time_until_unlocked.seconds / 3600 - math.trunc(time_until_unlocked.seconds / 3600)) * 60)
+				unlockout_time = {'Hours' : time_until_unlocked_hours, 'Minutes' : time_until_unlocked_minutes}
+				error = 'Account Locked'
+			elif not check_password_hash(user['Password'], password):
+				error = 'Incorrect password'
+				tries_remaining = add_account_try(user['User_ID'])['tries_remaining']
+		else:
 			error = 'Incorrect login'
-		elif not check_password_hash(user['Password'], password):
-			error = 'Incorrect password'
-			tries_remaining = add_account_try(user['User_ID'])['tries_remaining']
 
 
 		if error is None:
 			session.clear()
 			session['user_id'] = user['User_ID']
-			# TODO
-			#return redirect(url_for('index'))
 
 			# Check for TOS agreement
-			sql_str = """SELECT Has_Agreed_TOS
-						FROM Users
-						WHERE User_ID=?;
-					"""
-			if query_db(sql_str, (session['user_id'],), True, True)['Has_Agreed_TOS'] < 1:
+			has_agreed_tos = select_query.get_has_agreed_to_tos(session['user_id'])
+			if has_agreed_tos < 1:
 				# User has not agreed
 				return redirect(url_for('auth.register_tos'))
 		
@@ -128,8 +111,6 @@ def login():
 							tries_remaining=tries_remaining,
 							unlockout_time=unlockout_time)
 
-
-
 # Check if user is already loged in before a request
 @bp.before_app_request
 def load_logged_in_user():
@@ -138,10 +119,7 @@ def load_logged_in_user():
 	if user_id is None:
 		g.user = None
 	else:
-		g.user = get_db().execute(
-			# TODO
-			'SELECT * FROM Users WHERE User_ID = ?', (user_id,)
-		).fetchone()
+		g.user = select_query.select_user_data_from_id(user_id)
 
 # Logout
 @bp.route('/logout')
@@ -174,12 +152,7 @@ def register_tos():
 @login_required
 def accept_tos():
 	# If user has already accepted
-	sql_str = """SELECT Has_Agreed_TOS
-				FROM Users
-				WHERE User_ID=?;
-				"""
-
-	has_accepted = query_db(sql_str, (session['user_id'],), True, True)['Has_Agreed_TOS']
+	has_accepted = select_query.get_has_agreed_to_tos(session['user_id'])
 
 	if has_accepted > 0:
 		# User has already accepted the TOS
@@ -187,35 +160,17 @@ def accept_tos():
 								header_text=get_current_username(),
 								inner_text='You have already accepted the Terms of Service')
 
-	sql_str = """SELECT Notification_ID 
-				FROM Notification_Types
-				WHERE Type = ?;
-				"""
-
-	notification_type = query_db(sql_str, ('New User',), True, True)
+	
+	notification_type = select_query.get_notification_id("New User")
 
 	# Generate admin notification
-	sql_str = """INSERT INTO Admin_Notifications (User_ID, Notification_Type, Has_Been_Read)
-				VALUES (?, ?, 0);
-				"""
-
-	query_db(sql_str, (session['user_id'], notification_type['Notification_ID'],), False)
+	insert_query.create_admin_notification(session['user_id'], notification_type)
 
 	# Update user info in DB
-	sql_str = """UPDATE Users
-				SET Has_Agreed_TOS = 1
-				WHERE User_ID=?;
-				"""
-
-	query_db(sql_str, (session['user_id'],), False)
-
+	update_query.update_tos_agreement(session['user_id'], True)
+	
 	# Get the user name
-	sql_str = """SELECT Username
-				From Users
-				WHERE User_ID=?;
-				"""
-
-	username = query_db(sql_str, (session['user_id'],), True, True)['Username']
+	username = select_query.get_username(session['user_id'])
 
 	# Redirect to next screen
 	return render_template('auth/accepted_tos.html',
@@ -225,8 +180,4 @@ def accept_tos():
 
 @login_required
 def get_current_username():
-	sql_str = """SELECT Username
-				FROM Users
-				WHERE User_ID = ?;
-			"""
-	return query_db(sql_str, (session['user_id'],), True, True)['Username']
+	return select_query.get_username(session['user_id'])

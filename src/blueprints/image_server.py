@@ -2,6 +2,8 @@ from flask import (Blueprint, url_for, send_from_directory, current_app, session
 
 from blueprints.auth import login_required
 
+from modules.account.authentication_checks import is_admin
+
 #from PIL import Image
 
 import os

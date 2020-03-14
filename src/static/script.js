@@ -81,7 +81,19 @@ function getEquipmentItemDetailsHTML(jsonData, function_call='test2()'){
 				if(jsonData.slot === 10){	
 					equipmentItemDetailsHTML += '<tr>\
 						<td colspan=2><h2>Damage:</h2></td>\
-						<td colspan=2><h2>' + jsonData.item_damage_num_of_dice_sides + ' d ' + jsonData.item_damage_num_of_dices + '</h2></td>\
+						<td colspan=2><h2>' + jsonData.item_damage_num_of_dice_sides + ' d ' + jsonData.item_damage_num_of_dices + ' ' + (jsonData.bonus_damage < 0 ? '' : '+') + jsonData.bonus_damage + '</h2></td>\
+					</tr>\
+					<tr>\
+						<td><h2>Wield Str:</h2></td>\
+						<td><h2>' + jsonData.wield_str + '</h2></td>\
+						<td><h2>Wield Dex:</h2></td>\
+						<td><h2>' + jsonData.wield_dex + '</h2></td>\
+					</tr>\
+					<tr>\
+						<td><h2>Wield Wis:</h2></td>\
+						<td><h2>' + jsonData.wield_wis + '</h2></td>\
+						<td><h2>Wield Int:</h2></td>\
+						<td><h2>' + jsonData.wield_int + '</h2></td>\
 					</tr>'
 				} else if(jsonData.slot === 3){
 					equipmentItemDetailsHTML += '<tr>\
@@ -385,7 +397,7 @@ class ChangeData{
 	
 	string_value(char_id, current_string, field_id_name, submit_route){
 		var html_string = '<div class="char_item_val_change_container">\
-		<input type="number" id="new_value" value="' + current_number.level + '">';
+		<input type="text" id="new_value" value="' + current_string.current_value + '">';
 
 		var field = document.getElementById(field_id_name);
 		if(field == null){
@@ -488,9 +500,17 @@ function abortChanges(field_id_name){
 
 function changeClass(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getClassOptions',
+		var ccd = new ChangeData(char_id, '/dataserver/getClassName/' + char_id,
 			'json', 'character_class', '/character/edit/class/');
-		ccd.dataCall(ccd.dropdown);
+		ccd.dataCall(ccd.string_value);
+	}
+}
+
+function changeRace(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeData(char_id, '/dataserver/getRaceName/' + char_id,
+			'json', 'character_race', '/character/edit/race/');
+		ccd.dataCall(ccd.string_value);
 	}
 }
 
@@ -664,7 +684,7 @@ function inv_item_add_pop_up(char_id, response, a=null, b=null){
 					<input type="number" name="' + element.Item_ID + '.amount" min="1" value="1" disabled>\
 				</div>\
 				<div class="inv_add_item_data">\
-					<img src="/dataserver/imageserver/item/' + element.Item_Picture + '"/>\
+					<img src="/imageserver/item/' + element.Item_Picture + '"/>\
 					<h2 style="color:' + element.Rarities_Color + ';">' + element.Item_Name + '</h2>\
 				</div>\
 			</div>\
@@ -1063,7 +1083,7 @@ function changeNameLater(char_id, response, item_id, b=null){
 		var img_src_route = '/static/images/items/';
 		
 		if(element.Item_ID > 0){
-			img_src_route = '/dataserver/imageserver/item/';
+			img_src_route = '/imageserver/item/';
 		}
 
 		var side = 'left';
@@ -1159,6 +1179,12 @@ function submitEquipChange(url, char_id, item_id, keep_open){
 	var http = new XMLHttpRequest();
 	http.onreadystatechange = function(){ 
 		if(http.readyState == 4 && http.status == 200) {
+			try {
+				if (this.response.error != null && this.response.error !== "None"){
+					alert("An error occured: " + this.response.error);
+					return;
+				}
+			} catch (error) {}
 			// Update item picture and name in equipment
 			updateEquipedItemName(this.response);
 			updateEquipedItemPicture(this.response);
@@ -1213,7 +1239,7 @@ function updateEquipedItemPicture(response, use_default_image = false){
 		new_src = '/dataserver/imageserver/item/' + response.item_data['picture'];
 	} */
 	if(response.item_data != 'null'){
-		new_src = '/dataserver/imageserver/item/' + response.item_data['picture'];
+		new_src = '/imageserver/item/' + response.item_data['picture'];
 	}
 	
 	img_element.setAttribute('src', new_src);
@@ -1260,10 +1286,15 @@ function updateEquipedItemName(response, use_default_data=false){
 
 function updateCharacterStats(response){
 	var prefix = 'character_';
+
 	var ids = [
-		'max_hp', 'ac', 'initiative', 'attack_bonus', 'max_weight',
+		'max_hp', 'ac', 'max_weight',
 		'str', 'dex', 'con', 'int', 'wis', 'cha'
 	];
+/* 	var ids = [
+		'max_hp', 'ac', 'initiative', 'attack_bonus', 'max_weight',
+		'str', 'dex', 'con', 'int', 'wis', 'cha'
+	]; */
 	
 	var mod_ids = [
 		'str_mod', 'dex_mod', 'con_mod', 'int_mod', 'wis_mod', 'cha_mod', 
@@ -1357,7 +1388,7 @@ function updateMultiSlotItemHelper(response, category_name, slot_position_number
 		textElement.setAttribute('style', 'color: #606060');
 		imageElement.src = '/static/images/items/' + image_name;
 	} else {
-		imageElement.src = '/dataserver/imageserver/item/' + response.picture;
+		imageElement.src = '/imageserver/item/' + response.picture;
 	}
 	textElement.innerText = innerText;
 	

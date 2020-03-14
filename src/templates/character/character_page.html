@@ -279,12 +279,28 @@
 							<h3 class="info_data">Classification</h3>
 						</div>	
 						<div class="info_middle_section info_middle_section_top_image clickable" onclick="changeClass({{ char_id }});">
-							<h3 id="character_class" class="info_data">{{ character_data['race']|e }} {{ character_data['class']|e }}</h3>
+							<h3 id="character_class" class="info_data">{{ character_data['class']|e }}</h3>
 						</div>
 						<div class="info_right_section info_right_section_top_image clickable" onclick="changeLevel({{ char_id }});">
 							<h3 id="character_level" class="info_data">{{ character_data['level'] }}</h3>
 						</div>
 					</div>
+
+
+					<div class="info_item">
+						<div class="info_left_section">
+							<h3 class="info_data">Race</h3>
+						</div>	
+						<div class="info_middle_section info_middle_section_top_image clickable" onclick="changeRace({{ char_id }});">
+							<h3 id="character_race" class="info_data">{{ character_data['race']|e }}</h3>
+						</div>
+						<div class="info_right_section info_right_section_top_image">
+							<h3 class="info_data"></h3>
+						</div>
+					</div>
+
+					<div class="info_item_seperator"></div>
+
 					<div class="info_item">
 						<div class="info_left_section">
 							<h3 class="info_data">HP</h3>
@@ -308,9 +324,7 @@
 						</div>
 					</div>
 
-					<div class="info_item_seperator"></div>
-
-					<div class="info_item">
+					<!-- <div class="info_item">
 						<div class="info_left_section">
 							<h3 class="info_data">Initiative</h3>
 						</div>	
@@ -320,8 +334,8 @@
 						<div class="info_right_section info_right_section_top_image">
 							<h3 class="info_data"></h3>
 						</div>
-					</div>
-					<div class="info_item">
+					</div> -->
+					<!-- <div class="info_item">
 						<div class="info_left_section">
 							<h3 class="info_data">Attack Bonus</h3>
 						</div>	
@@ -331,7 +345,7 @@
 						<div class="info_right_section info_right_section_top_image">
 							<h3 class="info_data"></h3>
 						</div>
-					</div>
+					</div> -->
 
 					<div class="info_item_seperator"></div>
 
@@ -368,6 +382,8 @@
 							<h3 id="character_max_weight" class="info_data">{{ character_data['max_weight'] }}</h3>
 						</div>
 					</div>
+
+					<div class="info_item_seperator"></div>
 
 					<div class="info_item_seperator"></div>
 

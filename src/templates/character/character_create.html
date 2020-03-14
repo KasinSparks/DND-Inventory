@@ -19,25 +19,27 @@
 					</div>
 					<div class="input_item">
 						<label for="race">Race:</label>
-						<select name="race" required onchange="select_other_button(['race_other'], this.value);">
+						<input name="race_other" type="text" placeholder="Race" maxlength="25">
+<!-- 						<select name="race" required onchange="select_other_button(['race_other'], this.value);">
 							<option value="" selected>Race</option>
 							{% for r in races %}
 								<option value="{{ r['Race_Name'] }}">{{ r['Race_Name'] }}</option>
 							{% endfor %}
 							<option value="OTHER">Other</option>
 						</select>
-						<input name="race_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
+						<input name="race_other" type="text" style="display: none;" placeholder="Other" maxlength="25"> -->
 					</div>
 					<div class="input_item">
 						<label for="class">Class:</label>
-						<select name="class" required onchange="select_other_button(['class_other'], this.value);">
+						<input name="class_other" type="text" placeholder="Class" maxlength="25">
+<!-- 						<select name="class" required onchange="select_other_button(['class_other'], this.value);">
 							<option value="" selected>Class</option>
 							{% for c in classes %}
 								<option value="{{ c['Class_Name'] }}">{{ c['Class_Name'] }}</option>
 							{% endfor %}
 							<option value="OTHER">Other</option>
 						</select>
-						<input name="class_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
+						<input name="class_other" type="text" style="display: none;" placeholder="Other" maxlength="25"> -->
 					</div>
 					<div class="input_item">
 						<label for="alignment">Alignment:</label>
