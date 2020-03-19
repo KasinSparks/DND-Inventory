@@ -1,4 +1,5 @@
 from modules.data.database.query import Query
+from datetime import datetime
 
 def update_item(item_data, item_id):
 	update("Items", item_data, "WHERE Item_ID=?", (item_id,))
@@ -30,6 +31,22 @@ def change_user_admin_status(user_id, is_admin=False):
 		admin = 1
 	update("Users", {"Is_Admin" : admin}, "WHERE User_ID=?", (user_id,))
 
+def change_num_of_login_attempts(user_id, num_of_attempts):
+	update("Login_Attempts", {"Number_Attempts" : num_of_attempts}, "WHERE User_ID=?", (user_id,))
+
+def update_attempt_datetime(user_id, datetime=datetime.utcnow()):
+	update("Login_Attempts",
+		{
+			"Attempt_Year" : datetime.year,
+			"Attempt_Month" : datetime.month,
+			"Attempt_Day" : datetime.day,
+			"Attempt_Hour" : datetime.hour,
+			"Attempt_Minute" : datetime.minute,
+			"Attempt_Second" : datetime.second
+		},
+		"WHERE User_ID=?",
+		(user_id,)
+	)
 
 def update(table_name, data, where_clause="", where_clause_data=()):
 	if len(data) < 1:

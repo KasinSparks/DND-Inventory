@@ -44,4 +44,6 @@ def create_admin_notification(user_id, notification_type):
 			"Has_Been_Read" : 0
 		}
 	)
-		
+
+def create_login_attempt(user_id):
+	insert("Login_Attempts", {"User_ID" : user_id})

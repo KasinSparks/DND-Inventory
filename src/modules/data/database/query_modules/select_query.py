@@ -1,4 +1,5 @@
 from modules.data.database.query import Query
+from logger.logger import Logger
 
 # TODO: make more moduler like update and others
 # TODO: error/null checking on the queries that are being index
@@ -148,7 +149,7 @@ def select_items(item_id = -1):
 				INNER JOIN Slots ON Items.Item_Slot=Slots.Slots_ID """ + where_command + ";"
 
 	return Query(sql_str, args, True, multi).run_query()
-select_items_name_and_id
+
 def get_item_id_from_name(item_name):
 	sql_str = """SELECT Item_ID
 				FROM Items
@@ -253,3 +254,26 @@ def select_slots():
 				FROM SLOTS;
 		"""
 	return Query(sql_str, multiple=True).run_query()
+
+def select_attempt_date(user_id):
+	return select(
+		("Attempt_Year", "Attempt_Month", "Attempt_Day", "Attempt_Hour", "Attempt_Minute", "Attempt_Second"),
+		"Login_Attempts",
+		False,
+		"WHERE User_ID=?",
+		(user_id,)
+	)
+
+def get_num_of_login_attempts(user_id):
+	return select(("Number_Attempts",), "Login_Attempts", False, "WHERE User_ID=?", (user_id,))
+
+def get_is_admin(user_id):
+	query_result = select(("Is_Admin",), "Users", False, "WHERE User_ID=?", (user_id,))
+	if query_result is None:
+		#raise Exception("Invalid query attempted to run.")
+		# TODO: this should prop. throw an exception, but for now it will just be logged
+		Logger.error("Invalid query attempted to run")
+	elif query_result['Is_Admin'] > 0:
+		return True
+
+	return False 
