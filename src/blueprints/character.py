@@ -91,7 +91,7 @@ def character_page(char_id):
 		'offhand2' : item_short_data(characters['Character_Weapon4'], 'Off Hand 2', 'Off_Hand.png')
 	}
 
-	class_name = select_query.get_class_name(characters['Character_Class'])
+	class_name = select_query.get_class_names(characters['Character_Class'])
 	if class_name is None or class_name == '':
 		class_name = 'No Class'
 

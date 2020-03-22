@@ -13,6 +13,7 @@ Config Webserver:
 	a.) SECRET_KEY... Look up on Flask website on a good way to generate a secret SECRET_KEY
 	b.) DATABASE... Change path to where database is located 
 	c.) IMAGE_UPLOAD... Change path to where image uploads folder is located
+3.) modify the server name field in the enabled sites to your server's name
 
 
 Start Apache2:

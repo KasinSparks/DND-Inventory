@@ -216,7 +216,7 @@ def get_notification_id(notification_type):
 
 	return result
 
-def get_class_name(class_id):
+def get_class_names(class_id):
 	sql_str = """SELECT Class_Name
 				FROM Class
 				WHERE Class_ID = ?;
@@ -226,6 +226,14 @@ def get_class_name(class_id):
 		return result['Class_Name']
 
 	return result
+
+def select_character_class(user_id, char_id):
+	return select(("Class_Name",), "Characters", False, "WHERE User_ID=? AND Character_ID=?",
+					(user_id, char_id), ("INNER JOIN Class ON Class.Class_ID = Character.Character_Class"))
+
+def select_character_race(user_id, char_id):
+	return select(("Race_Name",), "Characters", False, "WHERE User_ID=? AND Character_ID=?",
+					(user_id, char_id), ("INNER JOIN Races ON Races.Race_ID = Character.Character_Race"))
 
 def get_race_name(race_id):
 	sql_str = """SELECT Race_Name
@@ -249,6 +257,9 @@ def get_alignment_name(alignment_id):
 
 	return result
 
+def get_alignments():
+	return select(("Alignment_ID", "Alignment_Name"), "Alignments", True)
+
 def select_slots():
 	sql_str = """SELECT *
 				FROM SLOTS;
@@ -271,9 +282,21 @@ def get_is_admin(user_id):
 	query_result = select(("Is_Admin",), "Users", False, "WHERE User_ID=?", (user_id,))
 	if query_result is None:
 		#raise Exception("Invalid query attempted to run.")
-		# TODO: this should prop. throw an exception, but for now it will just be logged
+		# TODO: this should throw an exception, but for now it will just be logged
 		Logger.error("Invalid query attempted to run")
 	elif query_result['Is_Admin'] > 0:
 		return True
 
 	return False 
+
+def select_effect_data(effect_id):
+	return select(("*",), "Effects", False, "WHERE Effect_ID=?", (effect_id,))
+
+def select_char_fields(user_id, char_id, field_names=("*",)):
+	return select(field_names, "Characters", False, "WHERE User_ID=? AND Character_ID=?", (user_id, char_id))
+
+def select_item_fields(item_id, field_names=("*",)):
+	return select(field_names, "Items", False, "WHERE Item_ID=?", (item_id,))
+
+def select_item_fields_from_item_slot(item_slot_num, field_names=("*",)):
+	return select(field_names, "Items", False, "WHERE Item_Slot=?", (item_slot_num,))

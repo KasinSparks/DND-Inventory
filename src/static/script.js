@@ -300,7 +300,7 @@ class ChangeData{
 
 		isChangeCharDataOpen = true;
 
-		dropdown_options.classes.forEach(element => {
+		dropdown_options.opts.forEach(element => {
 			html_string += '<option value="' + element.id + '">' + element.name + '</option>';
 		});
 
@@ -572,7 +572,7 @@ function changeAttackBonus(char_id){
 
 function changeAlignment(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getAlignmentOptions',
+		var ccd = new ChangeData(char_id, '/dataserver/optsgetAlignmentOptions',
 			'json', 'character_alignment', '/character/edit/alignment/');
 		ccd.dataCall(ccd.dropdown);
 	}
