@@ -2,8 +2,8 @@
 <meta charset="UTF-8">
 <head>
 	<title>Add Item</title>
-	<link rel="stylesheet" href="../../static/styles.css">
-	<script src="../../static/script.js"></script>
+	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+	<script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
 	<div class="panels">
@@ -134,7 +134,7 @@
 								<input name="wield_wis" type="number" min="0" max="999" placeholder="0">
 							</div>
 							<div class="input_item">
-								<label for="wield_int">Wield Intel. Requirement:</label>
+								<label for="wield_int">Wield Intelligence Requirement:</label>
 								<input name="wield_int" type="number" min="0" max="999" placeholder="0">
 							</div>
 						</div>

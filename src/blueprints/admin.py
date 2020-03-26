@@ -164,8 +164,10 @@ def admin_creationKit_add_submit():
 			# Name already exist
 			return '[TODO: Change this later]\n\nItem name already exist... Please go back and try again.'
 
-		creationKit_helper("INSERT")
-			
+		fullDirName = os.path.join(current_app.config['IMAGE_UPLOAD'], "items")
+		creationKit_helper("INSERT", fullDirName)
+		item_id = select_query.get_item_id_from_name(get_request_field_data('name'))
+		update_item_image(name_check, fullDirName, select_query.select_item_picture_name(item_id)["Item_Picture"])
 
 		return redirect(url_for('admin.admin_creationKit'))
 
@@ -174,7 +176,10 @@ def admin_creationKit_add_submit():
 def admin_creationKit_edit_submit():
 	check_for_admin_status()
 	if request.method == 'POST':
-		creationKit_helper("UPDATE")	
+		fullDirName = os.path.join(current_app.config['IMAGE_UPLOAD'], "items")
+		creationKit_helper("UPDATE", fullDirName)
+		item_id = convert_form_field_data_to_int('id')
+		update_item_image(item_id, fullDirName, select_query.select_item_picture_name(item_id)["Item_Picture"])
 
 		return redirect(url_for('admin.admin_creationKit'))
 
@@ -216,7 +221,7 @@ def admin_remove_user():
 	if request.method != 'POST':
 		return '400'
 
-	user_id = request.form['user_id']
+	user_id = get_request_field_data('user_id')
 
 	delete_query.delete_user(user_id)	
 
@@ -244,7 +249,7 @@ def make_user_admin():
 	if request.method != 'POST':
 		return '400'
 
-	user_id = request.form['user_id']
+	user_id = get_request_field_data('user_id')
 
 	update_query.change_user_admin_status(user_id, True)
 
@@ -256,7 +261,7 @@ def create_new_effect(effect_name, effect_description):
 
 	insert_query.insert_effect(effect_name, effect_description)
 
-def creationKit_helper(query_type):
+def creationKit_helper(query_type, image_save_dir):
 	query_types = ("UPDATE", "INSERT")
 
 	if query_type not in query_types:
@@ -301,8 +306,7 @@ def creationKit_helper(query_type):
 		new_img = request.files['picture']
 		#new_img = get_request_field_data('picture')
 
-		fullDirName = os.path.join(current_app.config['IMAGE_UPLOAD'], "items")
-		saved_filename = ImageHandler().save_image(new_img, fullDirName)
+		saved_filename = ImageHandler().save_image(new_img, image_save_dir, "temp_item")
 
 		if saved_filename is None:
 			saved_filename = "no_image.png"
@@ -322,7 +326,7 @@ def creationKit_helper(query_type):
 		"Item_Cha_Bonus" : convert_form_field_data_to_int('cha_bonus'),
 		"Item_Effect1" : effect1_id, 
 		"Item_Effect2" : effect2_id,
-		"Item_Bonus_Attack" : convert_form_field_data_to_int('bonus_damage'),
+		"Item_Attack_Bonus" : convert_form_field_data_to_int('bonus_damage'),
 		#"Item_Initiative_Bonus" : convert_form_field_data_to_int('initiative_bonus'),
 		"Item_Health_Bonus" : convert_form_field_data_to_int('health_bonus'),
 		"Item_AC_Bonus" : convert_form_field_data_to_int('ac_bonus'),
@@ -338,3 +342,7 @@ def creationKit_helper(query_type):
 		return update_query.update_item(query_data, convert_form_field_data_to_int('id'))
 	elif query_type == query_types[1]:
 		return insert_query.insert("Items", query_data)
+
+def update_item_image(item_id, path, file_name):
+	new_image_name = ImageHandler()._resize_image_to_thumbnail(os.path.join(path, file_name), save_path=path, new_file_name="item_" + str(item_id))
+	return update_query.update_item({"Item_Picture" : new_image_name}, item_id)

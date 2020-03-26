@@ -572,7 +572,7 @@ function changeAttackBonus(char_id){
 
 function changeAlignment(char_id){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/optsgetAlignmentOptions',
+		var ccd = new ChangeData(char_id, '/dataserver/getAlignmentOptions',
 			'json', 'character_alignment', '/character/edit/alignment/');
 		ccd.dataCall(ccd.dropdown);
 	}
@@ -1180,11 +1180,15 @@ function submitEquipChange(url, char_id, item_id, keep_open){
 	http.onreadystatechange = function(){ 
 		if(http.readyState == 4 && http.status == 200) {
 			try {
-				if (this.response.error != null && this.response.error !== "None"){
+				console.log(this.response);
+				if (this.response != null && this.response.error !== "None"){
+					console.log(this.response.error);
 					alert("An error occured: " + this.response.error);
 					return;
 				}
-			} catch (error) {}
+			} catch (error) {
+				console.error(error);
+			}
 			// Update item picture and name in equipment
 			updateEquipedItemName(this.response);
 			updateEquipedItemPicture(this.response);

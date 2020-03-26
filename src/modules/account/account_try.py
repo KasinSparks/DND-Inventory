@@ -3,9 +3,9 @@ from modules.data.database.query_modules.update_query import change_num_of_login
 from modules.data.database.query_modules.select_query import select_attempt_date, get_num_of_login_attempts
 from modules.data.database.query_modules.insert_query import create_login_attempt
 
-def add_account_try(user_id):
+def add_account_try(user_id, lockout_time_minutes):
 
-	tries_remaing = check_try_attempts(user_id)
+	tries_remaing = check_try_attempts(user_id, lockout_time_minutes)
 
 	if tries_remaing < 1:
 		tries_remaing = 0
@@ -22,12 +22,12 @@ def add_account_try(user_id):
 
 	return result
 
-def check_try_attempts(user_id):
+def check_try_attempts(user_id, locked_time_minutes):
 	# check number of attempts
 	tries = account_tries_remaining(user_id)
 	if tries < 1:
 		# see if tries need to be reset
-		if not is_attempt_within_range(user_id):
+		if not is_attempt_within_range(user_id, locked_time_minutes):
 			# reset tries
 			change_num_of_login_attempts(user_id, 0)
 	
@@ -44,8 +44,8 @@ def get_lockout_time(user_id):
 	attempt_datetime = datetime.datetime(attempt_data['Attempt_Year'], attempt_data['Attempt_Month'], attempt_data['Attempt_Day'], attempt_data['Attempt_Hour'], attempt_data['Attempt_Minute'], attempt_data['Attempt_Second'])
 	return attempt_datetime 
 
-# range is measured within hours
-def	is_attempt_within_range(user_id, range=24):
+# range is measured within minutes 
+def	is_attempt_within_range(user_id, range=10):
 	result = __get_attempt_data__(user_id)
 
 	if result is None:
@@ -53,15 +53,13 @@ def	is_attempt_within_range(user_id, range=24):
 
 	current_datetime = datetime.datetime.utcnow()
 	attempt_datetime = datetime.datetime(result['Attempt_Year'], result['Attempt_Month'], result['Attempt_Day'], result['Attempt_Hour'], result['Attempt_Minute'], result['Attempt_Second'])
-
 	diff_seconds = (current_datetime - attempt_datetime).seconds
+	diff_minutes = (diff_seconds / 60)	
 
-	diff_hours = (diff_seconds / 3600)	
+	if diff_minutes > range:
+		return False 
 
-	if diff_hours > range:
-		return True
-
-	return False
+	return True 
 
 def __get_number_of_attempts__(user_id):
 	query_result = get_num_of_login_attempts(user_id)

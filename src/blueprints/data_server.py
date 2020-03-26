@@ -13,67 +13,11 @@ from blueprints.auth import login_required
 
 from logger.logger import Logger
 from modules.data.database.query_modules import select_query 
+from modules.data.database import data_helper
 
 import os
 
 bp = Blueprint('dataserver', __name__, url_prefix='/dataserver')
-
-def _init_item_data():
-	item_data = {
-		'Item_Description' : 'null',
-		'Item_Name' : 'null',
-		'Item_Picture' : 'no_image.png',
-		'Rarities_Name' : 'null',
-		'Rarities_Color' : 'white',
-		'Item_Slot' : 'null',
-		'Item_Weight' : 'null',
-		'Item_Str_Bonus' : 0,
-		'Item_Dex_Bonus' : 0,
-		'Item_Con_Bonus' : 0,
-		'Item_Int_Bonus' : 0,
-		'Item_Wis_Bonus' : 0,
-		'Item_Cha_Bonus' : 0,
-		'Item_Effect1' : None,
-		'Item_Effect2' : None,
-		'Item_Damage_Num_Of_Dices' : 0,
-		'Item_Damage_Num_Of_Dice_Sides' : 0,
-		'Item_AC_Bonus' : 0,
-		'Item_Bonus_Attack' : 0,
-		'Wield_Str' : 0,
-		'Wield_Dex' : 0,
-		'Wield_Wis' : 0,
-		'Wield_Int' : 0
-	}
-	return item_data
-
-def _item_data_to_json(item_data, image, effect1_data, effect2_data):
-	return jsonify(
-		description=item_data['Item_Description'],
-		name=item_data['Item_Name'],
-		image=image,
-		rarity=item_data['Rarities_Name'],
-		rarity_color=item_data['Rarities_Color'],
-		slot=item_data['Item_Slot'],
-		weight=item_data['Item_Weight'],
-		str_bonus=item_data['Item_Str_Bonus'],
-		dex_bonus=item_data['Item_Dex_Bonus'],
-		con_bonus=item_data['Item_Con_Bonus'],
-		int_bonus=item_data['Item_Int_Bonus'],
-		wis_bonus=item_data['Item_Wis_Bonus'],
-		cha_bonus=item_data['Item_Cha_Bonus'],
-		effect1_name=effect1_data['Effect_Name'],
-		effect1_description=effect1_data['Effect_Description'],
-		effect2_name=effect2_data['Effect_Name'],
-		effect2_description=effect2_data['Effect_Description'],
-		item_damage_num_of_dices=item_data['Item_Damage_Num_Of_Dices'],
-		item_damage_num_of_dice_sides=item_data['Item_Damage_Num_Of_Dice_Sides'],
-		ac=item_data['Item_AC_Bonus'],
-		bonus_damage=item_data['Item_Bonus_Attack'],
-		wield_str=item_data['Wield_Str'],
-		wield_dex=item_data['Wield_Dex'],
-		wield_wis=item_data['Wield_Wis'],
-		wield_int=item_data['Wield_Int'],
-	)
 
 def _get_item_details(char_id, equipment_slot="", item_id=-1):
 	# Get the character's item piece
@@ -99,7 +43,7 @@ def _get_item_details(char_id, equipment_slot="", item_id=-1):
 
 	# Check to see if ID has been assigned
 	if itemQueryResult is None:
-		itemQueryResult = _init_item_data 
+		itemQueryResult = data_helper.init_item_data() 
 
 	#TODO: this effect query also shows up in admin.py... Could extract this to a function 
 	if itemQueryResult is not None:
@@ -122,7 +66,7 @@ def _get_item_details(char_id, equipment_slot="", item_id=-1):
 	if itemQueryResult['Item_Picture'] is not None and itemQueryResult['Item_Picture'] != '' and itemQueryResult['Item_Picture'] != 'no_image.png':
 		image = '/imageserver/item/' + itemQueryResult['Item_Picture']
 
-	return _item_data_to_json(itemQueryResult, image, effect1QueryResult, effect2QueryResult)
+	return data_helper.item_data_to_json(itemQueryResult, image, effect1QueryResult, effect2QueryResult)
 
 # Equipment Data 
 @bp.route('/equipmentItemDetails/<int:char_id>/<string:equipment_slot>', methods=('GET', 'POST'))
@@ -202,14 +146,7 @@ def get_stat_data(char_id : int, character_field : str, item_field : str):
 
 	characters = select_query.select_character_data(char_id)
 
-	item_id_list = [
-		characters['Character_Head'], characters['Character_Shoulder'], characters['Character_Torso'],
-		characters['Character_Hand'],characters['Character_Leg'],characters['Character_Foot'],
-		 characters['Character_Trinket1'], characters['Character_Trinket2'],characters['Character_Ring1'],
-		characters['Character_Ring2'],characters['Character_Item1'],characters['Character_Item2'],
-		characters['Character_Weapon1'], characters['Character_Weapon2'], characters['Character_Weapon3'],
-		characters['Character_Weapon4']
-	]
+	item_id_list = data_helper.get_character_items_id(characters)
 
 	stat_additional = 0
 
@@ -371,7 +308,7 @@ def get_current_equiped_items(char_id, item_slot):
 	count = 0
 	for i in item_ids:
 		join_str = "INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID"
-		item_data_result = select_query.select(tuple(field_names), "Items", False, "Item_ID=?", (i,), (join_str,))
+		item_data_result = select_query.select(tuple(field_names), "Items", False, "WHERE Item_ID=?", (i,), (join_str,))
 
 		if item_data_result is None:
 			count += 1
@@ -397,17 +334,7 @@ def get_items_in_slot(char_id, item_slot):
 	if characters is None:
 		return 'NULL'
 
-	items = []	
-
-	field_names = (
-		"Character_Head", "Character_Shoulder", "Character_Torso", "Character_Hand", "Character_Leg", 
-		"Character_Foot", "Character_Trinket1", "Character_Trinket2","Character_Ring1", "Character_Ring2",
-		"Character_Item1","Character_Item2", "Character_Weapon1", "Character_Weapon2", "Character_Weapon3",
-		"Character_Weapon4"
-	)
-
-	item_id_list = []
-	(item_id_list.append(characters[fn]) for fn in field_names)
+	item_id_list = data_helper.get_character_items_id(characters)
 
 	select_fields = (
 		"Items.Item_ID", "Items.Item_Weight", "Items.Item_Name", "Rarities.Rarities_Color",
@@ -421,6 +348,7 @@ def get_items_in_slot(char_id, item_slot):
 	)
 	query_result = select_query.select(select_fields, "Inventory", True, where_clause, (char_id, item_slot), joins)
 
+	items = []	
 	for q in query_result:
 		
 		item_fields = {
@@ -465,7 +393,7 @@ def getItemAmount(char_id, item_id):
 @login_required
 def getItemDetails(item_id):
 	select_fields = ("Item_Name", "Item_Picture", "Rarities.Rarities_Color")
-	joins = ("INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID")
+	joins = ("INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID",)
 	where_clause = "WHERE Item_ID = ?"
 	result = select_query.select(select_fields, "Items", False, where_clause, (item_id,), joins)
 

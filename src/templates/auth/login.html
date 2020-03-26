@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <head>
 	<title>Login Page</title>
-	<link rel="stylesheet" href="../../static/styles.css">
-	<script src="../../static/script.js"></script>
+	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+	<script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
+	{% if site_notification is not none %}
+		<div class="site_notification">
+			{% for sn in site_notification %}
+				<h2>{{ sn["Note"] }}</h2>
+			{% endfor %}
+		</div>
+	{% endif %}
 	<div class="login_container">
 		<div class="inner_container">
 			<div class="tab">
@@ -13,11 +20,10 @@
 				{% elif error_msg == 'Incorrect password' %}
 					<h1 style="color: orange;">Tries remaining {{ tries_remaining }}</h1>
 				{% elif error_msg == 'Account Locked' %}
-					<h1 style="color: red;">Account Locked for {{ unlockout_time['Hours'] }}:{{ unlockout_time['Minutes'] }} hours</h1>
+					<h1 style="color: red;">Account Locked for {{ unlockout_time['Minutes'] }}:{{ unlockout_time['Seconds'] }} minutes</h1>
 				{% else %}
 					<h1 style="color: orange;">Incorrect Login</h1>
 				{% endif %}
-
 			</div>
 			<div class="login_inner_panel">
 				<div class="login_panel">

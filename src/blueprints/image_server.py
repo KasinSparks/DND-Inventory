@@ -14,7 +14,7 @@ bp = Blueprint('imageserver', __name__, url_prefix='/imageserver')
 @login_required
 def getUserImage(image_name):
 	# TODO: Read the docs on how to improve this for server
-	path = os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'users', str(session['user_id']))
+	path = os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'users', str(session['user_id']), "profile_image")
 	
 	return send_from_directory(path, image_name, as_attachment=False)
 	

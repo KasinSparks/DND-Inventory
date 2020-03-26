@@ -28,7 +28,7 @@ def insert(table_name, item_data):
 	sql_str +=  values_str + ";"
 
 	## TODO: see the delete query todo
-	return Query(sql_str, tuple(args), False).run_query()
+	Query(sql_str, tuple(args), False).run_query()
 
 def insert_effect(name, description):
 	insert("Effects", {"Effect_Name" : name, "Effect_Description" : description})
@@ -47,3 +47,15 @@ def create_admin_notification(user_id, notification_type):
 
 def create_login_attempt(user_id):
 	insert("Login_Attempts", {"User_ID" : user_id})
+
+def create_race(race_name):
+	insert("Races", {"Race_Name" : race_name})
+	
+def create_class(class_name):
+	insert("Class", {"Class_Name" : class_name})
+	
+def create_alignment(alignment_name):
+	insert("Alignments", {"Alignment_Name" : alignment_name})
+
+def create_character(data):
+	insert("Character", data)

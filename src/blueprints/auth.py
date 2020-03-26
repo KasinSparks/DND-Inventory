@@ -73,20 +73,22 @@ def login():
 								header_text=header_text,
 								inner_text=None
 								)
+			
+			timeout_time_minutes = 10
 
-			if account_tries_remaining(user['User_ID']) < 1 and is_attempt_within_range(user['User_ID']):
+			if account_tries_remaining(user['User_ID']) < 1 and is_attempt_within_range(user['User_ID'], timeout_time_minutes):
 				# Accout locked
 				# TODO: clean up
 				tries_remaining = 0
 				lockout_time = get_lockout_time(user['User_ID'])
-				time_until_unlocked = ((datetime.timedelta(hours=24) + lockout_time) - datetime.datetime.utcnow())
-				time_until_unlocked_hours = math.trunc(time_until_unlocked.seconds / 3600)
-				time_until_unlocked_minutes = math.trunc((time_until_unlocked.seconds / 3600 - math.trunc(time_until_unlocked.seconds / 3600)) * 60)
-				unlockout_time = {'Hours' : time_until_unlocked_hours, 'Minutes' : time_until_unlocked_minutes}
+				time_until_unlocked = ((datetime.timedelta(minutes=timeout_time_minutes) + lockout_time) - datetime.datetime.utcnow())
+				time_until_unlocked_minutes = math.trunc(time_until_unlocked.seconds / 60)
+				time_until_unlocked_seconds = time_until_unlocked.seconds % 60
+				unlockout_time = {'Minutes' : time_until_unlocked_minutes, 'Seconds' : time_until_unlocked_seconds}
 				error = 'Account Locked'
 			elif not check_password_hash(user['Password'], password):
 				error = 'Incorrect password'
-				tries_remaining = add_account_try(user['User_ID'])['tries_remaining']
+				tries_remaining = add_account_try(user['User_ID'], timeout_time_minutes)['tries_remaining']
 		else:
 			error = 'Incorrect login'
 
@@ -105,11 +107,16 @@ def login():
 
 		flash(error)
 
+	site_notifications = select_query.select_site_notifications()
+	if site_notifications is None or len(site_notifications) < 1:
+		site_notifications = None
+
 	return render_template('auth/login.html',
 							header_text=header_text,
 							error_msg=error,
 							tries_remaining=tries_remaining,
-							unlockout_time=unlockout_time)
+							unlockout_time=unlockout_time,
+							site_notification=site_notifications)
 
 # Check if user is already loged in before a request
 @bp.before_app_request

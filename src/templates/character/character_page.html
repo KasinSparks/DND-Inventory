@@ -2,8 +2,8 @@
 <meta charset="UTF-8">
 <head>
 	<title>Character Page : {{ character_data['name']|e }}</title>
-	<link rel="stylesheet" href="../static/styles.css">
-	<script src="../static/script.js"></script>
+	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+	<script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <!-- will have to make multiple css files for diffrent devices -->
 <body>
@@ -323,29 +323,6 @@
 							<h3 class="info_data"></h3>
 						</div>
 					</div>
-
-					<!-- <div class="info_item">
-						<div class="info_left_section">
-							<h3 class="info_data">Initiative</h3>
-						</div>	
-						<div class="info_middle_section info_middle_section_top_image clickable" onclick="changeInitiative({{ char_id }});">
-							<h3 id="character_initiative" class="info_data">{{ character_data['initiative'] }}</h3>
-						</div>
-						<div class="info_right_section info_right_section_top_image">
-							<h3 class="info_data"></h3>
-						</div>
-					</div> -->
-					<!-- <div class="info_item">
-						<div class="info_left_section">
-							<h3 class="info_data">Attack Bonus</h3>
-						</div>	
-						<div class="info_middle_section info_middle_section_top_image clickable" onclick="changeAttackBonus({{ char_id }});">
-							<h3 id="character_attack_bonus" class="info_data">{{ character_data['attack_bonus'] }}</h3>
-						</div>
-						<div class="info_right_section info_right_section_top_image">
-							<h3 class="info_data"></h3>
-						</div>
-					</div> -->
 
 					<div class="info_item_seperator"></div>
 

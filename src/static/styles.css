@@ -1186,3 +1186,14 @@ table td{
 .verify_deny_buttons .small_buttons{
 	margin: 1px auto;
 }
+
+.site_notification{
+	width: 100%;
+	background-color: #1b1b1b;
+}
+
+.site_notification h2{
+	color: whitesmoke;
+	text-align: center;
+	margin: 0 auto;
+}

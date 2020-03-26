@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, send_from_directory, request
 
 def create_app(test_config=None, is_development_env=True, instance_path=None):
 	# create and configure the app
@@ -65,6 +65,9 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
 
 		return render_template('auth/user.html',
 								header_text=header_text)
-	
+
+	@app.route("/robots.txt")	
+	def robots():
+		return send_from_directory(app.static_folder, request.path[1:])
 
 	return app

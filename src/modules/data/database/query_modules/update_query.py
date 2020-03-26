@@ -48,6 +48,30 @@ def update_attempt_datetime(user_id, datetime=datetime.utcnow()):
 		(user_id,)
 	)
 
+def update_char_class(class_id, user_id, char_id):
+	update("Character", {"Character_Class" : class_id}, "WHERE User_ID=? AND Character_ID=?", (user_id, char_id))
+
+def update_char_race(race_id, user_id, char_id):
+	update("Character", {"Character_Race" : race_id}, "WHERE User_ID=? AND Character_ID=?", (user_id, char_id))
+
+def update_char_alignment(alignment_id, user_id, char_id):
+	update("Character", {"Character_Alignment" : alignment_id}, "WHERE User_ID=? AND Character_ID=?", (user_id, char_id))
+
+def update_char_level(level, user_id, char_id):
+	update("Character", {"Character_Level" : level}, "WHERE User_ID=? AND Character_ID=?", (user_id, char_id))
+
+def update_char_currency(currency, user_id, char_id):
+	update("Character", {"Character_Currency" : currency}, "WHERE User_ID=? AND Character_ID=?", (user_id, char_id))
+
+def update_char_health(health, user_id, char_id):
+	update("Character", {"Character_HP" : health}, "WHERE User_ID=? AND Character_ID=?", (user_id, char_id))
+
+def update_char_image(image, user_id, char_id):
+	update("Character", {"Character_Image" : image}, "WHERE User_ID=? AND Character_ID=?", (user_id, char_id))
+
+def update_inv_item_amount(amount, char_id, item_id):
+	update("Inventory", {"Amount" : amount}, "WHERE Character_ID=? AND Item_ID=?", (char_id, item_id))
+
 def update(table_name, data, where_clause="", where_clause_data=()):
 	if len(data) < 1:
 		# TODO: handle in a better way such as throwing an execption
@@ -72,4 +96,4 @@ def update(table_name, data, where_clause="", where_clause_data=()):
 		args.append(d)
 
 	## TODO: see the delete query todo
-	return Query(sql_str, tuple(args), False).run_query()
+	Query(sql_str, tuple(args), False).run_query()
