@@ -28,6 +28,7 @@ function itemInfo(element, jsonData){
 	if(jsonData != null && (jsonData.name != '' && jsonData.name != 'null')){
 		appendToHTML(element, getEquipmentItemDetailsHTML(jsonData));
 	} else {
+		console.log("JSON data was null");
 		saveForLater[0] = ["", ""];
 	}
 }
@@ -970,7 +971,9 @@ function unequipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=
 		}
 	} else {
 		equipItemChangeSubmit('/character/item/unequip/', char_id, item_id, slot_num, keep_open);
-		updateMultiSlotItem(item_id, slot_name, slot_num, true);
+		if(keep_open){
+			updateMultiSlotItem(item_id, slot_name, slot_num, true);
+		}
 	}
 }
 
@@ -1180,9 +1183,7 @@ function submitEquipChange(url, char_id, item_id, keep_open){
 	http.onreadystatechange = function(){ 
 		if(http.readyState == 4 && http.status == 200) {
 			try {
-				console.log(this.response);
 				if (this.response != null && this.response.error !== "None"){
-					console.log(this.response.error);
 					alert("An error occured: " + this.response.error);
 					return;
 				}
@@ -1196,8 +1197,6 @@ function submitEquipChange(url, char_id, item_id, keep_open){
 			// Update stats
 			updateCharacterStats(this.response);
 
-			console.log(this.response.slot_name);
-
 			// Change button to equip button
 			updateInvCategory(updateInvCategoryHelper, char_id, this.response.slot_name, '/dataserver/getItemsInSlot/' + char_id + '/' +  this.response.slot_name, keep_open);
 			//invertEquipButton(char_id, item_id);
@@ -1205,11 +1204,8 @@ function submitEquipChange(url, char_id, item_id, keep_open){
 	}
 
 	http.open("GET", url, true);
-	
 	http.responseType = 'json'; 
-
 	http.send();
-
 	return;
 }
 

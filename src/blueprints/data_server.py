@@ -37,7 +37,8 @@ def _get_item_details(char_id, equipment_slot="", item_id=-1):
 	# Ensure a proper item_id is given
 	if item_id < 1:
 		# TODO: needs better error handling
-		raise Exception("Tried to get item details of item with id " + item_id)
+		#raise Exception("Tried to get item details of item with id " + str(item_id))
+		return jsonify(None)
 
 	itemQueryResult = select_query.select_items(item_id) 
 

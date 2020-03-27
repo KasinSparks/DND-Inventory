@@ -203,7 +203,10 @@ def sumation_stats(item_id_list):
 	}
 
 	for item_id in item_id_list:
+		print("item_id: " + str(item_id))
 		query_result = item_stat_query(item_id)
+		print("query_result v")
+		print(query_result)
 		if query_result is not None:
 			stat_bonus['str'] += int(query_result['Item_Str_Bonus'])
 			stat_bonus['dex'] += int(query_result['Item_Dex_Bonus'])
@@ -310,7 +313,17 @@ def create_character_submit():
 			# Check if new race, class, or alignment need to be inserted into the DB
 			data['race_id'] = int(input_field_helper("race_other", select_query.get_race_id_from_name, insert_query.create_race))
 			data['class_id'] = int(input_field_helper("class_other", select_query.get_class_id_from_name, insert_query.create_class))
-			data['alignment_id'] = int(input_field_helper("alignment_other", select_query.get_alignment_id_from_name, insert_query.create_alignment))
+			if request.form["alignment_other"] != "":
+				alignment_id = int(input_field_helper("alignment_other", select_query.get_alignment_id_from_name, insert_query.create_alignment))
+			else:
+				alignment_id = int(select_query.get_alignment_id_from_name(get_request_field_data("alignment")))
+				try:
+					select_query.get_alignment_name(alignment_id)
+				except:
+					# TODO: change this later to an error message
+					alignment_id = 9
+
+			data["alignment_id"] = alignment_id
 
 			insert_data = {
 				"User_ID" : session["user_id"],
@@ -559,7 +572,7 @@ def edit_wis(char_id):
 	val = edit_field(char_id, 'Character_Wisdom', 'Item_Wis_Bonus')	
 	return jsonify(
 			character_wis=val,
-			character_wis_mod=data_helper.data_helper.calculate_modifier(val)
+			character_wis_mod=data_helper.calculate_modifier(val)
 		)
 
 @bp.route('/edit/cha/<int:char_id>', methods=('GET', 'POST'))
@@ -692,6 +705,16 @@ def item_equip(char_id, item_id, slot_number = 0):
 		return redirect(url_for("character.character_page", char_id=char_id))
 
 	characters = select_query.select_character_data(char_id, user_id)
+	item_id_list = data_helper.get_character_items_id(characters)
+	count = 0
+	for i in item_id_list:
+		if i == item_id:
+			count += 1
+
+	if count >= item["Amount"]:
+		item_name = select_query.select_item_fields(item_id, ("Item_Name", ))["Item_Name"]
+		error = "You have already equiped all of " + str(item_name) + " found in your inventory."
+		return jsonify(error=error)
 
 	# TODO: make this better
 	character_fields = {
@@ -705,6 +728,7 @@ def item_equip(char_id, item_id, slot_number = 0):
 	for f in character_fields:
 		if characters[f] < item_data[character_fields[f]]:
 			error = "You ain't good enough to equip this item."
+			return jsonify(error=error)
 
 	update_query.update("Character", {"Character_" + modified_slot_name : item_id}, "WHERE Character_ID=?", (char_id,))
 
@@ -718,6 +742,8 @@ def item_equip(char_id, item_id, slot_number = 0):
 		'color' : item_data['Rarities_Color']
 	}
 
+	# Refresh the items list after update
+	characters = select_query.select_character_data(char_id, user_id)
 	item_id_list = data_helper.get_character_items_id(characters) 
 	stat_bonus = sumation_stats(item_id_list)
 
@@ -777,9 +803,7 @@ def item_unequip(char_id, item_id, slot_number = 0):
 	update_query.update("Character", {"Character_" + modified_slot_name : -1}, "WHERE Character_ID=?", (char_id,))
 
 	characters = select_query.select_character_data(char_id, user_id)
-
 	item_id_list = data_helper.get_character_items_id(characters) 
-
 	stat_bonus = sumation_stats(item_id_list)
 
 	character_data = {
@@ -808,5 +832,6 @@ def item_unequip(char_id, item_id, slot_number = 0):
 		stat_modifiers = stat_modifiers,
 		slot_name = slot_name,
 		modified_slot_name = modified_slot_name,
-		item_data = 'null'
+		item_data = 'null',
+		error="None"
 	)
