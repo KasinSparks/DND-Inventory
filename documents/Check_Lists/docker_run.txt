@@ -4,17 +4,21 @@ Start Docker:
 	a) docker image build --tag=[image_repo_name]:[version.minor_version] .
 	b) docker container run --name=[container_name] -p [server_port]:[container_port] -it [image_repo_name:version.minor_version]
 3.) Proceed to section "Config Webserver"
+4.) Proceed to section "Start Apache2"
+5.) Exit container, but leave container runing by pressing ctrl + p then ctrl + q
 
 Config Webserver:
-0.) Use the following command to move files and folders from /example_site_data
+0.) Verify docker container started and you are logged into the container
+1.) Use the following command to move files and folders from /example_site_data
 	a.) mv /example_site_data/* /site_data
-1.) Change directories to /site_data
-2.) install a text editor and modify the following fields in 'production.cfg'
+2.) Change directories to /site_data
+3.) install a text editor and modify the following fields in 'production.cfg'
 	a.) SECRET_KEY... Look up on Flask website on a good way to generate a secret SECRET_KEY
 	b.) DATABASE... Change path to where database is located 
 	c.) IMAGE_UPLOAD... Change path to where image uploads folder is located
+4.) modify the server name field in the enabled sites to your server's name
 
 
-Start Apache2:
+Start Apache2 (in Docker container):
 1.) Run the following command(s)
 	a.) service apache2 start

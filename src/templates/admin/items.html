@@ -1,47 +1,44 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <head>
-	<title>Items</title>
-	<link rel="stylesheet" href="../../static/styles.css">
-	<script src="../../static/script.js"></script>
+    <title>Items</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
-	<div class="user_container">
-		<div class="inner_container">
-			<div class="tab">
-					<h1>{{ header_text }}</h1>
-			</div>
-			<div class="character_select_inner_panel">
-				<div class="sub_inner_panel">
-					{% for i in items %}
-						<div class="user_button_char_select clickable" style="display: flex; flex-direction: row;">
-							<div class="small_buttons character_select_bottom_button_remove clickable" onclick="location.href='/admin/creationKit/remove/{{ i['Item_ID'] }}'"></div>
-							<h2>{{ i['Item_Name']|e }}</h2>
-							<div class="small_buttons character_select_bottom_button_edit clickable" onclick="location.href='/admin/creationKit/edit/{{ i['Item_ID'] }}'"></div>
-						</div>
-					{% endfor %}
-				</div>
-				<div class="character_select_bottom_buttons_container">
-					<div class="character_select_bottom_button_new clickable" onclick="location.href='/admin/creationKit/add'"></div>
-					<div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('home') }}';"></div>
-				</div>
-<!-- 				<div class="user_button clickable" onclick="location.href='/character/create'">
-					<h2>Create New Character</h2>
-				</div> -->
-			</div>
-			
-		</div>
-		<div class="footer">
-			<p>Copyright 2020</p>
-		</div>
-	</div>
-
-<!-- 	<div class="panels">
-		<ul>
-			{% for c in characters %}
-				<li><a href="{{ c['Character_ID'] }}">{{ c['Character_Name'] }}</a></li>
-			{% endfor %}
-		</ul>
-		<a href="create">Create Character</button>
-	</div> -->
+    <div class="user_container">
+        <div class="inner_container">
+            <div class="tab">
+                    <h1>{{ header_text }}</h1>
+            </div>
+            <div class="character_select_inner_panel">
+                <div class="sub_inner_panel">
+                    {% for b in buckets %}
+                        <div id="item_category_{{ b }}" class="item_category">
+                            <div class="item_category_line user_button_char_select">
+                                <h2>{{ b|e }}</h2>
+                                <div class="item_category_collapse_button item_category_button clickable" onclick="category_expand_and_collapse('item_category_{{ b|e }}', 'collapse', 'item_line', 'item_category_button');"></div >
+                            </div>
+                            {% for i in buckets[b] %}
+                                <div class="item_line">
+                                    <div class="user_button_char_select clickable" style="display: flex; flex-direction: row;">
+                                        <div class="small_buttons character_select_bottom_button_remove clickable" onclick="location.href='/admin/creationKit/remove/{{ i['Item_ID'] }}'"></div>
+                                        <h2>{{ i['Item_Name']|e }}</h2>
+                                        <div class="small_buttons character_select_bottom_button_edit clickable" onclick="location.href='/admin/creationKit/edit/{{ i['Item_ID'] }}'"></div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="character_select_bottom_buttons_container">
+                    <div class="character_select_bottom_button_new clickable" onclick="location.href='/admin/creationKit/add'"></div>
+                    <div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('home') }}';"></div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Copyright 2020</p>
+        </div>
+    </div>
 </body>

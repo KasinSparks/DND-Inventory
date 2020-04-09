@@ -1,27 +1,34 @@
 <!DOCTYPE html>
 <head>
-	<title>User Page</title>
-	<link rel="stylesheet" href="../../static/styles.css">
-	<script src="../../static/script.js"></script>
+    <title>User Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
-	<div class="user_container">
-		<div class="inner_container">
-			<div class="tab">
-					<h1>{{ header_text }}</h1>
-			</div>
-			<div class="inner_panel">
-				<div class="user_button clickable" onclick="location.href='/character/select'">
-					<h2>Characters</h2>
-				</div>
-				<div class="user_button clickable" onclick="location.href='/auth/logout'">
-					<h2>Logout</h2>
-				</div>
-			</div>
-			
-		</div>
-		<div class="footer">
-			<p>Copyright 2020</p>
-		</div>
-	</div>
+    {% if site_notification is not none %}
+        <div class="site_notification">
+            {% for sn in site_notification %}
+                <h2>{{ sn["Note"] }}</h2>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="user_container">
+        <div class="inner_container">
+            <div class="tab">
+                    <h1>{{ header_text }}</h1>
+            </div>
+            <div class="inner_panel">
+                <div class="user_button clickable" onclick="location.href='/character/select'">
+                    <h2>Characters</h2>
+                </div>
+                <div class="user_button clickable" onclick="location.href='/auth/logout'">
+                    <h2>Logout</h2>
+                </div>
+            </div>
+            
+        </div>
+        <div class="footer">
+            <p>Copyright 2020</p>
+        </div>
+    </div>
 </body>

@@ -1,652 +1,348 @@
 from flask import (
-	Blueprint, g, redirect, render_template, request, session, url_for, current_app, jsonify
+    Blueprint, g, redirect, render_template, request, session, url_for, current_app, jsonify
 )
 
 import os
 
 from werkzeug.utils import secure_filename
-
-from db import get_db, query_db
-
 from blueprints.auth import login_required, get_current_username
+from modules.data.database.query_modules import select_query, delete_query, insert_query, update_query
+from modules.account.authentication_checks import check_for_admin_status
+from modules.data.string_shorten import shorten_string
+from modules.data.form_data import get_request_field_data, convert_form_field_data_to_int
+from modules.IO.file.image_handler import ImageHandler
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-def shorten_string(string : str, max_length : int):
-	shortened_name = string
-
-	if len(string) > max_length:
-		shortened_name = string[0:max_length] + '...'
-	
-	return shortened_name
-
-
-def is_admin():
-	sql_str = """SELECT Is_Admin
-				FROM Users
-				WHERE User_ID = ?;
-			"""
-	if query_db(sql_str, (session['user_id'],), True, True)['Is_Admin']	> 0:
-		return True
-
-	return False
-
-def check_for_admin_status():
-	if not is_admin():
-		return redirect(url_for('auth.login'))
 
 @bp.route('users')
 @login_required
 def admin_users():
+    check_for_admin_status()
 
-	check_for_admin_status()
+    users = select_query.select_user_data_except_user(session['user_id'])
+    user_data = []
 
-	sql_str = """SELECT User_ID, Username, Is_Verified, Is_Admin
-				FROM Users
-				WHERE NOT User_ID = ?;
-			"""
-	users = query_db(sql_str, (session['user_id'],), True)
+    for u in users:
+        user_data.append(
+            {
+                'User_ID' : u['User_ID'],
+                'Username' : shorten_string(u['Username'], 16),
+                'Is_Verified' : u['Is_Verified'],
+                'Is_Admin' : u['Is_Admin']
+            }
+        )
 
-	user_data = []
-
-	for u in users:
-		user_data.append(
-			{
-				'User_ID' : u['User_ID'],
-				'Username' : shorten_string(u['Username'], 16),
-				'Is_Verified' : u['Is_Verified'],
-				'Is_Admin' : u['Is_Admin']
-			}
-		)
-
-	return render_template('admin/users.html',
-							users=user_data,
-							header_text=get_current_username()
-							)
-
-
+    return render_template('admin/users.html',
+                            users=user_data,
+                            header_text=get_current_username())
 
 @bp.route('users/<string:username>')
 @login_required
 def admin_users_characters(username):
-	check_for_admin_status()
+    check_for_admin_status()
 
-	sql_str = """SELECT User_ID
-				FROM Users
-				WHERE Username = ?;
-			"""
-	user_id = query_db(sql_str, (username,), True, True)['User_ID']
+    user_id = select_query.get_user_id(username)
+    characters = select_query.select_char_name_and_id(user_id)
 
-	sql_str = """SELECT Character_Name, Character_ID
-				FROM Character
-				WHERE User_ID = ?;
-			"""
-	characters = query_db(sql_str, (user_id,), True)
-
-	return render_template('admin/characters.html',
-							characters=characters,
-							header_text=get_current_username())	
+    return render_template('admin/characters.html',
+                            characters=characters,
+                            header_text=get_current_username())	
 
 @bp.route('creationKit')
 @login_required
 def admin_creationKit():
-	check_for_admin_status()
+    check_for_admin_status()
 
-	sql_str = """SELECT Item_Name, Item_ID
-				FROM Items;
-			"""
-	items = query_db(sql_str, (), True)
+    items = select_query.select_items()
+    buckets = {}
+    slot_name_query_result = select_query.select_slot_names()
 
-	items_mod = []
+    for sn in slot_name_query_result:
+        buckets[sn["Slots_Name"]] = []
 
-	for i in items:
-		items_mod.append(
-			{
-				'Item_Name' : shorten_string(i['Item_Name'], 13),
-				'Item_ID' : i['Item_ID']
-			}
-		)
+    for i in items:
+        item_data = {'Item_Name' : shorten_string(i['Item_Name'], 13), 'Item_ID' : i['Item_ID']}
+        buckets[i["Slots_Name"]].append(item_data)
 
-	return render_template('admin/items.html',
-							items=items_mod,
-							header_text=get_current_username())
-
+    return render_template('admin/items.html',
+                            buckets=buckets,
+                            header_text=get_current_username())
 
 @bp.route('creationKit/add')
 @login_required
 def admin_creationKit_add():
-	check_for_admin_status()
-	sql_str = """SELECT Slots_Name
-				FROM SLOTS;
-			"""
-	slot_names = query_db(sql_str)
+    check_for_admin_status()
 
-	sql_str = """SELECT Rarities_Name
-				FROM Rarities;
-			"""
-	rarity_names = query_db(sql_str)
+    slot_names = select_query.select_slot_names()
+    rarity_names = select_query.select_rarity_names()
+    effect_names = select_query.select_effect_names()
 
-	sql_str = """SELECT Effect_Name
-				FROM Effects;
-			"""
-	effect_names = query_db(sql_str)
-
-	return render_template('admin/add_item.html',
-							slots=slot_names,
-							rarities=rarity_names,
-							effects=effect_names,
-							header_text=get_current_username())
+    return render_template('admin/add_item.html',
+                            slots=slot_names,
+                            rarities=rarity_names,
+                            effects=effect_names,
+                            header_text=get_current_username())
 
 @bp.route('creationKit/edit/<int:item_id>')
 @login_required
 def admin_creationKit_edit(item_id):
-	check_for_admin_status()
+    check_for_admin_status()
 
-	sql_str = """SELECT Slots_Name
-				FROM SLOTS;
-			"""
-	slot_names = query_db(sql_str)
+    slot_names = select_query.select_slot_names()
+    rarity_names = select_query.select_rarity_names()
+    effect_names = select_query.select_effect_names()
 
-	sql_str = """SELECT Rarities_Name
-				FROM Rarities;
-			"""
-	rarity_names = query_db(sql_str)
+    itemQueryResult = select_query.select_items(item_id)
 
-	sql_str = """SELECT Effect_Name
-				FROM Effects;
-			"""
-	effect_names = query_db(sql_str)
+    if itemQueryResult is None:
+        itemQueryResult = {
+            'Item_Description' : 'null',
+            'Item_Name' : 'null',
+            'Item_Picture' : 'no_image.png',
+            'Rarities_Name' : 'null',
+            'Rarities_Color' : 'white',
+            #'Item_Slot' : 'null',
+            'Item_Weight' : 'null',
+            'Item_Str_Bonus' : 0,
+            'Item_Dex_Bonus' : 0,
+            'Item_Con_Bonus' : 0,
+            'Item_Int_Bonus' : 0,
+            'Item_Wis_Bonus' : 0,
+            'Item_Cha_Bonus' : 0,
+            'Item_Attack_Bonus' : 0,
+            #'Item_Initiative_Bonus' : 0,
+            'Item_Health_Bonus' : 0,
+            'Item_Damage_Num_Of_Dices' : 0,
+            'Item_Damage_Num_Of_Dice_Sides' : 0,
+            'Item_AC_Bonus' : 0
+        }
 
-	# Items query
-	queryStr = """SELECT *
-				FROM Items
-				LEFT JOIN Rarities ON Items.Rarity_ID=Rarities.Rarities_ID
-				WHERE Items.Item_ID=?;"""
-	# Check to see if ID has been assigned
-	
-	itemQueryResult = query_db(queryStr, (item_id,), True, True)
+    item_effect1 = 'None'
+    item_effect2 = 'None'
+    item_slots_name = ''
 
-	if itemQueryResult is None:
-		itemQueryResult = {
-			'Item_Description' : 'null',
-			'Item_Name' : 'null',
-			'Item_Picture' : 'no_image.png',
-			'Rarities_Name' : 'null',
-			'Rarities_Color' : 'white',
-			'Item_Slot' : 'null',
-			'Item_Weight' : 'null',
-			'Item_Str_Bonus' : 0,
-			'Item_Dex_Bonus' : 0,
-			'Item_Con_Bonus' : 0,
-			'Item_Int_Bonus' : 0,
-			'Item_Wis_Bonus' : 0,
-			'Item_Cha_Bonus' : 0,
-			'Item_Attack_Bonus' : 0,
-			'Item_Initiative_Bonus' : 0,
-			'Item_Health_Bonus' : 0,
-			'Item_Damage_Num_Of_Dices' : 0,
-			'Item_Damage_Num_Of_Dice_Sides' : 0,
-			'Item_AC_Bonus' : 0
-		}
+    if itemQueryResult is not None:
+        # Check if item has an effect on it
+        if itemQueryResult['Item_Effect1'] is not None and itemQueryResult['Item_Effect1'] > 0:	
+            item_effect1 = select_query.select_effect_names(itemQueryResult['Item_Effect1'])['Effect_Name']
 
-	item_effect1 = 'None'
-	item_effect2 = 'None'
-	item_slots_name = ''
+        if itemQueryResult['Item_Effect2'] is not None and itemQueryResult['Item_Effect2'] > 0:	
+            item_effect2 = select_query.select_effect_names(itemQueryResult['Item_Effect2'])['Effect_Name']
+        
+        if itemQueryResult['Item_Slot'] is not None and itemQueryResult['Item_Slot'] > 0:	
+            item_slots_name = select_query.select_slot_names(itemQueryResult['Item_Slot'])['Slots_Name']
 
-	# Check if item has an effect on it
-	if itemQueryResult is not None and itemQueryResult['Item_Effect1'] is not None and itemQueryResult['Item_Effect1'] > 0:	
-		# Effect1 query
-		queryStr = """SELECT Effect_Name 
-					FROM Effects 
-					WHERE Effect_ID=?;"""
-		# Check to see if ID has been assigned
-		
-		item_effect1 = query_db(queryStr, (itemQueryResult['Item_Effect1'],), True, True)['Effect_Name']
-
-	# Check if item has an effect on it
-	if itemQueryResult is not None and itemQueryResult['Item_Effect2'] is not None and itemQueryResult['Item_Effect2'] > 0:	
-		# Effect2 query
-		queryStr = """SELECT Effect_Name 
-					FROM Effects 
-					WHERE Effect_ID=?;"""
-		# Check to see if ID has been assigned
-		
-		item_effect2 = query_db(queryStr, (itemQueryResult['Item_Effect2'],), True, True)['Effect_Name']
-
-	
-	if itemQueryResult is not None and itemQueryResult['Item_Slot'] is not None and itemQueryResult['Item_Slot'] > 0:	
-		# Effect2 query
-		queryStr = """SELECT Slots_Name 
-					FROM Slots 
-					WHERE Slots_ID=?;"""
-		# Check to see if ID has been assigned
-		
-		item_slots_name = query_db(queryStr, (itemQueryResult['Item_Slot'],), True, True)['Slots_Name']
-
-	image = url_for('static', filename='images/no_image.png')
-
-	if itemQueryResult['Item_Picture'] is not None and itemQueryResult['Item_Picture'] != '' and itemQueryResult['Item_Picture'] != 'no_image.png':
-		image = '/dataserver/imageserver/item/' + itemQueryResult['Item_Picture']
-
-
-	return render_template('admin/edit_item.html',
-							items=itemQueryResult,
-							slots=slot_names,
-							rarities=rarity_names,
-							effects=effect_names,
-							effect1_name=item_effect1,
-							effect2_name=item_effect2,
-							item_id=item_id,
-							item_slots_name=item_slots_name,
-							header_text=get_current_username())
+    return render_template('admin/edit_item.html',
+                            items=itemQueryResult,
+                            slots=slot_names,
+                            rarities=rarity_names,
+                            effects=effect_names,
+                            effect1_name=item_effect1,
+                            effect2_name=item_effect2,
+                            item_id=item_id,
+                            item_slots_name=item_slots_name,
+                            header_text=get_current_username())
 
 @bp.route('creationKit/remove/<int:item_id>')
 @login_required
 def admin_creationKit_remove(item_id):
-	check_for_admin_status()
-	sql_str = """DELETE
-				FROM Items
-				WHERE Item_ID = ?;
-			"""
-	query_db(sql_str, (item_id,), False)
-
-	return redirect(url_for('admin.admin_creationKit'))
+    check_for_admin_status()
+    delete_query.delete_item(item_id)
+    return redirect(url_for('admin.admin_creationKit'))
 
 @bp.route('creationKit/add/submit', methods=('GET', 'POST'))
 @login_required
 def admin_creationKit_add_submit():
-	check_for_admin_status()
-	if request.method == 'POST':
-		insert_sql_str = """INSERT INTO Items (Item_Name, Item_Picture, Item_Description,
-								Item_Slot, Rarity_ID, Item_Weight, Item_Str_Bonus, Item_Dex_Bonus
-								, Item_Con_Bonus, Item_Int_Bonus, Item_Wis_Bonus, Item_Cha_Bonus, Item_Effect1,
-								Item_Effect2, Item_Attack_Bonus, Item_Initiative_Bonus,
-								Item_Health_Bonus, Item_AC_Bonus, Item_Damage_Num_Of_Dices,
-								Item_Damage_Num_Of_Dice_Sides)
-							VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
-				"""
+    check_for_admin_status()
+    if request.method == 'POST':
+        name_check = select_query.get_item_id_from_name(get_request_field_data('name'))
+        
+        if name_check is not None:
+            # Name already exist
+            return '[TODO: Change this later]\n\nItem name already exist... Please go back and try again.'
 
-		sql_str = """SELECT Item_ID
-					FROM Items
-					WHERE Item_Name = ?;
-				"""
-		name_check = query_db(sql_str, (get_request_field_data('name'), ), True, True)
-		
-		if name_check is not None:
-			# Name already exist
-			return '[TODO: Change this later]\n\nItem name already exist... Please go back and try again.'
+        fullDirName = os.path.join(current_app.config['IMAGE_UPLOAD'], "items")
+        creationKit_helper("INSERT", fullDirName)
+        item_id = select_query.get_item_id_from_name(get_request_field_data('name'))
+        update_item_image(name_check, fullDirName, select_query.select_item_picture_name(item_id)["Item_Picture"])
 
-		sql_str = """SELECT Slots_ID
-					FROM Slots
-					WHERE Slots_Name = ?;
-				"""
-		slot_id = query_db(sql_str, (request.form['slot'],), True, True)
-		if slot_id is None:
-			raise Exception('Not a valid slot')
-		else:
-			slot_id = int(slot_id['Slots_ID'])
-
-		sql_str = """SELECT Rarities_ID
-					FROM Rarities 
-					WHERE Rarities_Name = ?;
-				"""
-		rarity_id = query_db(sql_str, (request.form['rarity'],), True, True)
-		if rarity_id is None:
-			raise Exception('Not a valid rarity')
-		else:
-			rarity_id = int(rarity_id['Rarities_ID'])
-
-		effect1_val = request.form['effect1']
-		effect2_val = request.form['effect2']
-
-		if effect1_val == 'OTHER':
-			create_new_effect(request.form['effect1_name'], request.form['effect1_description'])	
-			effect1_val = request.form['effect1_name']
-
-		if effect2_val == 'OTHER':
-			create_new_effect(request.form['effect2_name'], request.form['effect2_description'])	
-			effect2_val = request.form['effect2_name']
-
-		sql_str = """SELECT Effect_ID
-					FROM Effects
-					WHERE Effect_Name = ?;
-				"""
-		effect1_id = query_db(sql_str, (effect1_val,), True, True)
-		if effect1_id is None:
-			effect1_id = -1
-			#raise Exception('Not a valid effect1')
-		else:
-			effect1_id = int(effect1_id['Effect_ID'])
-
-		effect2_id = query_db(sql_str, (effect2_val,), True, True)
-		if effect2_id is None:
-			effect2_id = -1
-			#raise Exception('Not a valid effect2')
-		else:
-			effect2_id = int(effect2_id['Effect_ID'])
-
-		filename = 'no_image.png'
-
-		print("About to handle item picture file...")	
-		if 'picture' in request.files:
-			new_img = request.files['picture']
-
-			if new_img.filename == '':
-				print('ERROR: File name was blank')
-				return 'File name was blank'
-
-			if new_img and allowed_file(new_img.filename):
-				filename = secure_filename(new_img.filename)
-				dirName = 'items'
-				fullDirName = os.path.join(current_app.config['IMAGE_UPLOAD'], dirName)
-
-				if not os.path.exists(fullDirName):
-					os.mkdir(fullDirName, mode=0o770)
-
-				new_img.save(os.path.join(fullDirName, filename))
-			else:
-				print('ERROR: Either file was None or file extention was invalid.')
-				print('File name = ' + str(filename))
-
-			print('File uploaded successfully!')
-
-		query_db(insert_sql_str, 
-			(
-				str(get_request_field_data('name')),
-				filename,	
-				str(get_request_field_data('description')),
-				slot_id,
-				rarity_id,
-				convert_form_field_data_to_int(get_request_field_data('weight')),
-				convert_form_field_data_to_int(get_request_field_data('str_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('dex_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('con_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('int_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('wis_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('cha_bonus')),
-				effect1_id,
-				effect2_id,
-				convert_form_field_data_to_int(get_request_field_data('attack_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('initiative_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('health_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('ac_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('dnof')),
-				convert_form_field_data_to_int(get_request_field_data('dnofs')),
-
-			),
-			False
-		)
-
-		return redirect(url_for('admin.admin_creationKit'))
+        return redirect(url_for('admin.admin_creationKit'))
 
 @bp.route('creationKit/edit/submit', methods=('GET', 'POST'))
 @login_required
 def admin_creationKit_edit_submit():
-	check_for_admin_status()
-	if request.method == 'POST':
-		insert_sql_str = """UPDATE Items
-							SET Item_Name=?, Item_Picture=?, Item_Description=?,
-								Item_Slot=?, Rarity_ID=?, Item_Weight=?, Item_Str_Bonus=?, Item_Dex_Bonus=?
-								, Item_Con_Bonus=?, Item_Int_Bonus=?, Item_Wis_Bonus=?, Item_Cha_Bonus=?, Item_Effect1=?,
-								Item_Effect2=?, Item_Attack_Bonus=?, Item_Initiative_Bonus=?,
-								Item_Health_Bonus=?, Item_AC_Bonus=?, Item_Damage_Num_Of_Dices=?,
-								Item_Damage_Num_Of_Dice_Sides=?
-							WHERE Item_ID = ?;
-				"""
+    check_for_admin_status()
+    if request.method == 'POST':
+        fullDirName = os.path.join(current_app.config['IMAGE_UPLOAD'], "items")
+        creationKit_helper("UPDATE", fullDirName)
+        item_id = convert_form_field_data_to_int('id')
+        update_item_image(item_id, fullDirName, select_query.select_item_picture_name(item_id)["Item_Picture"])
 
-
-		sql_str = """SELECT Slots_ID
-					FROM Slots
-					WHERE Slots_Name = ?;
-				"""
-		slot_id = query_db(sql_str, (request.form['slot'],), True, True)
-		if slot_id is None:
-			raise Exception('Not a valid slot')
-		else:
-			slot_id = int(slot_id['Slots_ID'])
-
-		sql_str = """SELECT Rarities_ID
-					FROM Rarities 
-					WHERE Rarities_Name = ?;
-				"""
-		rarity_id = query_db(sql_str, (request.form['rarity'],), True, True)
-		if rarity_id is None:
-			raise Exception('Not a valid rarity')
-		else:
-			rarity_id = int(rarity_id['Rarities_ID'])
-
-		effect1_val = request.form['effect1']
-		effect2_val = request.form['effect2']
-
-		if effect1_val == 'OTHER':
-			create_new_effect(request.form['effect1_name'], request.form['effect1_description'])	
-			effect1_val = request.form['effect1_name']
-
-		if effect2_val == 'OTHER':
-			create_new_effect(request.form['effect2_name'], request.form['effect2_description'])	
-			effect2_val = request.form['effect2_name']
-
-		sql_str = """SELECT Effect_ID
-					FROM Effects
-					WHERE Effect_Name = ?;
-				"""
-		effect1_id = query_db(sql_str, (effect1_val,), True, True)
-		if effect1_id is None:
-			#raise Exception('Not a valid effect1')
-			effect1_id = -1 
-		else:
-			effect1_id = int(effect1_id['Effect_ID'])
-
-		effect2_id = query_db(sql_str, (effect2_val,), True, True)
-		if effect2_id is None:
-			effect2_id = -1 
-			#raise Exception('Not a valid effect2')
-		else:
-			effect2_id = int(effect2_id['Effect_ID'])
-
-
-		filename = 'no_image.png'
-		print("About to handle item picture file...")
-		if 'picture' in request.files:
-			new_img = request.files['picture']
-
-			if new_img.filename == '':
-				print('ERROR: File name was blank')
-				return 'File name was blank'
-
-			if new_img and allowed_file(new_img.filename):
-				sql_str = """SELECT Item_Picture
-							FROM Items
-							WHERE Item_ID = ?;
-						"""
-				existing_picture_name = query_db(sql_str, (int(get_request_field_data('id')),), True, True)['Item_Picture']
-				filename = secure_filename(new_img.filename)
-				if existing_picture_name != filename:
-					dirName = 'items'
-					fullDirName = os.path.join(current_app.config['IMAGE_UPLOAD'], dirName)
-
-					if not os.path.exists(fullDirName):
-						os.mkdir(fullDirName, mode=0o770)
-
-					new_img.save(os.path.join(fullDirName, filename))
-				else:
-					print('ERROR: Either file was None or file extention was invalid.')
-					print('File name = ' + str(filename))
-
-				print('File uploaded successfully!')
-
-
-
-		query_db(insert_sql_str, 
-			(
-				str(get_request_field_data('name')),
-				filename,	
-				str(get_request_field_data('description')),
-				slot_id,
-				rarity_id,
-				convert_form_field_data_to_int(get_request_field_data('weight')),
-				convert_form_field_data_to_int(get_request_field_data('str_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('dex_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('con_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('int_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('wis_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('cha_bonus')),
-				effect1_id,
-				effect2_id,
-				convert_form_field_data_to_int(get_request_field_data('attack_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('initiative_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('health_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('ac_bonus')),
-				convert_form_field_data_to_int(get_request_field_data('dnof')),
-				convert_form_field_data_to_int(get_request_field_data('dnofs')),
-				int(get_request_field_data('id'))
-			),
-			False
-		)
-
-		return redirect(url_for('admin.admin_creationKit'))
+        return redirect(url_for('admin.admin_creationKit'))
 
 @bp.route('users/verify/<int:user_id>')
 @login_required
 def admin_verify_user(user_id):
-	check_for_admin_status()
-	sql_str = """UPDATE Users
-				SET Is_Verified = 1
-				WHERE User_ID = ?;
-			"""
-	query_db(sql_str, (user_id, ), False)
-	return '200'
-
+    check_for_admin_status()
+    update_query.update_isVerified(user_id, True)
+    return '200'
 
 @bp.route('notifications')
 @login_required
 def admin_notifications():
-	check_for_admin_status()
-	sql_str = """SELECT Note_ID, Admin_Notifications.User_ID, Type, Username, Has_Been_Read, Notification_ID
-				FROM Admin_Notifications
-				INNER JOIN Notification_Types ON Admin_Notifications.Notification_Type=Notification_Types.Notification_ID
-				INNER JOIN Users ON Admin_Notifications.User_ID=Users.User_ID
-				;
-			"""	
-	notifications = query_db(sql_str)
+    check_for_admin_status()
+    notifications = select_query.select_notifications()
 
-	return render_template('admin/notifications.html',
-							header_text=get_current_username(),
-							notifications=notifications)
-
+    return render_template('admin/notifications.html',
+                            header_text=get_current_username(),
+                            notifications=notifications)
 
 @bp.route('notifications/remove/<int:notification_id>')
 @login_required
 def admin_remove_notification(notification_id):
-	check_for_admin_status()
-	sql_str = """DELETE FROM Admin_Notifications
-				WHERE Note_ID=?;
-			"""
-	query_db(sql_str, (notification_id,), False)
-	return '200'
+    check_for_admin_status()
+    delete_query.delete_notification(notification_id)
+    return '200'
 
 @bp.route('notifications/markRead/<int:notification_id>')
 @login_required
 def admin_markRead_notification(notification_id):
-	check_for_admin_status()
-	sql_str = """UPDATE Admin_Notifications
-				SET Has_Been_Read = 1
-				WHERE Note_ID=?;
-			"""
-	query_db(sql_str, (notification_id,), False)
-	return '200'
+    check_for_admin_status()
+    update_query.update_notification_read_status(notification_id, True)
+    return '200'
 
 @bp.route('users/remove', methods=('GET', 'POST'))
 @login_required
 def admin_remove_user():
-	check_for_admin_status()
-	if request.method != 'POST':
-		return '400'
+    check_for_admin_status()
+    if request.method != 'POST':
+        return '400'
 
-	user_id = request.form['user_id']
+    user_id = get_request_field_data('user_id')
 
-	sql_str = """DELETE FROM Users 
-				WHERE User_ID=?;
-			"""
-	query_db(sql_str, (user_id,), False)
+    delete_query.delete_user(user_id)	
 
-	sql_str = """SELECT Character_ID
-				FROM Character
-				WHERE User_ID = ?;
-			"""
-	characters = query_db(sql_str, (user_id,), True)
+    characters = select_query.get_char_id(user_id)
 
-	for c in characters:
-		char_id = c['Character_ID']
+    for c in characters:
+        char_id = c['Character_ID']
 
-		sql_str = """DELETE FROM Character_Abilites
-					WHERE Character_ID=?;
-				"""
-		query_db(sql_str, (char_id,), False)
-
-		sql_str = """DELETE FROM Character_Skills
-					WHERE Character_ID=?;
-				"""
-		query_db(sql_str, (char_id,), False)
-
-		sql_str = """DELETE FROM Inventory 
-					WHERE Character_ID=?;
-				"""
-		query_db(sql_str, (char_id,), False)
+        delete_query.delete_character_abilites(char_id)
+        delete_query.delete_character_skill(char_id)
+        delete_query.delete_character_inventory(char_id)
 
 
-	sql_str = """DELETE FROM Character 
-				WHERE User_ID=?;
-			"""
-	query_db(sql_str, (user_id,), False)
+    delete_query.delete_users_characters(user_id)
+    delete_query.delete_login_attempts(user_id)
+    delete_query.delete_users_notifications(user_id)
 
-	sql_str = """DELETE FROM Login_Attempts 
-				WHERE User_ID=?;
-			"""
-	query_db(sql_str, (user_id,), False)
-
-	sql_str = """DELETE FROM Admin_Notifications 
-				WHERE User_ID=?;
-			"""
-	query_db(sql_str, (user_id,), False)
-
-	return '200'
+    return '200'
 
 @bp.route('users/makeAdmin', methods=('GET', 'POST'))
 @login_required
 def make_user_admin():
-	check_for_admin_status()
-	
-	if request.method != 'POST':
-		return '400'
+    check_for_admin_status()
+    
+    if request.method != 'POST':
+        return '400'
 
-	user_id = request.form['user_id']
+    user_id = get_request_field_data('user_id')
 
-	sql_str = """UPDATE Users
-				SET Is_Admin = 1
-				WHERE User_ID = ?;
-			"""
-	query_db(sql_str, (user_id, ), False)
+    update_query.change_user_admin_status(user_id, True)
 
-	return '200'
-
-
-def allowed_file(filename):
-	 return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+    return '200'
 
 def create_new_effect(effect_name, effect_description):
-	if effect_name is None or effect_name == '' or effect_description is None or effect_description == '':
-		raise Exception('Invalid effect')
+    if effect_name is None or effect_name == '' or effect_description is None or effect_description == '':
+        raise Exception('Invalid effect')
 
-	sql_str = """INSERT INTO Effects (Effect_Name, Effect_Description)
-				VALUES (?, ?);
-			"""
-	query_db(sql_str, (effect_name, effect_description), False)
+    insert_query.insert_effect(effect_name, effect_description)
 
-def get_request_field_data(field_name):
-	print(str(field_name) + ' : ' + str(request.form[field_name]))
-	return request.form[field_name]
+def creationKit_helper(query_type, image_save_dir):
+    query_types = ("UPDATE", "INSERT")
 
-def convert_form_field_data_to_int(field_data):
-	return 0 if field_data is None or field_data == '' else int(field_data)
+    if query_type not in query_types:
+        raise Exception("Invaild query type.")
+    
+    slot_id = select_query.select_item_fields(convert_form_field_data_to_int('id'), ("Item_Slot",))["Item_Slot"]
+    if query_type == query_types[1]:
+        slot_id = select_query.get_slot_id_from_name(get_request_field_data('slot'))
+        if slot_id is None:
+            raise Exception('Not a valid slot')
+        else:
+            slot_id = int(slot_id)
+
+    rarity_id = select_query.get_rarity_id_from_name(get_request_field_data('rarity'))
+    if rarity_id is None:
+        raise Exception('Not a valid rarity')
+    else:
+        rarity_id = int(rarity_id)
+
+    effect1_val = get_request_field_data('effect1')
+    effect2_val = get_request_field_data('effect2')
+
+    if effect1_val == 'OTHER':
+        effect1_val = get_request_field_data('effect1_name')
+        create_new_effect(effect1_val, get_request_field_data('effect1_description'))	
+
+    if effect2_val == 'OTHER':
+        effect2_val = get_request_field_data('effect2_name')
+        create_new_effect(effect2_val, get_request_field_data('effect2_description'))	
+
+    effect1_id = select_query.select_effect_id_from_name(effect1_val)
+    if effect1_id is None:
+        effect1_id = -1
+    else:
+        effect1_id = int(effect1_id['Effect_ID'])
+
+    effect2_id = select_query.select_effect_id_from_name(effect2_val)
+    if effect2_id is None:
+        effect2_id = -1
+    else:
+        effect2_id = int(effect2_id['Effect_ID'])
+
+    if 'picture' in request.files:
+        new_img = request.files['picture']
+        #new_img = get_request_field_data('picture')
+
+        saved_filename = ImageHandler().save_image(new_img, image_save_dir, "temp_item")
+
+        if saved_filename is None:
+            saved_filename = "no_image.png"
+
+    query_data = {
+        "Item_Name" : str(get_request_field_data('name')),
+        "Item_Picture" : saved_filename,
+        "Item_Description" : str(get_request_field_data('description')),
+        "Item_Slot" : slot_id, 
+        "Rarity_ID" : rarity_id,
+        "Item_Weight" : convert_form_field_data_to_int('weight'),
+        "Item_Str_Bonus" : convert_form_field_data_to_int('str_bonus'),
+        "Item_Dex_Bonus" : convert_form_field_data_to_int('dex_bonus'),
+        "Item_Con_Bonus" : convert_form_field_data_to_int('con_bonus'),
+        "Item_Int_Bonus" : convert_form_field_data_to_int('int_bonus'),
+        "Item_Wis_Bonus" : convert_form_field_data_to_int('wis_bonus'),
+        "Item_Cha_Bonus" : convert_form_field_data_to_int('cha_bonus'),
+        "Item_Effect1" : effect1_id, 
+        "Item_Effect2" : effect2_id,
+        "Item_Attack_Bonus" : convert_form_field_data_to_int('bonus_damage'),
+        #"Item_Initiative_Bonus" : convert_form_field_data_to_int('initiative_bonus'),
+        "Item_Health_Bonus" : convert_form_field_data_to_int('health_bonus'),
+        "Item_AC_Bonus" : convert_form_field_data_to_int('ac_bonus'),
+        "Item_Damage_Num_Of_Dices" : convert_form_field_data_to_int('dnof'),
+        "Item_Damage_Num_Of_Dice_Sides" :convert_form_field_data_to_int('dnofs'),
+        "Wield_Str" : convert_form_field_data_to_int('wield_str'),
+        "Wield_Dex" : convert_form_field_data_to_int('wield_dex'),
+        "Wield_Wis" : convert_form_field_data_to_int('wield_wis'),
+        "Wield_Int" : convert_form_field_data_to_int('wield_int')
+    }
+
+    if query_type == query_types[0]:
+        return update_query.update_item(query_data, convert_form_field_data_to_int('id'))
+    elif query_type == query_types[1]:
+        return insert_query.insert("Items", query_data)
+
+def update_item_image(item_id, path, file_name):
+    new_image_name = ImageHandler()._resize_image_to_thumbnail(os.path.join(path, file_name), save_path=path, new_file_name="item_" + str(item_id))
+    return update_query.update_item({"Item_Picture" : new_image_name}, item_id)

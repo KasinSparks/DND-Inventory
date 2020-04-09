@@ -1,45 +1,32 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <head>
-	<title>Character Select</title>
-	<link rel="stylesheet" href="../static/styles.css">
-	<script src="../static/script.js"></script>
+    <title>Character Select</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
-	<div class="user_container">
-		<div class="inner_container">
-			<div class="tab">
-					<h1>{{ header_text }}</h1>
-			</div>
-			<div class="character_select_inner_panel">
-				<div class="sub_inner_panel">
-					{% for c in characters %}
-							<div class="user_button_char_select clickable" onclick="open_character_window({{ c['Character_ID'] }}); ">
-							<h2>{{ c['Character_Name']|e }}</h2>
-						</div>
-					{% endfor %}
-				</div>
-				<div class="character_select_bottom_buttons_container">
-					<div class="character_select_bottom_button_new clickable" onclick="location.href='/character/create';"></div>
-					<div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('home') }}';"></div>
-				</div>
-<!-- 				<div class="user_button clickable" onclick="location.href='/character/create'">
-					<h2>Create New Character</h2>
-				</div> -->
-			</div>
-			
-		</div>
-		<div class="footer">
-			<p>Copyright 2020</p>
-		</div>
-	</div>
-
-<!-- 	<div class="panels">
-		<ul>
-			{% for c in characters %}
-				<li><a href="{{ c['Character_ID'] }}">{{ c['Character_Name'] }}</a></li>
-			{% endfor %}
-		</ul>
-		<a href="create">Create Character</button>
-	</div> -->
+    <div class="user_container">
+        <div class="inner_container">
+            <div class="tab">
+                    <h1>{{ header_text }}</h1>
+            </div>
+            <div class="character_select_inner_panel">
+                <div class="sub_inner_panel">
+                    {% for c in characters %}
+                            <div class="user_button_char_select clickable" onclick="open_character_window({{ c['Character_ID'] }}); ">
+                            <h2>{{ c['Character_Name']|e }}</h2>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="character_select_bottom_buttons_container">
+                    <div class="character_select_bottom_button_new clickable" onclick="location.href='/character/create';"></div>
+                    <div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('home') }}';"></div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Copyright 2020</p>
+        </div>
+    </div>
 </body>

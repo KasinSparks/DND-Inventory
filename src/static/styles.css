@@ -828,6 +828,18 @@ table td{
 	height: 31px;
 }
 
+.item_category_collapse_button{
+	background-image: url(./images/inv_collapse.png);
+	width: 31px;
+	height: 31px;
+}
+
+.item_category_expand_button{
+	background-image: url(./images/inv_extend.png);
+	width: 31px;
+	height: 31px;
+}
+
 .inv_remove_item_button{
 	background-image: url(./images/inv_remove_item.png);
 	width: 31px;
@@ -900,20 +912,20 @@ table td{
 }
 
 .item_remove_container{
-		/*visibility: hidden;*/
-		width: 400px;
-		background-color: #222222;
-		text-align: center;
-		padding: 5px 0;
-		border-radius: 10px;
-		border-color: black;
-		border-width: 3px;
-		/* margin-left: hand10%; */
-		/* margin-top: -4%; */
-	
-		/* Position the tooltip text */
-		position: absolute;
-		z-index: 1;
+	/*visibility: hidden;*/
+	width: 400px;
+	background-color: #222222;
+	text-align: center;
+	padding: 5px 0;
+	border-radius: 10px;
+	border-color: black;
+	border-width: 3px;
+	/* margin-left: hand10%; */
+	/* margin-top: -4%; */
+
+	/* Position the tooltip text */
+	/* position: absolute; */
+	z-index: 1;
 }
 
 .stat_details{
@@ -1185,4 +1197,27 @@ table td{
 
 .verify_deny_buttons .small_buttons{
 	margin: 1px auto;
+}
+
+.site_notification{
+	width: 100%;
+	background-color: #1b1b1b;
+}
+
+.site_notification h2{
+	color: whitesmoke;
+	text-align: center;
+	margin: 0 auto;
+}
+
+.item_line{}
+
+.item_category_line{
+	display: flex;
+	flex-direction: row;
+	background-color: #1b1b1b;
+}
+
+.item_category_line .item_category_button{
+	margin: auto;
 }
