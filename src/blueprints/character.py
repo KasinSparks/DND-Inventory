@@ -138,13 +138,23 @@ def character_page(char_id):
         for i in inv_items[k]['items']:
             character_data['weight'] += int(i['Item_Weight']) * int(i['Amount'])
 
+    character_skills = select_query.select_character_skills(char_id)
+    skills = []
+    for cs in character_skills:
+        field = str(cs["Skill_Type"])
+        field_short_word = field[:3].lower()
+        skill = dict(cs)
+        skill["Skill_Additional_Value"] = stat_modifiers[field_short_word]
+        skills.append(skill)
+
     return render_template('character/character_page.html',
                            char_id=char_id,
                            equiped_item=equiped_item_short_data,
                            character_data=character_data,
                            stat_modifiers=stat_modifiers,
-                           inv_items=inv_items
-                        )
+                           inv_items=inv_items,
+                           skills=skills
+                          )
 
 def get_inv_items(char_id : int, equiped_items_ids):
     items = {}
