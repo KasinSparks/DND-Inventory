@@ -1,50 +1,50 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <head>
-	<title>Notifications</title>
-	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-	<script src="{{ url_for('static', filename='script.js') }}"></script>
+    <title>Notifications</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
-	<div class="user_container">
-		<div class="inner_container">
-			<div class="tab">
-					<h1>{{ header_text }}</h1>
-			</div>
-			<div class="character_select_inner_panel">
-				<div class="sub_inner_panel">
-					{% for n in notifications %}
-						<div id="notification_{{ n['Note_ID'] }}" class="user_button_char_select" style="display: flex; flex-direction: row;" >
-							{% if n['Has_Been_Read'] < 1 %}
-								<div id="notification_read_{{ n['Note_ID'] }}" class="small_buttons character_select_bottom_button_read clickable" onclick="mark_read({{ n['Note_ID'] }});"></div>
-							{% endif %}
-							<div class="clickable user_button_notification" onclick="alert('Not Implemented Yet...');">
-								<h2>{{ n['Type']|e }}: {{ n['Username']|e }}</h2>
-							</div>
-							<div class="small_buttons character_select_bottom_button_remove clickable" onclick="remove_note({{ n['Note_ID'] }});"></div>
-						</div>
-					{% endfor %}
-				</div>
-				<div class="character_select_bottom_buttons_container">
-					<div class="character_select_bottom_button_goback clickable" onclick="window.history.go(-1); return false;"></div>
-				</div>
+    <div class="user_container">
+        <div class="inner_container">
+            <div class="tab">
+                    <h1>{{ header_text }}</h1>
+            </div>
+            <div class="character_select_inner_panel">
+                <div class="sub_inner_panel">
+                    {% for n in notifications %}
+                        <div id="notification_{{ n['Note_ID'] }}" class="user_button_char_select" style="display: flex; flex-direction: row;" >
+                            {% if n['Has_Been_Read'] < 1 %}
+                                <div id="notification_read_{{ n['Note_ID'] }}" class="small_buttons character_select_bottom_button_read clickable" onclick="mark_read({{ n['Note_ID'] }});"></div>
+                            {% endif %}
+                            <div class="clickable user_button_notification" onclick="alert('Not Implemented Yet...');">
+                                <h2>{{ n['Type']|e }}: {{ n['Username']|e }}</h2>
+                            </div>
+                            <div class="small_buttons character_select_bottom_button_remove clickable" onclick="remove_note({{ n['Note_ID'] }});"></div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="character_select_bottom_buttons_container">
+                    <div class="character_select_bottom_button_goback clickable" onclick="window.history.go(-1); return false;"></div>
+                </div>
 <!-- 				<div class="user_button clickable" onclick="location.href='/character/create'">
-					<h2>Create New Character</h2>
-				</div> -->
-			</div>
-			
-		</div>
-		<div class="footer">
-			<p>Copyright 2020</p>
-		</div>
-	</div>
+                    <h2>Create New Character</h2>
+                </div> -->
+            </div>
+            
+        </div>
+        <div class="footer">
+            <p>Copyright 2020</p>
+        </div>
+    </div>
 
 <!-- 	<div class="panels">
-		<ul>
-			{% for c in characters %}
-				<li><a href="{{ c['Character_ID'] }}">{{ c['Character_Name'] }}</a></li>
-			{% endfor %}
-		</ul>
-		<a href="create">Create Character</button>
-	</div> -->
+        <ul>
+            {% for c in characters %}
+                <li><a href="{{ c['Character_ID'] }}">{{ c['Character_Name'] }}</a></li>
+            {% endfor %}
+        </ul>
+        <a href="create">Create Character</button>
+    </div> -->
 </body>

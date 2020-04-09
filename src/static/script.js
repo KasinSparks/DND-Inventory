@@ -190,12 +190,12 @@ function inv_tab(activeClass, activeButtonID){
 	return;
 }
 
-function category_expand_and_collapse(categoryID, option){
+function category_expand_and_collapse(categoryID, option, line_item_class, button_class){
 	inv_cat = document.getElementById(categoryID); 
 
-	inv_line_items = inv_cat.getElementsByClassName('inv_line_item');
+	inv_line_items = inv_cat.getElementsByClassName(line_item_class);
 
-	inv_category_button = inv_cat.getElementsByClassName('inv_category_button')[0];
+	inv_category_button = inv_cat.getElementsByClassName(button_class)[0];
 
 	for(var i = 0; i < inv_line_items.length; ++i){
 		if(option === 'expand'){
@@ -950,7 +950,8 @@ function submitAddItemData(url, params, field_id_name='', char_id, slot_name){
 		if(http.readyState == 4 && http.status == 200) {
 			// do something here
 			updateInvCategory(updateInvCategoryHelper, char_id, slot_name, '/dataserver/getItemsInSlot/' + char_id + '/' +  slot_name);
-			document.getElementById('character_weight').innerHTML = this.response;
+			weight_field = document.getElementById('character_weight');
+			weight_field.innerHTML = this.response;
 			isRemoveItemOpen = false;
 		}
 	}
@@ -970,10 +971,7 @@ function unequipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=
 			console.error(e);
 		}
 	} else {
-		equipItemChangeSubmit('/character/item/unequip/', char_id, item_id, slot_num, keep_open);
-		if(keep_open){
-			updateMultiSlotItem(item_id, slot_name, slot_num, true);
-		}
+		equipItemChangeSubmit('/character/item/unequip/', char_id, item_id, slot_name, slot_num, keep_open, true);
 	}
 }
 
@@ -985,7 +983,7 @@ const multi_slot_name_map = new Map([
 ])
 
 function equipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=false, keep_open=false){
-	console.log('slot_num: ' + slot_num);
+	console.log('slot_num: ' + slot_num + ', slot_name: ' + slot_name);
 	// TODO: change later
 	if(is_multiple_slots){
 		// Determine which slot to add the item to
@@ -996,10 +994,7 @@ function equipItem(char_id, item_id, slot_name, slot_num=0, is_multiple_slots=fa
 			console.error(e);
 		}
 	} else {
-		equipItemChangeSubmit('/character/item/equip/', char_id, item_id, slot_num, keep_open);
-		if(keep_open){
-			updateMultiSlotItem(item_id, slot_name, slot_num);
-		}
+		equipItemChangeSubmit('/character/item/equip/', char_id, item_id, slot_name, slot_num, keep_open, false);
 	}
 }
 
@@ -1023,63 +1018,17 @@ function displayMultiSlot(char_id, item_id, slot_name, slot_num=0, is_unequip=fa
 function multipleSlotsInsert(char_id, item_id, number_of_slots, slot_num, is_unequip=false){
 	var parentElement = document.getElementById('inv_item_' + item_id).parentElement;
 
-	/*var buttonElement = null;
-	if(parentElement.getElementsByClassName('inv_equip_unequip_item_button')[0] != null){
-		buttonElement = parentElement.getElementsByClassName('inv_equip_unequip_item_button')[0].remove();
-	} else {
-		throw "No inventory equip/unequip item button found.";
-	} */
-
 	if(number_of_slots < 1 || number_of_slots === 3 || number_of_slots > 4){
 		throw "Invaild number of slots passed.";
 	}
 
-	/* var offset = new Map([
-		[1, 0],
-		[2, 50],
-		[4, 200]
-	]) */
-
 	var ccd = new ChangeData(char_id, '/dataserver/getCurrentEquipedItems/' + char_id + '/' + slot_num, 'json', item_id, '');
 	ccd.dataCall(changeNameLater);
-
-	/* var html_string = '<div class="inv_multi_options">\
-		<div class="inv_multi_options_inner" style="margin-left: ' + -1 * offset.get(number_of_slots) + '%">';
-	
-	for(var i = 1; i < number_of_slots + 1; ++i){
-		html_string += '<div>\
-			<h4>Item' + i + '</h4>\
-			<div class="inv_' + (is_unequip ? 'un' : '') + 'equip_item_button clickable" onclick="';
-			if(is_unequip){
-				html_string += 'unequipItem';
-			} else {
-				html_string += 'equipItem';
-			}
-		html_string += '(' + char_id + ',' + item_id + ', null, ' + i + ');"></div ></div>';
-	}
-		
-	
-	html_string += '</div></div>';
-
-	parentElement.innerHTML += html_string; */
 }
 
 function changeNameLater(char_id, response, item_id, b=null){
 	var items_html = '<div style="display: flex; flex-direction: row;">';
 
-	/* for(var i = 0; i < response.num_of_slots; ++i){
-		items_html += '\
-			<div class="equipment_left_item equipment_item">\
-				<div class="equipment_left_img">\
-					<img id="equipment_image_' + i + '" src="/dataserver/imageserver/item/' + element.Item_Picture + '" alt="Weapon" />\
-				</div>\
-				<div class="equipment_left_item_name">\
-					<h2  id="equipment_text_' + i + '"	style="color: ' + element.Rarities_Color + ';">\
-						' + element.Item_Name + '\
-					</h2>\
-				</div>\
-			</div>'
-	} */
 	var i = 0;
 
 	response.items.forEach(element => {
@@ -1173,33 +1122,54 @@ function changeNameLater(char_id, response, item_id, b=null){
 }
 
 
-function equipItemChangeSubmit(url_prefix, char_id, item_id, slot_num=0, keep_open=false){
+function equipItemChangeSubmit(url_prefix, char_id, item_id, slot_name="", slot_num=0, keep_open=false, unequip=false){
 	// Send update to server
-	submitEquipChange(url_prefix + char_id + '/' + item_id + '/' + slot_num, char_id, item_id, keep_open);
+	submitEquipChange(url_prefix + char_id + '/' + item_id + '/' + slot_num, char_id, item_id, keep_open, slot_name, slot_num, unequip);
 }
 
-function submitEquipChange(url, char_id, item_id, keep_open){
+function submitEquipChange(url, char_id, item_id, keep_open, slot_name, slot_num, unequip){
 	var http = new XMLHttpRequest();
 	http.onreadystatechange = function(){ 
 		if(http.readyState == 4 && http.status == 200) {
 			try {
-				if (this.response != null && this.response.error !== "None"){
-					alert("An error occured: " + this.response.error);
-					return;
+				if (this.response != null && this.response.error.type !== "None") {
+					var error_type = this.response.error.type;
+					if (error_type === "equip_error") {
+						alert("An error occured: " + this.response.error.message);
+						return;
+					} else if (error_type === "unequip_error") {
+						var prompt_response = confirm(this.response.error.message);
+						if (prompt_response) {
+							submitEquipChange(url + "/1", char_id, item_id, keep_open, slot_name, slot_num, unequip);
+						}
+						return;
+					}
 				}
 			} catch (error) {
 				console.error(error);
 			}
-			// Update item picture and name in equipment
-			updateEquipedItemName(this.response);
-			updateEquipedItemPicture(this.response);
+			
+			// TODO: error handling
+			var _slot_name = this.response.item_data[0].slot_name;
+			var _mod_slot_name = this.response.item_data[0].modified_slot_name;
+
+			this.response.item_data.forEach(item_data => {
+				// Update item picture and name in equipment
+				updateEquipedItemName(item_data);
+				updateEquipedItemPicture(item_data);
+			});
 
 			// Update stats
-			updateCharacterStats(this.response);
+			updateCharacterStats(this.response.character_data, this.response.stat_modifiers);
 
 			// Change button to equip button
-			updateInvCategory(updateInvCategoryHelper, char_id, this.response.slot_name, '/dataserver/getItemsInSlot/' + char_id + '/' +  this.response.slot_name, keep_open);
+			updateInvCategory(updateInvCategoryHelper, char_id, _slot_name, '/dataserver/getItemsInSlot/' + char_id + '/' +  _slot_name, keep_open);
 			//invertEquipButton(char_id, item_id);
+
+			if(keep_open){
+				console.log('slot_num: ' + slot_num + ', slot_name: ' + slot_name);
+				updateMultiSlotItem(item_id, slot_name, slot_num, unequip);
+			}
 		}
 	}
 
@@ -1209,17 +1179,17 @@ function submitEquipChange(url, char_id, item_id, keep_open){
 	return;
 }
 
-function updateEquipedItemPicture(response, use_default_image = false){
-	var img_element = document.getElementById('equipment_' + response.modified_slot_name + '_image');
+function updateEquipedItemPicture(item_data, use_default_image = false){
+	var img_element = document.getElementById('equipment_' + item_data.modified_slot_name + '_image');
 
 	var static_item_loc = '/static/images/items/';
 	var extention_type = '.png';
 
-	var new_src = static_item_loc + response.slot_name + extention_type;
+	var new_src = static_item_loc + item_data.slot_name + extention_type;
 
-	if(response.slot_name === 'Weapon'){
+	if(item_data.slot_name === 'Weapon'){
 		try{
-			var s = String(response.modified_slot_name);
+			var s = String(item_data.modified_slot_name);
 			var l = s.length
 			var temp = s.substr(l - 1, l);
 			var image_name = '';
@@ -1238,21 +1208,21 @@ function updateEquipedItemPicture(response, use_default_image = false){
 	/* if(!use_default_image){
 		new_src = '/dataserver/imageserver/item/' + response.item_data['picture'];
 	} */
-	if(response.item_data != 'null'){
-		new_src = '/imageserver/item/' + response.item_data['picture'];
+	if(item_data.picture != 'null'){
+		new_src = '/imageserver/item/' + item_data.picture;
 	}
 	
 	img_element.setAttribute('src', new_src);
 }
 
-function updateEquipedItemName(response, use_default_data=false){
-	var name_element = document.getElementById('equipment_' + response.modified_slot_name + '_text');
+function updateEquipedItemName(item_data, use_default_data=false){
+	var name_element = document.getElementById('equipment_' + item_data.modified_slot_name + '_text');
 
-	var new_name = response.slot_name;
+	var new_name = item_data.slot_name;
 
-	if(response.slot_name === 'Weapon'){
+	if(item_data.slot_name === 'Weapon'){
 		try{
-			var s = String(response.modified_slot_name);
+			var s = String(item_data.modified_slot_name);
 			var l = s.length
 			var temp = s.substr(l - 1, l);
 			var end_num = (Math.floor(temp / 3) + 1);
@@ -1275,16 +1245,19 @@ function updateEquipedItemName(response, use_default_data=false){
 		new_name = response.item_data['name'];
 		color = response.item_data['color'];
 	} */
-	if(response.item_data != 'null'){
-		new_name = response.item_data['name'];
-		color = response.item_data['color'];
+	if(item_data.name != 'null'){
+		new_name = item_data.name;
+	}
+
+	if (item_data.color != 'null'){
+		color = item_data.color;
 	}
 	
 	name_element.innerHTML = new_name;
 	name_element.setAttribute('style', 'color: ' + color + ';');
 }
 
-function updateCharacterStats(response){
+function updateCharacterStats(char_data, stat_modifiers){
 	var prefix = 'character_';
 
 	var ids = [
@@ -1302,14 +1275,14 @@ function updateCharacterStats(response){
 
 	ids.forEach(id => {
 		var fullId = prefix + id;
-		console.log(fullId + ', ' + response.character_data[id]);
-		document.getElementById(fullId).innerHTML = response.character_data[id];
+		console.log(fullId + ', ' + char_data[id]);
+		document.getElementById(fullId).innerHTML = char_data[id];
 	});	
 
 	mod_ids.forEach(id => {
 		var fullId = prefix + id;
-		console.log(fullId + ', ' + response.character_data[id]);
-		document.getElementById(fullId).innerHTML = response.stat_modifiers[id];
+		console.log(fullId + ', ' + char_data[id]);
+		document.getElementById(fullId).innerHTML = stat_modifiers[id];
 	})
 }
 
@@ -1366,6 +1339,7 @@ function updateMultiSlotItemHelper(response, category_name, slot_position_number
 	var idString = 'equipment_multi_' + category_name + slot_position_number;
 	console.log(idString);
 	var el = document.getElementById(idString);
+	console.log("resonse.name: " + response.name);
 	var innerText = response.name;
 	var textElement = el.getElementsByTagName('h2')[0];
 	var imageElement = el.getElementsByTagName('img')[0];
@@ -1390,8 +1364,9 @@ function updateMultiSlotItemHelper(response, category_name, slot_position_number
 	} else {
 		imageElement.src = '/imageserver/item/' + response.picture;
 	}
+	console.log("inner_text: " + innerText);
 	textElement.innerText = innerText;
-	
+	return;
 }
 
 function open_character_window(char_id){

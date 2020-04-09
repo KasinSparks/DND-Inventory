@@ -1,84 +1,84 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <head>
-	<title>Character Create</title>
-	<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-	<script src="{{ url_for('static', filename='script.js') }}"></script>
+    <title>Character Create</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
-	<div class="panels">
-		<div class="create_character_container">
-			<div class="inner_container">
-				<div class="tab">
-					<h1>{{ header_text }} </h1>
-				</div>
-				<form class="create_character_form" action="create/submit" method="POST">
-					<div class="input_item">
-						<label for="name">Name:</label>
-						<input name="name" type="text" placeholder="Character Name" maxlength="25" required>
-					</div>
-					<div class="input_item">
-						<label for="race">Race:</label>
-						<input name="race_other" type="text" placeholder="Race" maxlength="25">
-					</div>
-					<div class="input_item">
-						<label for="class">Class:</label>
-						<input name="class_other" type="text" placeholder="Class" maxlength="25">
-					</div>
-					<div class="input_item">
-						<label for="alignment">Alignment:</label>
-						<select name="alignment" required onchange="select_other_button(['alignment_other'], this.value);">
-							<option value="" selected>Alignment</option>
-							{% for a in alignments %}
-								<option value="{{ a['Alignment_Name'] }}">{{ a['Alignment_Name'] }}</option>
-							{% endfor %}
-							<option value="OTHER">Other</option>
-						</select>
-						<input name="alignment_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
-					</div>
-					<div class="input_item">
-						<label for="level">Level:</label>
-						<input name="level" type="number" min="0" max="999" placeholder="0">
-					</div>
-					<div class="input_item">
-						<label for="health_points">Health Points:</label>
-						<input name="health_points" type="number" min="0" placeholder="0">
-					</div>
-					<div class="input_item">
-						<label for="strength">Strength:</label>
-						<input name="strength" type="number" min="0" max="99" placeholder="0">
-					</div>
-					<div class="input_item">
-						<label for="dexerity">Dexerity:</label>
-						<input name="dexerity" type="number" min="0" max="99" placeholder="0">
-					</div>
-					<div class="input_item">
-						<label for="constitution">Constitution:</label>
-						<input name="constitution" type="number" min="0" max="99" placeholder="0">
-					</div>
-					<div class="input_item">
-						<label for="intelligence">Intelligence:</label>
-						<input name="intelligence" type="number" min="0" max="99" placeholder="0">
-					</div>
-					<div class="input_item">
-						<label for="wisdom">Wisdom:</label>
-						<input name="wisdom" type="number" min="0" max="99" placeholder="0">
-					</div>
-					<div class="input_item">
-						<label for="charisma">Charisma:</label>
-						<input name="charisma" type="number" min="0" max="99" placeholder="0">
-					</div>
-					<div class="input_item">
-						<input id="submit_button" type="submit" value="Submit">
-					</div>
-				</form>
-				<div class="character_select_bottom_buttons_container">
-					<div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('character.character_select') }}';"></div>
-				</div>
-			</div>
-			<div class="footer">
-				<p>Copyright 2020</p>
-			</div>
-		</div>
-	</div>
+    <div class="panels">
+        <div class="create_character_container">
+            <div class="inner_container">
+                <div class="tab">
+                    <h1>{{ header_text }} </h1>
+                </div>
+                <form class="create_character_form" action="create/submit" method="POST">
+                    <div class="input_item">
+                        <label for="name">Name:</label>
+                        <input name="name" type="text" placeholder="Character Name" maxlength="25" required>
+                    </div>
+                    <div class="input_item">
+                        <label for="race">Race:</label>
+                        <input name="race_other" type="text" placeholder="Race" maxlength="25">
+                    </div>
+                    <div class="input_item">
+                        <label for="class">Class:</label>
+                        <input name="class_other" type="text" placeholder="Class" maxlength="25">
+                    </div>
+                    <div class="input_item">
+                        <label for="alignment">Alignment:</label>
+                        <select name="alignment" required onchange="select_other_button(['alignment_other'], this.value);">
+                            <option value="" selected>Alignment</option>
+                            {% for a in alignments %}
+                                <option value="{{ a['Alignment_Name'] }}">{{ a['Alignment_Name'] }}</option>
+                            {% endfor %}
+                            <option value="OTHER">Other</option>
+                        </select>
+                        <input name="alignment_other" type="text" style="display: none;" placeholder="Other" maxlength="25">
+                    </div>
+                    <div class="input_item">
+                        <label for="level">Level:</label>
+                        <input name="level" type="number" min="0" max="999" placeholder="0">
+                    </div>
+                    <div class="input_item">
+                        <label for="health_points">Health Points:</label>
+                        <input name="health_points" type="number" min="0" placeholder="0">
+                    </div>
+                    <div class="input_item">
+                        <label for="strength">Strength:</label>
+                        <input name="strength" type="number" min="0" max="99" placeholder="0">
+                    </div>
+                    <div class="input_item">
+                        <label for="dexerity">Dexerity:</label>
+                        <input name="dexerity" type="number" min="0" max="99" placeholder="0">
+                    </div>
+                    <div class="input_item">
+                        <label for="constitution">Constitution:</label>
+                        <input name="constitution" type="number" min="0" max="99" placeholder="0">
+                    </div>
+                    <div class="input_item">
+                        <label for="intelligence">Intelligence:</label>
+                        <input name="intelligence" type="number" min="0" max="99" placeholder="0">
+                    </div>
+                    <div class="input_item">
+                        <label for="wisdom">Wisdom:</label>
+                        <input name="wisdom" type="number" min="0" max="99" placeholder="0">
+                    </div>
+                    <div class="input_item">
+                        <label for="charisma">Charisma:</label>
+                        <input name="charisma" type="number" min="0" max="99" placeholder="0">
+                    </div>
+                    <div class="input_item">
+                        <input id="submit_button" type="submit" value="Submit">
+                    </div>
+                </form>
+                <div class="character_select_bottom_buttons_container">
+                    <div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('character.character_select') }}';"></div>
+                </div>
+            </div>
+            <div class="footer">
+                <p>Copyright 2020</p>
+            </div>
+        </div>
+    </div>
 </body>
