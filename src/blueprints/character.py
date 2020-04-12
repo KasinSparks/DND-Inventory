@@ -456,7 +456,7 @@ def edit_image(char_id):
     #TODO: change to image_handler
     user_id = session["user_id"]
     if not check_if_user_has_character(user_id, char_id):
-        return '400'
+        return 'Error: attempted to access data outside of user\'s scope'
 
     if request.method == 'POST':
         if 'image' not in request.files:
