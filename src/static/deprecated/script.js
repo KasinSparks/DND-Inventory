@@ -1,6 +1,18 @@
+import { Redirect } from "./scripts/Redirect.js";
+import { Data_Change_Submit } from "./scripts/field_editing/Data_Change_Submit.js";
+import { Data_Caller } from "./scripts/Data_Caller.js";
+import { Data_Change } from "./scripts/field_editing/Data_Change.js";
+import { Data_Change_Type } from "./scripts/field_editing/Data_Change_Type.js"
+
+import { Logger } from "./scripts/Logger.js";
+	window.onload = function(){
+	var logger = new Logger(true);
+	logger.log("yup");
+}
+
 var saveForLater = new Map([["", ""]]);
 
-function equipmentItemDetails(charId, equipmentItemStr){
+window.equipmentItemDetails = function equipmentItemDetails(charId, equipmentItemStr){
 	var hmtlInner = document.getElementsByClassName('eq_container')[0];
 	console.log(saveForLater[0]);
 	if(saveForLater[0] != undefined && saveForLater[0][1] != ""){
@@ -52,7 +64,7 @@ function itemDataFromXHTTP(element, charId, equipmentItemStr){
 	xhttp.send();
 }
 
-function test2(){
+window.test2 = function test2(){
 	console.debug("test2()");
 	console.debug(saveForLater[0][1]);
 	document.getElementsByClassName('eq_container')[0].innerHTML = saveForLater[0][1];
@@ -144,29 +156,15 @@ function getEquipmentItemDetailsHTML(jsonData, function_call='test2()'){
 	return equipmentItemDetailsHTML;
 }
 
-function accept_tos(){
-	document.location = 'tos/accept';
-	return;
-}
+window.accept_tos = function accept_tos(){Redirect.redirect("tos/accept");}
 
-function decline_tos(){
-	redirect_after_seconds('../login', 10000);
+window.decline_tos = function decline_tos(){
+	Redirect.redirect_after_seconds('../login', 10000);
 	// TODO: make a better looking message
 	document.getElementsByClassName('login_container')[0].innerHTML = '<p>Terms of Service have been declined.\n\nRedirecting in 10 seconds...</p>';
-	return;
 }
 
-function redirect(location){
-	document.location = location;
-}
-
-function redirect_after_seconds(location, milliseconds){
-	setTimeout(function(){
-		redirect(location);
-	}, milliseconds);
-}
-
-function inv_tab(activeClass, activeButtonID){
+window.inv_tab = function inv_tab(activeClass, activeButtonID){
 	inv_inner_area_children = document.getElementsByClassName('inv_container_inner_area')[0].children;
 
 	for(var i = 0; i < inv_inner_area_children.length; ++i){
@@ -185,12 +183,9 @@ function inv_tab(activeClass, activeButtonID){
 			inv_buttons[i].className = inv_buttons[i].className.replace('active', 'inactive');
 		}
 	}
-
-	
-	return;
 }
 
-function category_expand_and_collapse(categoryID, option, line_item_class, button_class){
+window.category_expand_and_collapse = function category_expand_and_collapse(categoryID, option, line_item_class, button_class){
 	inv_cat = document.getElementById(categoryID); 
 
 	inv_line_items = inv_cat.getElementsByClassName(line_item_class);
@@ -222,7 +217,7 @@ function setToOption_Image(element, prevOption, option){
 	element.setAttribute('class', element.getAttribute('class').replace(prevOption, option));
 }
 
-function select_other_button(element_name=[], value){
+window.select_other_button = function select_other_button(element_name=[], value){
 	console.log(value);
 	element_name.forEach(element => {
 		if(value === "OTHER"){
@@ -233,7 +228,7 @@ function select_other_button(element_name=[], value){
 	});
 }
 
-function select_standard_button(element_name=[]){
+window.select_standard_button = function select_standard_button(element_name=[]){
 	element_name.forEach(element => {
 		select_button_helper(element, 'display: none;');
 	});
@@ -252,244 +247,16 @@ function select_button_helper(element_name, style_attribute, required='false'){
 	
 }
 
-class ChangeData{
-	constructor(char_id, webpage, responseType, field_id_name, submit_route){
-		this.char_id = char_id;
-		this.webpage = webpage;
-		this.responseType = responseType;
-		this.field_id_name = field_id_name;
-		this.submit_route = submit_route;
-	}
-
-	dataCall(callbackFunction=null, submit_route=this.submit_route, char_id=this.char_id, field_id_name=this.field_id_name){
-		console.log(submit_route);
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function(){
-			if(this.readyState == 4 && this.status == 200){
-				if(this.response == null){
-					console.error('Response from ' + webpage + ' was null.');
-					return;
-				}
-				if(callbackFunction == null){
-					console.log(this.response);
-					return this.response;
-				}
-				
-				callbackFunction(char_id, this.response, field_id_name, submit_route);
-				return;
-			}
-		};
-		
-		xhttp.open("GET", this.webpage, true);
-		
-		xhttp.responseType = this.responseType;
-	
-		xhttp.send();
-	
-		return;
-	}
-	
-	dropdown(char_id, dropdown_options, field_id_name, submit_route){
-		var html_string = '<div class="char_item_val_change_container"><select id="new_value">';
-		
-		//console.log(submit_route);
-
-		var field = document.getElementById(field_id_name);
-		if(field == null){
-			return;
-		}
-
-		isChangeCharDataOpen = true;
-
-		dropdown_options.opts.forEach(element => {
-			html_string += '<option value="' + element.id + '">' + element.name + '</option>';
-		});
-
-		html_string += '</select>\
-							<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 0 + ');">Y</button>\
-							<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
-							</div>';
-
-		// Put the data in to html and insert it
-		
-		field.setAttribute('style', 'display: none;');
-		field.parentElement.parentElement.innerHTML += html_string;
-		
-
-		return;
-	}
-
-	number(char_id, current_number, field_id_name, submit_route){
-		var html_string = '<div class="char_item_val_change_container">';
-		
-		html_string += '<input type="number" id="new_value" value="' + current_number.current_value + '">';
-
-		var field = document.getElementById(field_id_name);
-		if(field == null){
-			return;
-		}
-
-		isChangeCharDataOpen = true;
-
-		html_string += '<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 1 + ');">Y</button>\
-						<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
-						</div>';
-
-		
-		field.setAttribute('style', 'display: none;');
-		field.parentElement.parentElement.innerHTML += html_string;
-		
-
-		return;
-	}
-
-	number_additional(char_id, current_number, field_id_name, submit_route){
-		var html_string = '<div class="char_item_val_change_container">';
-
-		html_string += '<div style="display: flex; width: 100%;">\
-							<div class="stat_details"><h4>Base</h4><p>' + current_number.base + '</p></div>\
-							<div class="stat_details"><h4>Additional</h4><p>' + current_number.additional + '</p></div>\
-						</div>'
-		
-		html_string += '<input type="number" id="new_value" value="' + current_number.base + '">';
-
-		var field = document.getElementById(field_id_name);
-		if(field == null){
-			return;
-		}
-
-		isChangeCharDataOpen = true;
-
-		html_string += '<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 1 + ');">Y</button>\
-						<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
-						</div>';
-
-		
-		field.setAttribute('style', 'display: none;');
-		field.parentElement.parentElement.innerHTML += html_string;
-		
-
-		return;
-	}
-
-	image(char_id, dummy_data, field_id_name, submit_route){
-		var html_string = '<div class="char_item_val_change_container">\
-						<form method="post" enctype="multipart/form-data" action="' + submit_route + char_id + '">\
-						<input name="image" type="file" id="new_value" accept="image/gif, image/jpeg, image/png, image/jpg">';
-
-		var field = document.getElementById(field_id_name);
-		if(field == null){
-			return;
-		}
-
-		isChangeCharDataOpen = true;
-
-		html_string += '<input type="submit", value="Y"/>\
-						<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
-						</form></div>';
-
-		
-		field.setAttribute('style', 'display: none;');
-		field.parentElement.innerHTML += html_string;
-		
-
-		return;
-	}
-	
-	string_value(char_id, current_string, field_id_name, submit_route){
-		var html_string = '<div class="char_item_val_change_container">\
-		<input type="text" id="new_value" value="' + current_string.current_value + '">';
-
-		var field = document.getElementById(field_id_name);
-		if(field == null){
-		return;
-		}
-
-		isChangeCharDataOpen = true;
-
-		html_string += '<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 1 + ');">Y</button>\
-				<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
-				</div>';
-
-
-		field.setAttribute('style', 'display: none;');
-		field.parentElement.parentElement.innerHTML += html_string;
-
-
-		return;
-	}	
-}
-
 
 var isChangeCharDataOpen = false;
 
-function submitChanges(char_id, field_id_name, submit_route, callType=0){
-	var element = document.getElementById('new_value');
-	switch(callType){
-		case 0:
-			submitData(submit_route + char_id,
-				'value=' + element.options[element.selectedIndex].value,
-				field_id_name);
-			break;
-		case 1:
-			submitData(submit_route + char_id, 'value=' + element.value,
-				field_id_name, true);
-			break;
-		case 2:
-			submitImage(submit_route + char_id, 'image=' + element.value,
-				field_id_name);
-			break;
-		default:
-			console.log('Value:: ' + element.value);
-	}
-	abortChanges(field_id_name);
-	return
+// TODO: clean up call
+window.submitChanges = function submitChanges(char_id, field_id_name, submit_route, callType=0){
+	Data_Change_Submit.submit(char_id, field_id_name, submit_route, callType);
+	isChangeCharDataOpen = false;
 }
 
-function submitData(url, params, field_id_name='', is_json=false){
-	var http = new XMLHttpRequest();
-	http.open('POST', url, true);
-
-	//Send the proper header information along with the request
-	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-	http.onreadystatechange = function() {
-		//Call a function when the state changes.
-		if(http.readyState == 4 && http.status == 200) {
-			// do something here
-			if(!is_json && field_id_name != ''){
-				document.getElementById(field_id_name).innerHTML = http.responseText;
-			} else {
-				var data = JSON.parse(http.response);
-				for(var k in data){
-					console.log(k + ', ' + data[k])
-					document.getElementById(k).innerHTML = data[k];
-				}
-			}
-		}
-	}
-	http.send(params);
-}
-
-function submitImage(url, params, field_id_name){
-	var http = new XMLHttpRequest();
-	http.open('POST', url, true);
-
-	//Send the proper header information along with the request
-	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-	http.onreadystatechange = function() {
-		//Call a function when the state changes.
-		if(http.readyState == 4 && http.status == 200) {
-			// do something here
-			//console.log(http.responseText);
-			//document.getElementById(field_id_name).innerHTML = http.responseText;
-		}
-	}
-	http.send(params);
-}
-
-function abortChanges(field_id_name){
+window.abortChanges = function abortChanges(field_id_name){
 	if(isChangeCharDataOpen){
 		document.getElementById(field_id_name).setAttribute('style', '');
 		document.getElementsByClassName('char_item_val_change_container')[0].remove();
@@ -498,141 +265,97 @@ function abortChanges(field_id_name){
 	return;
 }
 
-
-function changeClass(char_id){
+function changeField(char_id, data_change_type, data_url, field_id_name, submit_url){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getClassName/' + char_id,
-			'json', 'character_class', '/character/edit/class/');
-		ccd.dataCall(ccd.string_value);
+		var dc = new Data_Change(char_id, data_change_type, data_url, field_id_name, submit_url);
+		isChangeCharDataOpen = dc.change_data();
 	}
 }
 
-function changeRace(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getRaceName/' + char_id,
-			'json', 'character_race', '/character/edit/race/');
-		ccd.dataCall(ccd.string_value);
-	}
+window.changeClass = function changeClass(char_id){
+	changeField(char_id, Data_Change_Type.Types.STRING, '/dataserver/getClassName/' + char_id,
+		'character_class', '/character/edit/class/' + char_id);
 }
 
-function changeLevel(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getLevel/' + char_id, 'json',
-			'character_level', '/character/edit/level/');
-		ccd.dataCall(ccd.number);
-	}
+window.changeRace = function changeRace(char_id){
+	changeField(char_id, Data_Change_Type.Types.STRING, '/dataserver/getRaceName/' + char_id,
+		'character_race', '/character/edit/race/' + char_id);
 }
 
-function changeImage(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/dummyCall', 'json',
-			'character_image', '/character/edit/image/');
-		ccd.dataCall(ccd.image);
-	}
+window.changeLevel = function changeLevel(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUMBER, '/dataserver/getLevel/' + char_id,
+		'character_level', '/character/edit/level/' + char_id);
 }
 
-function changeHealth(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getHealth/' + char_id, 'json',
-			'character_hp', '/character/edit/health/')
-		ccd.dataCall(ccd.number);
-	}
+window.changeImage = function changeImage(char_id){
+	changeField(char_id, Data_Change_Type.Types.IMAGE, '/dataserver/dummyCall',
+		'character_image', '/character/edit/image/' + char_id);
 }
 
-function changeMaxHealth(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getMaxHealth/' + char_id, 'json',
-			'character_max_hp', '/character/edit/maxhealth/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeHealth = function changeHealth(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUMBER, '/dataserver/getHealth/' + char_id,
+		'character_hp', '/character/edit/health/' + char_id);
 }
 
-function changeAC(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getAC/' + char_id, 'json',
-			'character_ac', '/character/edit/ac/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeMaxHealth = function changeMaxHealth(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getMaxHealth/' + char_id,
+		'character_max_hp', '/character/edit/maxhealth/' + char_id);
 }
 
-function changeInitiative(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getInitiative/' + char_id, 'json',
-			'character_initiative', '/character/edit/initiative/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeAC = function changeAC(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getAC/' + char_id,
+		'character_ac', '/character/edit/ac/' + char_id);
 }
 
-function changeAttackBonus(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getAttackBonus/' + char_id, 'json',
-			'character_attack_bonus', '/character/edit/attackBonus/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeInitiative = function changeInitiative(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getInitiative/' + char_id,
+		'character_initiative', '/character/edit/initiative/' + char_id);
 }
 
-function changeAlignment(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getAlignmentOptions',
-			'json', 'character_alignment', '/character/edit/alignment/');
-		ccd.dataCall(ccd.dropdown);
-	}
+window.changeAttackBonus = function changeAttackBonus(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getAttackBonus/' + char_id,
+		'character_attack_bonus', '/character/edit/attack_bonus/' + char_id);
 }
 
-function changeCurrency(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getCurrency/' + char_id, 'json',
-			'character_currency', '/character/edit/currency/')
-		ccd.dataCall(ccd.number);
-	}
+window.changeAlignment = function changeAlignment(char_id){
+	changeField(char_id, Data_Change_Type.Types.SELECT,
+		'/dataserver/getAlignmentOptions',
+		'character_alignment', '/character/edit/alignment/' + char_id);
 }
 
-function changeStr(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getStr/' + char_id, 'json',
-			'character_str', '/character/edit/str/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeCurrency = function changeCurrency(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUMBER, '/dataserver/getCurrency/' + char_id,
+		'character_currency', '/character/edit/currency/' + char_id);
 }
 
-function changeDex(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getDex/' + char_id, 'json',
-			'character_dex', '/character/edit/dex/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeStr = function changeStr(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getStr/' + char_id,
+		'character_str', '/character/edit/str/' + char_id);
 }
 
-function changeCon(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getCon/' + char_id, 'json',
-			'character_con', '/character/edit/con/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeDex = function changeDex(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getDex/' + char_id,
+		'character_dex', '/character/edit/dex/' + char_id);
 }
 
-function changeInt(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getInt/' + char_id, 'json',
-			'character_int', '/character/edit/int/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeCon = function changeCon(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getCon/' + char_id,
+		'character_con', '/character/edit/con/' + char_id);
 }
 
-function changeWis(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getWis/' + char_id, 'json',
-			'character_wis', '/character/edit/wis/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeInt = function changeInt(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getInt/' + char_id,
+		'character_int', '/character/edit/int/' + char_id);
 }
 
-function changeCha(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getCha/' + char_id, 'json',
-			'character_cha', '/character/edit/cha/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeWis = function changeWis(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getWis/' + char_id,
+		'character_wis', '/character/edit/wis/' + char_id);
+}
+
+window.changeCha = function changeCha(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getCha/' + char_id,
+		'character_cha', '/character/edit/cha/' + char_id);
 }
 
 

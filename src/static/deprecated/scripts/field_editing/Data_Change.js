@@ -1,7 +1,7 @@
 import { Data_Change_Options } from "./Data_Change_Options.js"
 import { Data_Change_Type } from "./Data_Change_Type.js"
-import { Data_Caller } from "./Data_Caller.js"
-import { Logger } from "./Logger.js"
+import { Data_Caller } from "../Data_Caller.js"
+import { Logger } from "../Logger.js"
 
 export class Data_Change {
 	constructor(char_id, data_change_type, data_url, field_id_name, submit_url){
@@ -40,7 +40,7 @@ export class Data_Change {
 				return false;
 		}
 		var data_caller = new Data_Caller("GET", this.data_url, is_res_json, null, this.logger);
-		data_caller.call(callback_function, 
+		data_caller.call_async(callback_function, 
 			[this.char_id, '?', this.field_id_name, this.submit_url]); 
 
 		return true;

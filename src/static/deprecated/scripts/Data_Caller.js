@@ -14,7 +14,7 @@ export class Data_Caller {
 	}
 	
 	// use ? for location you want response arg to go
-	call(callback, callback_args){
+	call_async(callback, callback_args){
 		var xhttp = new XMLHttpRequest();
 
 		xhttp.open(this.method_type, this.url, true);
@@ -26,9 +26,7 @@ export class Data_Caller {
 
 		xhttp.onreadystatechange = function(logger=this.logger, ignore_res=this.ignore_res){
 			if(this.readyState == 4 && this.status == 200){
-				if (ignore_res){
-					return;
-				}
+				if (ignore_res){ return; }
 
 				if (this.response == null) {
 					if (logger !== null){
@@ -47,7 +45,7 @@ export class Data_Caller {
 				return;
 			}
 		};
-		
+
 		if (this.params !== null){
 			xhttp.send(this.params);
 		} else {

@@ -1,5 +1,5 @@
-import { Data_Caller } from "./Data_Caller.js"
-import { Logger } from "./Logger.js"
+import { Data_Caller } from "../Data_Caller.js"
+import { Logger } from "../Logger.js"
 import { Data_Change_Type } from "./Data_Change_Type.js"
 
 export class Data_Change_Submit{
@@ -10,7 +10,7 @@ export class Data_Change_Submit{
 			case Data_Change_Type.Types.SELECT:
 				var d = new Data_Caller("POST", submit_route, false, "value=" +
 					element.options[element.selectedIndex].value, logger);
-				d.call(Data_Change_Submit._submit_result_handler,
+				d.call_async(Data_Change_Submit._submit_result_handler,
 					[false, call_type, field_id_name, '?']);
 				break;
 			case Data_Change_Type.Types.NUMBER:
@@ -19,13 +19,13 @@ export class Data_Change_Submit{
 			case Data_Change_Type.Types.STRING:
 				var d = new Data_Caller("POST", submit_route, true, "value=" +
 					element.value, logger);
-				d.call(Data_Change_Submit._submit_result_handler,
+				d.call_async(Data_Change_Submit._submit_result_handler,
 					[true, call_type, field_id_name, '?']);
 				break;
 			case Data_Change_Type.Types.IMAGE:
 				var d = new Data_Caller("POST", submit_route, false, "image=" +
 					element.value, logger, true);
-				d.call(Data_Change_Submit._submit_result_handler,
+				d.call_async(Data_Change_Submit._submit_result_handler,
 					[false, call_type, field_id_name, '?']);
 				break;
 			default:
