@@ -363,3 +363,34 @@ def select_character_skills(char_id):
         "Skills.Skill_Type"
     )
     return select(fields, "Character_Skills", True, "WHERE Character_ID=?", (char_id,), joins)
+
+def select_all_skills():
+    return select(("*",), "Skills", True)
+
+def select_skill_id_from_name(skill_name):
+    return select(("Skill_ID",), "Skills", False, "WHERE Skill_Name=?", (skill_name,))
+
+def select_char_skill(char_id, skill_id=-1):
+    where_clause = "WHERE Character_ID=?"
+    args = [char_id]
+    multiple = True
+    if skill_id > -1:
+        where_clause += " AND Skill_ID=?"
+        args.append(skill_id)
+        multiple = False
+
+    return select(("*",), "Character_Skills", multiple, where_clause, tuple(args))
+
+def select_abilities(char_id, ability_id=-1):
+    where_clause = "WHERE Character_ID=?"
+    args = [char_id]
+    multiple = True
+    if ability_id > -1:
+        where_clause += " AND Ability_ID=?"
+        args.append(ability_id)
+        multiple = False
+
+    return select(("*",), "Abilities", multiple, where_clause, tuple(args))
+
+def select_ability_id_from_name(ability_name):
+    return select(("Ability_ID",), "Abilities", False, "WHERE Ability_Name=?", (ability_name,))

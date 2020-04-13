@@ -11,6 +11,7 @@ from modules.account.authentication_checks import check_for_admin_status
 from modules.data.string_shorten import shorten_string
 from modules.data.form_data import get_request_field_data, convert_form_field_data_to_int
 from modules.IO.file.image_handler import ImageHandler
+from modules.data.database.data_helper import FIELD_NAMES
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -47,7 +48,7 @@ def admin_users_characters(username):
 
     return render_template('admin/characters.html',
                             characters=characters,
-                            header_text=get_current_username())	
+                            header_text=get_current_username())
 
 @bp.route('creationKit')
 @login_required
@@ -124,13 +125,13 @@ def admin_creationKit_edit(item_id):
 
     if itemQueryResult is not None:
         # Check if item has an effect on it
-        if itemQueryResult['Item_Effect1'] is not None and itemQueryResult['Item_Effect1'] > 0:	
+        if itemQueryResult['Item_Effect1'] is not None and itemQueryResult['Item_Effect1'] > 0:
             item_effect1 = select_query.select_effect_names(itemQueryResult['Item_Effect1'])['Effect_Name']
 
-        if itemQueryResult['Item_Effect2'] is not None and itemQueryResult['Item_Effect2'] > 0:	
+        if itemQueryResult['Item_Effect2'] is not None and itemQueryResult['Item_Effect2'] > 0:
             item_effect2 = select_query.select_effect_names(itemQueryResult['Item_Effect2'])['Effect_Name']
-        
-        if itemQueryResult['Item_Slot'] is not None and itemQueryResult['Item_Slot'] > 0:	
+
+        if itemQueryResult['Item_Slot'] is not None and itemQueryResult['Item_Slot'] > 0:
             item_slots_name = select_query.select_slot_names(itemQueryResult['Item_Slot'])['Slots_Name']
 
     return render_template('admin/edit_item.html',
@@ -149,6 +150,18 @@ def admin_creationKit_edit(item_id):
 def admin_creationKit_remove(item_id):
     check_for_admin_status()
     delete_query.delete_item(item_id)
+    # go though user's equiped items and unequiped deleted item
+    characters = select_query.select(("Character_ID",), "Character", True)
+    for c in characters:
+        char_id = c["Character_ID"]
+        update_dict = {}
+        character_equiped_data = select_query.select(FIELD_NAMES, "Character", False, "WHERE Character_ID=?", (char_id,))
+        for ced in FIELD_NAMES:
+            if character_equiped_data[ced] == item_id:
+                # it's gotta go
+                update_dict[ced] = -1
+        update_query.update("Character", update_dict, "WHERE Character_ID=?", (char_id,))
+
     return redirect(url_for('admin.admin_creationKit'))
 
 @bp.route('creationKit/add/submit', methods=('GET', 'POST'))
@@ -157,7 +170,7 @@ def admin_creationKit_add_submit():
     check_for_admin_status()
     if request.method == 'POST':
         name_check = select_query.get_item_id_from_name(get_request_field_data('name'))
-        
+
         if name_check is not None:
             # Name already exist
             return '[TODO: Change this later]\n\nItem name already exist... Please go back and try again.'

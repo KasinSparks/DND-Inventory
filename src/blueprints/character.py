@@ -139,13 +139,32 @@ def character_page(char_id):
             character_data['weight'] += int(i['Item_Weight']) * int(i['Amount'])
 
     character_skills = select_query.select_character_skills(char_id)
-    skills = []
+    all_skills = select_query.select_all_skills()
+    #skills = []
+    #for cs in character_skills:
+    #    field = str(cs["Skill_Type"])
+    #    field_short_word = field[:3].lower()
+    #    skill = dict(cs)
+    #    skill["Skill_Additional_Value"] = stat_modifiers[field_short_word]
+    #    skills.append(skill)
+    skills = {}
+    for s in all_skills:
+        if not s["Skill_Type"] in skills:
+            skills[s["Skill_Type"]] = {}
+
+        #skills[s["Skill_Type"]].append(s)
+        skills[s["Skill_Type"]][s["Skill_ID"]] = {
+            "Skill_Name" : s["Skill_Name"],
+            "Skill_Base_Value" : 0,
+            "Skill_Type" : s["Skill_Type"]
+        }
+
     for cs in character_skills:
-        field = str(cs["Skill_Type"])
-        field_short_word = field[:3].lower()
-        skill = dict(cs)
-        skill["Skill_Additional_Value"] = stat_modifiers[field_short_word]
-        skills.append(skill)
+        skill = skills[cs["Skill_Type"]][cs["Skill_ID"]]
+        skill["Skill_Name"] = cs["Skill_Name"]
+        skill["Skill_Base_Value"] = cs["Skill_Base_Value"]
+
+    abilities = select_query.select_abilities(char_id)
 
     return render_template('character/character_page.html',
                            char_id=char_id,
@@ -153,7 +172,8 @@ def character_page(char_id):
                            character_data=character_data,
                            stat_modifiers=stat_modifiers,
                            inv_items=inv_items,
-                           skills=skills
+                           skills=skills,
+                           abilities=abilities
                           )
 
 def get_inv_items(char_id : int, equiped_items_ids):
@@ -948,3 +968,156 @@ def get_unequip_items_due_to_item_change(user_id, char_id, slot_name):
 
     print(unequip_dict)
     return unequip_dict
+
+@bp.route("/skills/edit", methods=("GET", "POST"))
+@login_required
+def skills_edit():
+    try:
+        char_id = get_request_field_data("char_id")
+        amount = convert_form_field_data_to_int("amount")
+        skill_name = get_request_field_data("skill_name")
+    except:
+        return "Invaild data was supplied with the given request"
+
+    user_id = session["user_id"]
+    characters = select_query.select_character_data(char_id, user_id)
+
+    if characters is None:
+        # Error
+        return redirect(url_for('character.character_select'))
+
+    skill_id = select_query.select_skill_id_from_name(skill_name)
+    if skill_id is None:
+        return "Invaild skill name"
+
+    skill_id = skill_id["Skill_ID"]
+
+    char_skill = select_query.select_char_skill(char_id, skill_id)
+    if char_skill is None:
+        insert_query.insert_char_skill(char_id, skill_id, amount)
+    else:
+        update_query.update_char_skill(char_id, skill_id, int(char_skill["Skill_Base_Value"]) + amount)
+
+    char_skill_amount = select_query.select_char_skill(char_id, skill_id)["Skill_Base_Value"]
+    return str(char_skill_amount)
+
+@bp.route("/abilities/add", methods=("GET", "POST"))
+@login_required
+def abilities_add():
+    try:
+        char_id = get_request_field_data("char_id")
+        ability_name = get_request_field_data("ability_name")
+        ability_description = get_request_field_data("ability_description")
+    except:
+        return "Invaild data was supplied with the given request"
+
+    user_id = session["user_id"]
+    characters = select_query.select_character_data(char_id, user_id)
+
+    if characters is None:
+        # Error
+        return redirect(url_for('character.character_select'))
+
+    if len(ability_name) < 1 or len(ability_name) > 31:
+        return "ERROR: ability name length must be inside the following bounds, 0 < name_length < 32. Value(s) were not modified."
+    if len(ability_description) < 1 or len(ability_description) > 500:
+        return "ERROR: ability description length must be inside the following bounds, 0 < description_length < 501. Value(s) were not modified."
+
+    ability_id = select_query.select_ability_id_from_name(ability_name)
+    if ability_id is None:
+        try:
+            insert_query.insert_char_ability(char_id, ability_name, ability_description)
+        except:
+            return "ERROR: Detected duplicate ability name. Please retry with an unique name.  Value(s) were not modified."
+        ability_id = select_query.select_ability_id_from_name(ability_name)["Ability_ID"]
+    else:
+        return "ERROR: Detected duplicate ability name, " + str(ability_name) + ". Please retry with an unique name.  Value(s) were not modified."
+        #ability_id = ability_id["Ability_ID"]
+        #update_query.update_char_ability(char_id, ability_id, ability_name, ability_description)
+
+    #char_ability = select_query.select_abilities(char_id, ability_id)
+    #if char_ability is None:
+    #    insert_query.insert_char_ability(char_id, ability_name, ability_description)
+    #else:
+    #    update_query.update_char_ability(char_id, ability_id, ability_name, ability_description)
+
+    char_ability_data = select_query.select_abilities(char_id, ability_id)
+    fields = ("Ability_Name", "Ability_Description")
+    char_ability_data_dict = {"char_id":char_id, "old_name":'null'}
+    for f in fields:
+        char_ability_data_dict[f] = char_ability_data[f]
+
+    return jsonify(char_ability_data_dict)
+
+# TODO: this is ver similar to /abilities/add  combine them or make class
+@bp.route("/abilities/edit", methods=("GET", "POST"))
+@login_required
+def abilities_edit():
+    try:
+        char_id = get_request_field_data("char_id")
+        ability_name = get_request_field_data("ability_name")
+        ability_description = get_request_field_data("ability_description")
+        old_ability_name = get_request_field_data("old_ability_name")
+    except:
+        return "Invaild data was supplied with the given request"
+
+    user_id = session["user_id"]
+    characters = select_query.select_character_data(char_id, user_id)
+
+    if characters is None:
+        # Error
+        return redirect(url_for('character.character_select'))
+
+    if len(ability_name) < 1 or len(ability_name) > 31:
+        return "ERROR: ability name length must be inside the following bounds, 0 < name_length < 32. Value(s) were not modified."
+    if len(ability_description) < 1 or len(ability_description) > 500:
+        return "ERROR: ability description length must be inside the following bounds, 0 < description_length < 501. Value(s) were not modified."
+
+    ability_id = select_query.select_ability_id_from_name(old_ability_name)
+    #old_ability_name = select_query.select_abilities(char_id, ability_id)["Ability_Name"]
+    if ability_id is None:
+        insert_query.insert_char_ability(char_id, ability_name, ability_description)
+        ability_id = select_query.select_ability_id_from_name(ability_name)["Ability_ID"]
+    else:
+        ability_id = ability_id["Ability_ID"]
+        update_query.update_char_ability(char_id, ability_id, ability_name, ability_description)
+
+    #char_ability = select_query.select_abilities(char_id, ability_id)
+    #if char_ability is None:
+    #    insert_query.insert_char_ability(char_id, ability_name, ability_description)
+    #else:
+    #    update_query.update_char_ability(char_id, ability_id, ability_name, ability_description)
+
+    char_ability_data = select_query.select_abilities(char_id, ability_id)
+    fields = ("Ability_Name", "Ability_Description")
+    char_ability_data_dict = {"char_id":char_id, "old_name":old_ability_name}
+    for f in fields:
+        char_ability_data_dict[f] = char_ability_data[f]
+
+    return jsonify(char_ability_data_dict)
+
+@bp.route("/abilities/delete", methods=("GET", "POST"))
+@login_required
+def abilities_delete():
+    try:
+        char_id = get_request_field_data("char_id")
+        ability_name = get_request_field_data("ability_name")
+    except:
+        return "Invaild data was supplied with the given request"
+
+    user_id = session["user_id"]
+    characters = select_query.select_character_data(char_id, user_id)
+
+    if characters is None:
+        # Error
+        return redirect(url_for('character.character_select'))
+
+    ability_id = select_query.select_ability_id_from_name(ability_name)
+    #old_ability_name = select_query.select_abilities(char_id, ability_id)["Ability_Name"]
+    if ability_id is None:
+        return "200"
+
+    ability_id = ability_id["Ability_ID"]
+    delete_query.delete_ability(char_id, ability_id)
+
+    return "200"

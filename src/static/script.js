@@ -172,6 +172,12 @@ function inv_tab(activeClass, activeButtonID){
 	for(var i = 0; i < inv_inner_area_children.length; ++i){
 		if(inv_inner_area_children[i].className === activeClass){
 			inv_inner_area_children[i].removeAttribute('style');
+			// TODO:
+			//if (inv_inner_area_children[i].className === "inv_container_skills_section") {
+				// update data, lazy way by coping local modifier data
+				// TODO: change to update from server instead of local
+			//	_update_skills_data();
+			//}
 		} else {
 			inv_inner_area_children[i].style.display = 'none';
 		}
@@ -185,9 +191,14 @@ function inv_tab(activeClass, activeButtonID){
 			inv_buttons[i].className = inv_buttons[i].className.replace('active', 'inactive');
 		}
 	}
-
 	
 	return;
+}
+
+function _update_skills_data(){
+	// get the modifier data locally
+	var labels = ["str", "dex", "con", "int", "wis", "cha"];
+
 }
 
 function category_expand_and_collapse(categoryID, option, line_item_class, button_class){
@@ -1463,3 +1474,217 @@ function make_user_admin(user_id, username){
 		http.send(params);
 	}
 }
+
+function modify_skill(char_id, amount, skill_name, field_id_name){
+	var params = 'char_id=' + char_id + '&skill_name=' + skill_name + '&amount=' + amount;
+	var http = new XMLHttpRequest();
+	http.open('POST', '/character/skills/edit', true);
+
+	//Send the proper header information along with the request
+	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+	http.onreadystatechange = function() {
+		//Call a function when the state changes.
+		if(http.readyState == 4 && http.status == 200) {
+			// do something here
+			document.getElementById(field_id_name).getElementsByTagName("h2")[0].innerHTML = this.response;
+		}
+	}
+	http.send(params);
+}
+
+var ability_header_old = "";
+function add_ability(char_id){
+	var ability_test = null;
+	try{
+		var ability_test = [
+			document.getElementsByClassName("new_ability_input"),
+			document.getElementsByClassName("edit_ability_input")
+		];
+	} catch (error) {
+		// an edit or create is NOT already open
+		// ignore and go on
+	}
+
+	for(var i = 0; i < ability_test.length; ++i){
+		if (ability_test[i] !== null && ability_test[i].length > 0) {
+			console.error("Ability modification window is already open. Please close existing ability modification window before continuing.");
+			
+			alert("Ability modification window is already open. Please close existing ability modification window before continuing.");
+
+			return;
+		}
+	}
+
+	var ability_header = document.getElementById("ability_header");
+	ability_header_old = ability_header.innerHTML;
+	var new_html = '<div class="new_ability_input">\
+			<label for"ability_name">Ability Name</label>\
+			<input id="ability_name" name="ability_name" type="text">\
+			<br>\
+			<label for"ability_description">Ability Description</label>\
+			<textarea id="ability_description" name="ability_description" rows="5" columns="100" maxlength="500"></textarea>\
+			<br>\
+			<button onclick="submit_ability(' + char_id + ', \'/character/abilities/add\')">Submit</button>\
+			<button onclick="cancel_add_ability()">Cancel</button>\
+		</div>';
+	ability_header.innerHTML = new_html;
+}
+
+function submit_ability(char_id, url, old_ability_name=null, ability_name=null, ability_description=null){
+	if(ability_name === null){
+		var ability_name = document.getElementById("ability_name").value;
+	}
+	if(ability_description === null){
+		var ability_description = document.getElementById("ability_description").value;
+	}
+	
+	var params = 'char_id=' + char_id + '&ability_name=' + ability_name + '&ability_description=' + ability_description + '&old_ability_name=' + old_ability_name;
+	var http = new XMLHttpRequest();
+	http.open('POST', url, true);
+
+	//Send the proper header information along with the request
+	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+	http.onreadystatechange = function() {
+		//Call a function when the state changes.
+		if(http.readyState == 4 && http.status == 200) {
+			// do something here
+			// TODO
+			//document.getElementById(field_id_name).getElementsByTagName("h2")[0].innerHTML = this.response;
+			if(this.response.substring(0, 5) === "ERROR"){
+				console.error(this.response);
+				alert(this.response);
+				return;
+			}
+			
+					
+			var json_data = JSON.parse(this.response);
+			var char_id = json_data.char_id;
+			var old_name = json_data.old_name;
+
+			if(old_name !== 'null'){
+				// edit ability
+				cancel_edit_ability(old_name);
+				var line_item = document.getElementById("abilities_" + old_name);
+				line_item.setAttribute("id", line_item.getAttribute("id").replace(old_name, json_data.Ability_Name));
+				line_item.getElementsByClassName("ability_name")[0].innerHTML = json_data.Ability_Name;
+				var _old_des_el = document.getElementById("ability_" + old_name + "_description")
+				_old_des_el.innerHTML = json_data.Ability_Description;
+				_old_des_el.setAttribute("id", _old_des_el.getAttribute("id").replace(old_name, json_data.Ability_Name));
+				
+				var _edit_button = line_item.getElementsByClassName("ability_edit_button")[0];
+				_edit_button.setAttribute("onclick", _edit_button.getAttribute("onclick").replace(old_name, json_data.Ability_Name));
+				var _remove_button = line_item.getElementsByClassName("ability_remove_button")[0];
+				_remove_button.setAttribute("onclick", _remove_button.getAttribute("onclick").replace(old_name, json_data.Ability_Name));
+				var _expand_button = line_item.getElementsByClassName("inv_category_button")[0];
+				_expand_button.setAttribute("onclick", _expand_button.getAttribute("onclick").replace(old_name, json_data.Ability_Name));
+			} else {
+				// new ability
+				var i_html = document.getElementsByClassName("inv_container_abilities_section")[0];
+
+				i_html.innerHTML += add_ability_html(char_id, json_data.Ability_Name, json_data.Ability_Description);
+				console.log(this.response);	
+				cancel_add_ability();
+			}
+
+		}
+	}
+	http.send(params);
+}
+
+function delete_ability(char_id, ability_name){
+	var params = 'char_id=' + char_id + '&ability_name=' + ability_name;
+	var http = new XMLHttpRequest();
+	http.open('POST', 'abilities/delete', true);
+
+	//Send the proper header information along with the request
+	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+	http.onreadystatechange = function() {
+		//Call a function when the state changes.
+		if(http.readyState == 4 && http.status == 200) {
+			document.getElementById("abilities_" + ability_name).remove();
+		}
+	}
+	http.send(params);
+}
+
+function add_ability_html(char_id, ability_name, ability_description){
+	var html = '<div id="abilities_' + ability_name + '" class="inv_category">\
+		<div class="inv_category_line">\
+			<div class="inv_line_inner">\
+				<div class="ability_remove_button clickable" onclick="delete_ability(' + char_id + ', \'' + ability_name + '\');"></div>\
+				<h2 class="ability_name">' + ability_name + '</h2>\
+				<div class="skills_mod_buttons">\
+					<div class="ability_edit_button clickable" onclick="edit_ability(' + char_id + ', \'' + ability_name + '\');"></div>\
+					<div style="width: 8px;"></div>\
+					<div class="inv_category_expand_button inv_category_button clickable" onclick="category_expand_and_collapse(\'abilities_' + ability_name + '\', \'expand\', \'inv_line_item\', \'inv_category_button\');"></div >\
+				</div>\
+			</div>\
+		</div>\
+		<div class="inv_line_item" style="display: none;">\
+			<div class="inv_line_inner">\
+				<div class="ability_description">\
+					<h2 id="ability_' + ability_name + '_description">' + ability_description + '</h2>\
+				</div>\
+			</div>\
+		</div>\
+	</div>'
+	return html;
+}
+
+var edit_ability_header_old = "";
+function edit_ability(char_id, old_ability_name){
+	var ability_test = null;
+	try{
+		var ability_test = [
+			document.getElementsByClassName("new_ability_input"),
+			document.getElementsByClassName("edit_ability_input")
+		];
+	} catch (error) {
+		// an edit or create is NOT already open
+		// ignore and go on
+	}
+
+	for(var i = 0; i < ability_test.length; ++i){
+		if (ability_test[i] !== null && ability_test[i].length > 0) {
+			console.error("Ability modification window is already open. Please close existing ability modification window before continuing.");
+			
+			alert("Ability modification window is already open. Please close existing ability modification window before continuing.");
+
+			return;
+		}
+	}
+
+	var ability_header = document.getElementById("abilities_" + old_ability_name);
+	var old_ability_description = document.getElementById("ability_" + old_ability_name + "_description").innerHTML;
+	edit_ability_header_old = ability_header.innerHTML;
+	var new_html = '<div class="edit_ability_input">\
+			<label for"ability_name">Ability Name</label>\
+			<input id="ability_name" name="ability_name" type="text" value="' + old_ability_name + '">\
+			<br>\
+			<label for"ability_description">Ability Description</label>\
+			<textarea id="ability_description" name="ability_description" rows="5" columns="100" maxlength="500">' + old_ability_description + '</textarea>\
+			<br>\
+			<button onclick="submit_ability(' + char_id + ', \'/character/abilities/edit\', \'' + old_ability_name + '\')">Submit</button>\
+			<button onclick="cancel_edit_ability(\'' + old_ability_name + '\')">Cancel</button>\
+		</div>';
+	ability_header.innerHTML = new_html;
+}
+
+function cancel_add_ability(){
+	_cancel_mod_ability("ability_header", ability_header_old);
+	ability_header_old = "";
+}
+
+function cancel_edit_ability(name){
+	_cancel_mod_ability("abilities_" + name, edit_ability_header_old);
+	edit_ability_header_old = "";
+}
+
+function _cancel_mod_ability(parent_div, old_html){
+	var ability_header = document.getElementById(parent_div);
+	ability_header.innerHTML = old_html;
+}
+

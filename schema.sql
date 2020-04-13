@@ -120,18 +120,12 @@ DROP TABLE IF EXISTS "Character_Skills";
 CREATE TABLE IF NOT EXISTS "Character_Skills" (
 	"Character_ID"	INTEGER NOT NULL,
 	"Skill_ID"	INTEGER NOT NULL,
-	"Skill_Base_Value"	INTEGER NOT NULL DEFAULT 0,
-	PRIMARY KEY("Character_ID")
-);
-DROP TABLE IF EXISTS "Character_Abilites";
-CREATE TABLE IF NOT EXISTS "Character_Abilites" (
-	"Character_ID"	INTEGER NOT NULL,
-	"Ability_ID"	INTEGER NOT NULL,
-	PRIMARY KEY("Character_ID")
+	"Skill_Base_Value"	INTEGER NOT NULL DEFAULT 0
 );
 DROP TABLE IF EXISTS "Abilities";
 CREATE TABLE IF NOT EXISTS "Abilities" (
 	"Ability_ID"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"Character_ID"	INTEGER NOT NULL,
 	"Ability_Type"	INTEGER NOT NULL DEFAULT 0,
 	"Ability_Name"	TEXT NOT NULL,
 	"Ability_Description"	TEXT NOT NULL
