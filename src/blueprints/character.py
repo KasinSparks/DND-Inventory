@@ -140,19 +140,11 @@ def character_page(char_id):
 
     character_skills = select_query.select_character_skills(char_id)
     all_skills = select_query.select_all_skills()
-    #skills = []
-    #for cs in character_skills:
-    #    field = str(cs["Skill_Type"])
-    #    field_short_word = field[:3].lower()
-    #    skill = dict(cs)
-    #    skill["Skill_Additional_Value"] = stat_modifiers[field_short_word]
-    #    skills.append(skill)
     skills = {}
     for s in all_skills:
         if not s["Skill_Type"] in skills:
             skills[s["Skill_Type"]] = {}
 
-        #skills[s["Skill_Type"]].append(s)
         skills[s["Skill_Type"]][s["Skill_ID"]] = {
             "Skill_Name" : s["Skill_Name"],
             "Skill_Base_Value" : 0,

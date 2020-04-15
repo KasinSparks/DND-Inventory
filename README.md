@@ -35,13 +35,13 @@ Character and inventory manager for DND sessions.
 4. Modify the ServerName field in the enabled sites (/etc/apache2/sites-enabled/apache2_site.conf) to your server's name
 5. Change ownership and permissions
 
-	a.) use the following command to change ownership, 
+	a.) use the following command to change ownership
 	
 		I.) `chown www-data -R /site_data/instance/uploads`
 		
 		II.) `chown www-data -R /site_data/instance/database`
 		
-	b.) use the following command to change permissions, 
+	b.) use the following command to change permissions
 	
 		I.) `chmod 740 -R /site_data/instance/uploads`
 		
@@ -58,8 +58,4 @@ Character and inventory manager for DND sessions.
 0. Verify docker container started and you are logged into the container
 1. Enter the following commands
 
-	I.) `sqlite3 /site_data/instance/database/db.sqlite`
-
-	II.) `UPDATE Users SET Is_Verified=1, Is_Admin=1 WHERE User_ID=1;`
-
-	III.) `.quit`
+	I.) `sqlite3 /site_data/instance/database/db.sqlite "UPDATE Users SET Is_Verified=1, Is_Admin=1 WHERE User_ID=1;"`

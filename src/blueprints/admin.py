@@ -12,6 +12,7 @@ from modules.data.string_shorten import shorten_string
 from modules.data.form_data import get_request_field_data, convert_form_field_data_to_int
 from modules.IO.file.image_handler import ImageHandler
 from modules.data.database.data_helper import FIELD_NAMES
+from logger.logger import Logger
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -99,6 +100,7 @@ def admin_creationKit_edit(item_id):
     item_query_result = select_query.select_items(item_id)
 
     if item_query_result is None:
+        Logger().error("Failed to get item data for item_id: " + str(item_id))
         item_query_result = {
             'Item_Description' : 'null',
             'Item_Name' : 'null',
@@ -152,6 +154,7 @@ def admin_creationKit_edit(item_id):
 def admin_creationKit_remove(item_id):
     check_for_admin_status()
     delete_query.delete_item(item_id)
+    Logger().log("Deleting item with id=" + str(item_id))
     # go though user's equiped items and unequiped deleted item
     characters = select_query.select(("Character_ID",), "Character", True)
     for c in characters:
@@ -171,15 +174,17 @@ def admin_creationKit_remove(item_id):
 def admin_creationKit_add_submit():
     check_for_admin_status()
     if request.method == 'POST':
-        name_check = select_query.get_item_id_from_name(get_request_field_data('name'))
+        _new_name = get_request_field_data("name")
+        name_check = select_query.get_item_id_from_name(_new_name)
 
         if name_check is not None:
             # Name already exist
+            Logger().error("Item name," + _new_name + " , is already taken.")
             return '[TODO: Change this later]\n\nItem name already exist... Please go back and try again.'
 
         full_dir_name = os.path.join(current_app.config['IMAGE_UPLOAD'], "items")
         creationKit_helper("INSERT", full_dir_name)
-        item_id = select_query.get_item_id_from_name(get_request_field_data('name'))
+        item_id = select_query.get_item_id_from_name(_new_name)
         update_item_image(item_id, full_dir_name, select_query.select_item_picture_name(item_id)["Item_Picture"])
 
         return redirect(url_for('admin.admin_creationKit'))
@@ -235,6 +240,7 @@ def admin_remove_user():
         return '400'
 
     user_id = get_request_field_data('user_id')
+    Logger().log("Deleting user with id=" + str(user_id))
 
     delete_query.delete_user(user_id)
 
@@ -265,11 +271,13 @@ def make_user_admin():
     user_id = get_request_field_data('user_id')
 
     update_query.change_user_admin_status(user_id, True)
+    Logger().log("User with id=" + str(user_id) + " is now admin")
 
     return '200'
 
 def create_new_effect(effect_name, effect_description):
     if effect_name is None or effect_name == '' or effect_description is None or effect_description == '':
+        Logger().error("Invaild effect")
         raise Exception('Invalid effect')
 
     insert_query.insert_effect(effect_name, effect_description)
@@ -278,11 +286,13 @@ def creationKit_helper(query_type, image_save_dir):
     query_types = ("UPDATE", "INSERT")
 
     if query_type not in query_types:
+        Logger().error("Invaild query type")
         raise Exception("Invaild query type.")
 
     if query_type == query_types[1]:
         slot_id = select_query.get_slot_id_from_name(get_request_field_data('slot'))
         if slot_id is None:
+            Logger().error("Invaild slot")
             raise Exception('Not a valid slot')
 
         slot_id = int(slot_id)
@@ -291,6 +301,7 @@ def creationKit_helper(query_type, image_save_dir):
 
     rarity_id = select_query.get_rarity_id_from_name(get_request_field_data('rarity'))
     if rarity_id is None:
+        Logger().error("Invaild rarity")
         raise Exception('Not a valid rarity')
 
     rarity_id = int(rarity_id)
