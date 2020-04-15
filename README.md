@@ -19,7 +19,11 @@ Character and inventory manager for DND sessions.
 
 ## Config Webserver:
 0. Verify docker container started and you are logged into the container
-1. Install a text editor and modify the following fields in '/site_data/instance/production.cfg'
+1. Run the following command (move data folder and change ownership and permissions)
+
+	a.) `/tmp/install`
+
+2. Install a text editor and modify the following fields in '/site_data/instance/production.cfg'
 
 	a.) SECRET_KEY... Look up on Flask website on a good way to generate a secret SECRET_KEY
 	
@@ -27,10 +31,7 @@ Character and inventory manager for DND sessions.
 	
 	c.) IMAGE_UPLOAD... Change path to where image uploads folder is located
 
-2. Modify the ServerName field in the enabled sites (/etc/apache2/sites-enabled/apache2_site.conf) to your server's name
-3. Run the following command (move data folder and change ownership and permissions)
-
-	a.) `/tmp/install`
+3. Modify the ServerName field in the enabled sites (/etc/apache2/sites-enabled/apache2_site.conf) to your server's name
 
 ## Start Apache2 (in Docker container):
 0. Run the following command(s):
