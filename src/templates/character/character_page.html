@@ -3,7 +3,7 @@
 <head>
     <title>Character Page : {{ character_data['name']|e }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <!-- will have to make multiple css files for diffrent devices -->
 <body>
@@ -454,7 +454,7 @@
                             <div class="inv_category_line">
                                 <div class="inv_line_inner">
                                     <div class="inv_add_item_button clickable" onclick="add_item_to_inv({{ char_id }}, {{ inv_items[ii]['id'] }});"></div >
-                                    <h2>{{ ii }}</h2>
+									<h2><i>{{ ii }}</i></h2>
                                     <div class="inv_category_collapse_button inv_category_button clickable" onclick="category_expand_and_collapse('inv_category_{{ ii }}', 'collapse', 'inv_line_item', 'inv_category_button');"></div >
                                 </div>
                             </div>
@@ -490,10 +490,66 @@
                     </div>
                 {% endfor %}
                 <div class="inv_container_skills_section" style="display: none;">
-                    <h1>Skills</h1>
+					{% for stat in skills %}
+                        <div id="skills_category_{{ stat }}" class="inv_category">
+                            <div class="inv_category_line">
+                                <div class="inv_line_inner">
+									<h2 class="skill_category_text"><i>{{ stat }}</i></h2>
+                                    <div class="inv_category_collapse_button inv_category_button clickable" onclick="category_expand_and_collapse('skills_category_{{ stat }}', 'collapse', 'inv_line_item', 'inv_category_button');"></div >
+                                </div>
+                            </div>
+							{% for s in skills[stat] %}
+                                <div class="inv_line_item">
+									<div class="inv_line_inner">
+										<div class="skill_name">
+											<h2>{{ skills[stat][s]["Skill_Name"] }}</h2>
+										</div>
+										<div id="skill_value_{{ skills[stat][s]["Skill_Name"] }}" class="skill_val">
+											<h2>{{ skills[stat][s]["Skill_Base_Value"] }}</h2>
+										</div>
+										<div class="skills_mod_buttons">
+											<div class="inv_add_item_button clickable" onclick="modify_skill({{ char_id }}, 1, '{{ skills[stat][s]["Skill_Name"] }}', 'skill_value_{{ skills[stat][s]["Skill_Name"] }}');"></div>
+											<div style="width: 8px;"></div>
+											<div class="inv_remove_item_button clickable" onclick="modify_skill({{ char_id }}, -1, '{{ skills[stat][s]["Skill_Name"] }}', 'skill_value_{{ skills[stat][s]["Skill_Name"] }}');"></div>
+										</div>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					{% endfor %}
                 </div>
                 <div class="inv_container_abilities_section" style="display: none;">
-                    <h1>Abilities</h1>
+					<div id="ability_header" class="inv_category">
+						<div class="inv_category_line">
+							<div class="inv_line_inner">
+								<h2 class="ability_name"><i>Add Ability</i></h2>
+								<div class="inv_add_item_button clickable" onclick="add_ability({{ char_id }})"></div>
+							</div>
+						</div>
+					</div>
+					<div class="ability_header_seperator"></div>
+					{% for a in abilities %}
+                        <div id="abilities_{{ a["Ability_Name"] }}" class="inv_category">
+                            <div class="inv_category_line">
+                                <div class="inv_line_inner">
+									<div class="ability_remove_button clickable" onclick="delete_ability({{ char_id }}, '{{ a["Ability_Name"] }}');"></div>
+                                    <h2 class="ability_name">{{ a["Ability_Name"] }}</h2>
+									<div class="skills_mod_buttons">
+										<div class="ability_edit_button clickable" onclick="edit_ability({{ char_id }}, '{{ a["Ability_Name"] }}');"></div>
+										<div style="width: 8px;"></div>
+										<div class="inv_category_expand_button inv_category_button clickable" onclick="category_expand_and_collapse('abilities_{{ a["Ability_Name"] }}', 'expand', 'inv_line_item', 'inv_category_button');"></div >
+									</div>
+                                </div>
+                            </div>
+							<div class="inv_line_item" style="display: none;">
+								<div class="inv_line_inner">
+									<div class="ability_description">
+										<h2 id="ability_{{ a["Ability_Name"] }}_description">{{ a["Ability_Description"] }}</h2>
+									</div>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
                 </div>
             </div>
         </div>

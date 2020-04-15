@@ -28,7 +28,6 @@ class ImageHandler():
 
                 if not os.path.exists(save_dir_name):
                     os.makedirs(save_dir_name, mode=0o770)
-                    
 
                 image.save(os.path.join(save_dir_name, image_name))
                 return image_name 

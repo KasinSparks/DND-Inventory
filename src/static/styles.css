@@ -489,6 +489,7 @@ table td{
 .stats_table td{
 	text-align: center;
 	padding: 4px;
+	max-width: 128px;
 }
 
 .item_info_footer{
@@ -887,6 +888,7 @@ table td{
 	display: flex;
 	flex-direction: row;
 	max-width: 70%;
+	width: 60%;
 }
 
 .clickable{
@@ -1220,4 +1222,64 @@ table td{
 
 .item_category_line .item_category_button{
 	margin: auto;
+}
+
+.skill_category_text{
+	padding-left: 32px;
+}
+
+.skills_mod_buttons{
+	display: flex;
+	flex-direction: row;
+	margin: 0 auto;
+}
+
+.skill_name{
+	width: 50%;
+	margin: 0 auto;
+}
+
+.skill_val{
+	width: 33%;
+	margin: 0 auto;
+}
+
+#ability_description{
+	resize: none;
+	width: 80%;
+}
+
+.new_ability_input{
+	background: #252525;
+	border: 3px solid black;
+}
+
+.new_ability_input label{
+	color: #c1c1c1;
+}
+
+.new_ability_input input, textarea{
+	margin: 0 auto;
+}
+
+.ability_header_seperator{
+	background-color: #1e1e1e;
+	height: 23px;
+	border-bottom: solid black 3px;
+}
+
+.ability_edit_button{
+	width: 31px;
+	height: 31px;
+	background-image: url(images/edit.png);
+}
+
+.ability_remove_button{
+	width: 31px;
+	height: 31px;
+	background-image: url(images/inv_remove_item.png);
+}
+
+.ability_name{
+	width: 80%;
 }

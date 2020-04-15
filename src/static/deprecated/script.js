@@ -1,6 +1,18 @@
+import { Redirect } from "./scripts/Redirect.js";
+import { Data_Change_Submit } from "./scripts/field_editing/Data_Change_Submit.js";
+import { Data_Caller } from "./scripts/Data_Caller.js";
+import { Data_Change } from "./scripts/field_editing/Data_Change.js";
+import { Data_Change_Type } from "./scripts/field_editing/Data_Change_Type.js"
+
+import { Logger } from "./scripts/Logger.js";
+	window.onload = function(){
+	var logger = new Logger(true);
+	logger.log("yup");
+}
+
 var saveForLater = new Map([["", ""]]);
 
-function equipmentItemDetails(charId, equipmentItemStr){
+window.equipmentItemDetails = function equipmentItemDetails(charId, equipmentItemStr){
 	var hmtlInner = document.getElementsByClassName('eq_container')[0];
 	console.log(saveForLater[0]);
 	if(saveForLater[0] != undefined && saveForLater[0][1] != ""){
@@ -52,7 +64,7 @@ function itemDataFromXHTTP(element, charId, equipmentItemStr){
 	xhttp.send();
 }
 
-function test2(){
+window.test2 = function test2(){
 	console.debug("test2()");
 	console.debug(saveForLater[0][1]);
 	document.getElementsByClassName('eq_container')[0].innerHTML = saveForLater[0][1];
@@ -144,40 +156,20 @@ function getEquipmentItemDetailsHTML(jsonData, function_call='test2()'){
 	return equipmentItemDetailsHTML;
 }
 
-function accept_tos(){
-	document.location = 'tos/accept';
-	return;
-}
+window.accept_tos = function accept_tos(){Redirect.redirect("tos/accept");}
 
-function decline_tos(){
-	redirect_after_seconds('../login', 10000);
+window.decline_tos = function decline_tos(){
+	Redirect.redirect_after_seconds('../login', 10000);
 	// TODO: make a better looking message
 	document.getElementsByClassName('login_container')[0].innerHTML = '<p>Terms of Service have been declined.\n\nRedirecting in 10 seconds...</p>';
-	return;
 }
 
-function redirect(location){
-	document.location = location;
-}
-
-function redirect_after_seconds(location, milliseconds){
-	setTimeout(function(){
-		redirect(location);
-	}, milliseconds);
-}
-
-function inv_tab(activeClass, activeButtonID){
+window.inv_tab = function inv_tab(activeClass, activeButtonID){
 	inv_inner_area_children = document.getElementsByClassName('inv_container_inner_area')[0].children;
 
 	for(var i = 0; i < inv_inner_area_children.length; ++i){
 		if(inv_inner_area_children[i].className === activeClass){
 			inv_inner_area_children[i].removeAttribute('style');
-			// TODO:
-			//if (inv_inner_area_children[i].className === "inv_container_skills_section") {
-				// update data, lazy way by coping local modifier data
-				// TODO: change to update from server instead of local
-			//	_update_skills_data();
-			//}
 		} else {
 			inv_inner_area_children[i].style.display = 'none';
 		}
@@ -191,17 +183,9 @@ function inv_tab(activeClass, activeButtonID){
 			inv_buttons[i].className = inv_buttons[i].className.replace('active', 'inactive');
 		}
 	}
-	
-	return;
 }
 
-function _update_skills_data(){
-	// get the modifier data locally
-	var labels = ["str", "dex", "con", "int", "wis", "cha"];
-
-}
-
-function category_expand_and_collapse(categoryID, option, line_item_class, button_class){
+window.category_expand_and_collapse = function category_expand_and_collapse(categoryID, option, line_item_class, button_class){
 	inv_cat = document.getElementById(categoryID); 
 
 	inv_line_items = inv_cat.getElementsByClassName(line_item_class);
@@ -233,7 +217,7 @@ function setToOption_Image(element, prevOption, option){
 	element.setAttribute('class', element.getAttribute('class').replace(prevOption, option));
 }
 
-function select_other_button(element_name=[], value){
+window.select_other_button = function select_other_button(element_name=[], value){
 	console.log(value);
 	element_name.forEach(element => {
 		if(value === "OTHER"){
@@ -244,7 +228,7 @@ function select_other_button(element_name=[], value){
 	});
 }
 
-function select_standard_button(element_name=[]){
+window.select_standard_button = function select_standard_button(element_name=[]){
 	element_name.forEach(element => {
 		select_button_helper(element, 'display: none;');
 	});
@@ -263,244 +247,16 @@ function select_button_helper(element_name, style_attribute, required='false'){
 	
 }
 
-class ChangeData{
-	constructor(char_id, webpage, responseType, field_id_name, submit_route){
-		this.char_id = char_id;
-		this.webpage = webpage;
-		this.responseType = responseType;
-		this.field_id_name = field_id_name;
-		this.submit_route = submit_route;
-	}
-
-	dataCall(callbackFunction=null, submit_route=this.submit_route, char_id=this.char_id, field_id_name=this.field_id_name){
-		console.log(submit_route);
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function(){
-			if(this.readyState == 4 && this.status == 200){
-				if(this.response == null){
-					console.error('Response from ' + webpage + ' was null.');
-					return;
-				}
-				if(callbackFunction == null){
-					console.log(this.response);
-					return this.response;
-				}
-				
-				callbackFunction(char_id, this.response, field_id_name, submit_route);
-				return;
-			}
-		};
-		
-		xhttp.open("GET", this.webpage, true);
-		
-		xhttp.responseType = this.responseType;
-	
-		xhttp.send();
-	
-		return;
-	}
-	
-	dropdown(char_id, dropdown_options, field_id_name, submit_route){
-		var html_string = '<div class="char_item_val_change_container"><select id="new_value">';
-		
-		//console.log(submit_route);
-
-		var field = document.getElementById(field_id_name);
-		if(field == null){
-			return;
-		}
-
-		isChangeCharDataOpen = true;
-
-		dropdown_options.opts.forEach(element => {
-			html_string += '<option value="' + element.id + '">' + element.name + '</option>';
-		});
-
-		html_string += '</select>\
-							<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 0 + ');">Y</button>\
-							<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
-							</div>';
-
-		// Put the data in to html and insert it
-		
-		field.setAttribute('style', 'display: none;');
-		field.parentElement.parentElement.innerHTML += html_string;
-		
-
-		return;
-	}
-
-	number(char_id, current_number, field_id_name, submit_route){
-		var html_string = '<div class="char_item_val_change_container">';
-		
-		html_string += '<input type="number" id="new_value" value="' + current_number.current_value + '">';
-
-		var field = document.getElementById(field_id_name);
-		if(field == null){
-			return;
-		}
-
-		isChangeCharDataOpen = true;
-
-		html_string += '<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 1 + ');">Y</button>\
-						<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
-						</div>';
-
-		
-		field.setAttribute('style', 'display: none;');
-		field.parentElement.parentElement.innerHTML += html_string;
-		
-
-		return;
-	}
-
-	number_additional(char_id, current_number, field_id_name, submit_route){
-		var html_string = '<div class="char_item_val_change_container">';
-
-		html_string += '<div style="display: flex; width: 100%;">\
-							<div class="stat_details"><h4>Base</h4><p>' + current_number.base + '</p></div>\
-							<div class="stat_details"><h4>Additional</h4><p>' + current_number.additional + '</p></div>\
-						</div>'
-		
-		html_string += '<input type="number" id="new_value" value="' + current_number.base + '">';
-
-		var field = document.getElementById(field_id_name);
-		if(field == null){
-			return;
-		}
-
-		isChangeCharDataOpen = true;
-
-		html_string += '<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 1 + ');">Y</button>\
-						<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
-						</div>';
-
-		
-		field.setAttribute('style', 'display: none;');
-		field.parentElement.parentElement.innerHTML += html_string;
-		
-
-		return;
-	}
-
-	image(char_id, dummy_data, field_id_name, submit_route){
-		var html_string = '<div class="char_item_val_change_container">\
-						<form method="post" enctype="multipart/form-data" action="' + submit_route + char_id + '">\
-						<input name="image" type="file" id="new_value" accept="image/gif, image/jpeg, image/png, image/jpg">';
-
-		var field = document.getElementById(field_id_name);
-		if(field == null){
-			return;
-		}
-
-		isChangeCharDataOpen = true;
-
-		html_string += '<input type="submit", value="Y"/>\
-						<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
-						</form></div>';
-
-		
-		field.setAttribute('style', 'display: none;');
-		field.parentElement.innerHTML += html_string;
-		
-
-		return;
-	}
-	
-	string_value(char_id, current_string, field_id_name, submit_route){
-		var html_string = '<div class="char_item_val_change_container">\
-		<input type="text" id="new_value" value="' + current_string.current_value + '">';
-
-		var field = document.getElementById(field_id_name);
-		if(field == null){
-		return;
-		}
-
-		isChangeCharDataOpen = true;
-
-		html_string += '<button onclick="submitChanges(' + char_id + ',\'' + field_id_name + '\',' + '\'' + submit_route + '\',' + 1 + ');">Y</button>\
-				<button onclick="abortChanges(\'' + field_id_name + '\');">X</button>\
-				</div>';
-
-
-		field.setAttribute('style', 'display: none;');
-		field.parentElement.parentElement.innerHTML += html_string;
-
-
-		return;
-	}	
-}
-
 
 var isChangeCharDataOpen = false;
 
-function submitChanges(char_id, field_id_name, submit_route, callType=0){
-	var element = document.getElementById('new_value');
-	switch(callType){
-		case 0:
-			submitData(submit_route + char_id,
-				'value=' + element.options[element.selectedIndex].value,
-				field_id_name);
-			break;
-		case 1:
-			submitData(submit_route + char_id, 'value=' + element.value,
-				field_id_name, true);
-			break;
-		case 2:
-			submitImage(submit_route + char_id, 'image=' + element.value,
-				field_id_name);
-			break;
-		default:
-			console.log('Value:: ' + element.value);
-	}
-	abortChanges(field_id_name);
-	return
+// TODO: clean up call
+window.submitChanges = function submitChanges(char_id, field_id_name, submit_route, callType=0){
+	Data_Change_Submit.submit(char_id, field_id_name, submit_route, callType);
+	isChangeCharDataOpen = false;
 }
 
-function submitData(url, params, field_id_name='', is_json=false){
-	var http = new XMLHttpRequest();
-	http.open('POST', url, true);
-
-	//Send the proper header information along with the request
-	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-	http.onreadystatechange = function() {
-		//Call a function when the state changes.
-		if(http.readyState == 4 && http.status == 200) {
-			// do something here
-			if(!is_json && field_id_name != ''){
-				document.getElementById(field_id_name).innerHTML = http.responseText;
-			} else {
-				var data = JSON.parse(http.response);
-				for(var k in data){
-					console.log(k + ', ' + data[k])
-					document.getElementById(k).innerHTML = data[k];
-				}
-			}
-		}
-	}
-	http.send(params);
-}
-
-function submitImage(url, params, field_id_name){
-	var http = new XMLHttpRequest();
-	http.open('POST', url, true);
-
-	//Send the proper header information along with the request
-	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-	http.onreadystatechange = function() {
-		//Call a function when the state changes.
-		if(http.readyState == 4 && http.status == 200) {
-			// do something here
-			//console.log(http.responseText);
-			//document.getElementById(field_id_name).innerHTML = http.responseText;
-		}
-	}
-	http.send(params);
-}
-
-function abortChanges(field_id_name){
+window.abortChanges = function abortChanges(field_id_name){
 	if(isChangeCharDataOpen){
 		document.getElementById(field_id_name).setAttribute('style', '');
 		document.getElementsByClassName('char_item_val_change_container')[0].remove();
@@ -509,141 +265,97 @@ function abortChanges(field_id_name){
 	return;
 }
 
-
-function changeClass(char_id){
+function changeField(char_id, data_change_type, data_url, field_id_name, submit_url){
 	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getClassName/' + char_id,
-			'json', 'character_class', '/character/edit/class/');
-		ccd.dataCall(ccd.string_value);
+		var dc = new Data_Change(char_id, data_change_type, data_url, field_id_name, submit_url);
+		isChangeCharDataOpen = dc.change_data();
 	}
 }
 
-function changeRace(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getRaceName/' + char_id,
-			'json', 'character_race', '/character/edit/race/');
-		ccd.dataCall(ccd.string_value);
-	}
+window.changeClass = function changeClass(char_id){
+	changeField(char_id, Data_Change_Type.Types.STRING, '/dataserver/getClassName/' + char_id,
+		'character_class', '/character/edit/class/' + char_id);
 }
 
-function changeLevel(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getLevel/' + char_id, 'json',
-			'character_level', '/character/edit/level/');
-		ccd.dataCall(ccd.number);
-	}
+window.changeRace = function changeRace(char_id){
+	changeField(char_id, Data_Change_Type.Types.STRING, '/dataserver/getRaceName/' + char_id,
+		'character_race', '/character/edit/race/' + char_id);
 }
 
-function changeImage(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/dummyCall', 'json',
-			'character_image', '/character/edit/image/');
-		ccd.dataCall(ccd.image);
-	}
+window.changeLevel = function changeLevel(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUMBER, '/dataserver/getLevel/' + char_id,
+		'character_level', '/character/edit/level/' + char_id);
 }
 
-function changeHealth(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getHealth/' + char_id, 'json',
-			'character_hp', '/character/edit/health/')
-		ccd.dataCall(ccd.number);
-	}
+window.changeImage = function changeImage(char_id){
+	changeField(char_id, Data_Change_Type.Types.IMAGE, '/dataserver/dummyCall',
+		'character_image', '/character/edit/image/' + char_id);
 }
 
-function changeMaxHealth(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getMaxHealth/' + char_id, 'json',
-			'character_max_hp', '/character/edit/maxhealth/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeHealth = function changeHealth(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUMBER, '/dataserver/getHealth/' + char_id,
+		'character_hp', '/character/edit/health/' + char_id);
 }
 
-function changeAC(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getAC/' + char_id, 'json',
-			'character_ac', '/character/edit/ac/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeMaxHealth = function changeMaxHealth(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getMaxHealth/' + char_id,
+		'character_max_hp', '/character/edit/maxhealth/' + char_id);
 }
 
-function changeInitiative(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getInitiative/' + char_id, 'json',
-			'character_initiative', '/character/edit/initiative/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeAC = function changeAC(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getAC/' + char_id,
+		'character_ac', '/character/edit/ac/' + char_id);
 }
 
-function changeAttackBonus(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getAttackBonus/' + char_id, 'json',
-			'character_attack_bonus', '/character/edit/attackBonus/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeInitiative = function changeInitiative(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getInitiative/' + char_id,
+		'character_initiative', '/character/edit/initiative/' + char_id);
 }
 
-function changeAlignment(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getAlignmentOptions',
-			'json', 'character_alignment', '/character/edit/alignment/');
-		ccd.dataCall(ccd.dropdown);
-	}
+window.changeAttackBonus = function changeAttackBonus(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getAttackBonus/' + char_id,
+		'character_attack_bonus', '/character/edit/attack_bonus/' + char_id);
 }
 
-function changeCurrency(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getCurrency/' + char_id, 'json',
-			'character_currency', '/character/edit/currency/')
-		ccd.dataCall(ccd.number);
-	}
+window.changeAlignment = function changeAlignment(char_id){
+	changeField(char_id, Data_Change_Type.Types.SELECT,
+		'/dataserver/getAlignmentOptions',
+		'character_alignment', '/character/edit/alignment/' + char_id);
 }
 
-function changeStr(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getStr/' + char_id, 'json',
-			'character_str', '/character/edit/str/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeCurrency = function changeCurrency(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUMBER, '/dataserver/getCurrency/' + char_id,
+		'character_currency', '/character/edit/currency/' + char_id);
 }
 
-function changeDex(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getDex/' + char_id, 'json',
-			'character_dex', '/character/edit/dex/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeStr = function changeStr(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getStr/' + char_id,
+		'character_str', '/character/edit/str/' + char_id);
 }
 
-function changeCon(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getCon/' + char_id, 'json',
-			'character_con', '/character/edit/con/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeDex = function changeDex(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getDex/' + char_id,
+		'character_dex', '/character/edit/dex/' + char_id);
 }
 
-function changeInt(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getInt/' + char_id, 'json',
-			'character_int', '/character/edit/int/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeCon = function changeCon(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getCon/' + char_id,
+		'character_con', '/character/edit/con/' + char_id);
 }
 
-function changeWis(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getWis/' + char_id, 'json',
-			'character_wis', '/character/edit/wis/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeInt = function changeInt(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getInt/' + char_id,
+		'character_int', '/character/edit/int/' + char_id);
 }
 
-function changeCha(char_id){
-	if(!isChangeCharDataOpen){
-		var ccd = new ChangeData(char_id, '/dataserver/getCha/' + char_id, 'json',
-			'character_cha', '/character/edit/cha/')
-		ccd.dataCall(ccd.number_additional);
-	}
+window.changeWis = function changeWis(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getWis/' + char_id,
+		'character_wis', '/character/edit/wis/' + char_id);
+}
+
+window.changeCha = function changeCha(char_id){
+	changeField(char_id, Data_Change_Type.Types.NUM_ADDITIONAL, '/dataserver/getCha/' + char_id,
+		'character_cha', '/character/edit/cha/' + char_id);
 }
 
 
@@ -1473,263 +1185,4 @@ function make_user_admin(user_id, username){
 		}
 		http.send(params);
 	}
-}
-
-function modify_skill(char_id, amount, skill_name, field_id_name){
-	var params = 'char_id=' + char_id + '&skill_name=' + skill_name + '&amount=' + amount;
-	var http = new XMLHttpRequest();
-	http.open('POST', '/character/skills/edit', true);
-
-	//Send the proper header information along with the request
-	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-	http.onreadystatechange = function() {
-		//Call a function when the state changes.
-		if(http.readyState == 4 && http.status == 200) {
-			// do something here
-			document.getElementById(field_id_name).getElementsByTagName("h2")[0].innerHTML = this.response;
-		}
-	}
-	http.send(params);
-}
-
-var ability_header_old = "";
-function add_ability(char_id){
-	var ability_test = null;
-	try{
-		var ability_test = [
-			document.getElementsByClassName("new_ability_input"),
-			document.getElementsByClassName("edit_ability_input")
-		];
-	} catch (error) {
-		// an edit or create is NOT already open
-		// ignore and go on
-	}
-
-	for(var i = 0; i < ability_test.length; ++i){
-		if (ability_test[i] !== null && ability_test[i].length > 0) {
-			console.error("Ability modification window is already open. Please close existing ability modification window before continuing.");
-			
-			alert("Ability modification window is already open. Please close existing ability modification window before continuing.");
-
-			return;
-		}
-	}
-
-	var ability_header = document.getElementById("ability_header");
-	ability_header_old = ability_header.innerHTML;
-	var new_html = '<div class="new_ability_input">\
-			<label for"ability_name">Ability Name</label>\
-			<input id="ability_name" name="ability_name" type="text">\
-			<br>\
-			<label for"ability_description">Ability Description</label>\
-			<textarea id="ability_description" name="ability_description" rows="5" columns="100" maxlength="500"></textarea>\
-			<br>\
-			<button onclick="submit_ability(' + char_id + ', \'/character/abilities/add\')">Submit</button>\
-			<button onclick="cancel_add_ability()">Cancel</button>\
-		</div>';
-	ability_header.innerHTML = new_html;
-}
-
-function submit_ability(char_id, url, old_ability_name=null, ability_name=null, ability_description=null){
-	if(ability_name === null){
-		var ability_name = document.getElementById("ability_name").value;
-	}
-	if(ability_description === null){
-		var ability_description = document.getElementById("ability_description").value;
-	}
-	
-	var params = 'char_id=' + char_id + '&ability_name=' + ability_name + '&ability_description=' + ability_description + '&old_ability_name=' + old_ability_name;
-	var http = new XMLHttpRequest();
-	http.open('POST', url, true);
-
-	//Send the proper header information along with the request
-	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-	http.onreadystatechange = function() {
-		//Call a function when the state changes.
-		if(http.readyState == 4 && http.status == 200) {
-			// do something here
-			// TODO
-			//document.getElementById(field_id_name).getElementsByTagName("h2")[0].innerHTML = this.response;
-			if(this.response.substring(0, 5) === "ERROR"){
-				console.error(this.response);
-				alert(this.response);
-				return;
-			}
-			
-					
-			var json_data = JSON.parse(this.response);
-			var char_id = json_data.char_id;
-			var old_name = json_data.old_name;
-
-			if(old_name !== 'null'){
-				// edit ability
-				cancel_edit_ability(old_name);
-				var line_item = document.getElementById("abilities_" + old_name);
-				line_item.setAttribute("id", line_item.getAttribute("id").replace(old_name, json_data.Ability_Name));
-				line_item.getElementsByClassName("ability_name")[0].innerHTML = json_data.Ability_Name;
-				var _old_des_el = document.getElementById("ability_" + old_name + "_description")
-				_old_des_el.innerHTML = json_data.Ability_Description;
-				_old_des_el.setAttribute("id", _old_des_el.getAttribute("id").replace(old_name, json_data.Ability_Name));
-				
-				var _edit_button = line_item.getElementsByClassName("ability_edit_button")[0];
-				_edit_button.setAttribute("onclick", _edit_button.getAttribute("onclick").replace(old_name, json_data.Ability_Name));
-				var _remove_button = line_item.getElementsByClassName("ability_remove_button")[0];
-				_remove_button.setAttribute("onclick", _remove_button.getAttribute("onclick").replace(old_name, json_data.Ability_Name));
-				var _expand_button = line_item.getElementsByClassName("inv_category_button")[0];
-				_expand_button.setAttribute("onclick", _expand_button.getAttribute("onclick").replace(old_name, json_data.Ability_Name));
-			} else {
-				// new ability
-				var i_html = document.getElementsByClassName("inv_container_abilities_section")[0];
-
-				i_html.innerHTML += add_ability_html(char_id, json_data.Ability_Name, json_data.Ability_Description);
-				console.log(this.response);	
-				cancel_add_ability();
-			}
-
-		}
-	}
-	http.send(params);
-}
-
-function delete_ability(char_id, ability_name){
-	var params = 'char_id=' + char_id + '&ability_name=' + ability_name;
-	var http = new XMLHttpRequest();
-	http.open('POST', 'abilities/delete', true);
-
-	//Send the proper header information along with the request
-	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-	http.onreadystatechange = function() {
-		//Call a function when the state changes.
-		if(http.readyState == 4 && http.status == 200) {
-			document.getElementById("abilities_" + ability_name).remove();
-		}
-	}
-	http.send(params);
-}
-
-function add_ability_html(char_id, ability_name, ability_description){
-	var html = '<div id="abilities_' + ability_name + '" class="inv_category">\
-		<div class="inv_category_line">\
-			<div class="inv_line_inner">\
-				<div class="ability_remove_button clickable" onclick="delete_ability(' + char_id + ', \'' + ability_name + '\');"></div>\
-				<h2 class="ability_name">' + ability_name + '</h2>\
-				<div class="skills_mod_buttons">\
-					<div class="ability_edit_button clickable" onclick="edit_ability(' + char_id + ', \'' + ability_name + '\');"></div>\
-					<div style="width: 8px;"></div>\
-					<div class="inv_category_expand_button inv_category_button clickable" onclick="category_expand_and_collapse(\'abilities_' + ability_name + '\', \'expand\', \'inv_line_item\', \'inv_category_button\');"></div >\
-				</div>\
-			</div>\
-		</div>\
-		<div class="inv_line_item" style="display: none;">\
-			<div class="inv_line_inner">\
-				<div class="ability_description">\
-					<h2 id="ability_' + ability_name + '_description">' + ability_description + '</h2>\
-				</div>\
-			</div>\
-		</div>\
-	</div>'
-	return html;
-}
-
-var edit_ability_header_old = "";
-function edit_ability(char_id, old_ability_name){
-	var ability_test = null;
-	try{
-		var ability_test = [
-			document.getElementsByClassName("new_ability_input"),
-			document.getElementsByClassName("edit_ability_input")
-		];
-	} catch (error) {
-		// an edit or create is NOT already open
-		// ignore and go on
-	}
-
-	for(var i = 0; i < ability_test.length; ++i){
-		if (ability_test[i] !== null && ability_test[i].length > 0) {
-			console.error("Ability modification window is already open. Please close existing ability modification window before continuing.");
-			
-			alert("Ability modification window is already open. Please close existing ability modification window before continuing.");
-
-			return;
-		}
-	}
-
-	var ability_header = document.getElementById("abilities_" + old_ability_name);
-	var old_ability_description = document.getElementById("ability_" + old_ability_name + "_description").innerHTML;
-	edit_ability_header_old = ability_header.innerHTML;
-	var new_html = '<div class="edit_ability_input">\
-			<label for"ability_name">Ability Name</label>\
-			<input id="ability_name" name="ability_name" type="text" value="' + old_ability_name + '">\
-			<br>\
-			<label for"ability_description">Ability Description</label>\
-			<textarea id="ability_description" name="ability_description" rows="5" columns="100" maxlength="500">' + old_ability_description + '</textarea>\
-			<br>\
-			<button onclick="submit_ability(' + char_id + ', \'/character/abilities/edit\', \'' + old_ability_name + '\')">Submit</button>\
-			<button onclick="cancel_edit_ability(\'' + old_ability_name + '\')">Cancel</button>\
-		</div>';
-	ability_header.innerHTML = new_html;
-}
-
-function cancel_add_ability(){
-	_cancel_mod_ability("ability_header", ability_header_old);
-	ability_header_old = "";
-}
-
-function cancel_edit_ability(name){
-	_cancel_mod_ability("abilities_" + name, edit_ability_header_old);
-	edit_ability_header_old = "";
-}
-
-function _cancel_mod_ability(parent_div, old_html){
-	var ability_header = document.getElementById(parent_div);
-	ability_header.innerHTML = old_html;
-}
-
-function item_create_slot_change(slot_name=null){
-	var sel_val = "";
-	if (slot_name === null) {
-		selector = document.getElementsByName("slot")[0];
-		sel_val = selector.value.toLowerCase();
-	} else {
-		sel_val = slot_name.toLowerCase();
-	}
-	var wield_req_div = document.getElementById("wield_req");
-	var chest_el = document.getElementById("ac_bonus");
-
-	var wield_new_style = "display: none;";
-	var torso_new_style = "display: none;";
-
-	if (sel_val === "weapon") {
-		// show wield requirements
-		wield_new_style = wield_req_div.getAttribute("style").replace("display: none;", "");
-		_set_element_style(wield_req_div, wield_new_style);
-		_set_element_style_to_display_none(chest_el);
-	} else if (sel_val === "torso") { 
-		torso_new_style = chest_el.getAttribute("style").replace("display: none;", "");
-		_set_element_style(chest_el, torso_new_style);
-		_set_element_style_to_display_none(wield_req_div);
-	} else {
-		_set_element_style_to_display_none(chest_el);
-		_set_element_style_to_display_none(wield_req_div);
-	}
-}
-
-function _element_style_has_display_none(element){
-	return element.getAttribute("style").includes("display: none;");
-}
-
-function _set_element_style_to_display_none(element){
-	if (_element_style_has_display_none(element)) { return; }
-	_set_element_style(element, element.getAttribute("style") + " display: none;");
-}
-
-function _set_element_style(element, new_style){
-	element.setAttribute("style", new_style);
-}
-
-function detect_item_type(slot_name){
-	item_create_slot_change(slot_name);
 }

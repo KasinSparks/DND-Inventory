@@ -11,7 +11,7 @@ def select(select_fields, from_table, multiple=False, where_clause="", args=(), 
     for field in select_fields:
         sql_str += field
         if count < num_of_fields - 1:
-            sql_str += ", "	
+            sql_str += ", "
         count += 1
 
     sql_str += " FROM " + from_table + " "
@@ -43,7 +43,7 @@ def select_user_data_from_id(user_id):
     return Query(sql_str, (user_id,)).run_query()
 
 def get_username(user_id):
-    sql_str = """SELECT Username 
+    sql_str = """SELECT Username
                 FROM Users
                 WHERE User_ID=?;
             """
@@ -78,7 +78,7 @@ def select_char_id_from_name(user_id, char_name):
 
 def get_char_id(user_id):
     sql_str = """SELECT Character_ID
-                FROM Character 
+                FROM Character
                 WHERE User_ID= ?;
             """
     return Query(sql_str, (user_id,), True, True).run_query()
@@ -109,7 +109,7 @@ def select_slot_names(slot_id = -1):
     if slot_id > -1:
         where_command = "WHERE Slots_ID=?"
         args = (slot_id,)
-        multi = False 
+        multi = False
 
     sql_str = """SELECT Slots_Name
                 FROM Slots """ + where_command + ";"
@@ -124,7 +124,7 @@ def select_rarity_names():
 def select_effect_names(effect_id = -1):
     where_command = ""
     args = ()
-    multi = True 
+    multi = True
 
     if effect_id > -1:
         where_command = "WHERE Effect_ID=?"
@@ -140,12 +140,12 @@ def select_effect_names(effect_id = -1):
 def select_items(item_id = -1):
     where_command = ""
     args = ()
-    multi = True 
+    multi = True
 
     if item_id > -1:
         where_command = "WHERE Items.Item_ID=?"
         args = (item_id,)
-        multi = False 
+        multi = False
 
     sql_str = """SELECT *
                 FROM Items
@@ -199,7 +199,7 @@ def select_notifications():
                 FROM Admin_Notifications
                 INNER JOIN Notification_Types ON Admin_Notifications.Notification_Type=Notification_Types.Notification_ID
                 INNER JOIN Users ON Admin_Notifications.User_ID=Users.User_ID;
-            """	
+            """
     return Query(sql_str, (), True, True).run_query()
 
 def get_has_agreed_to_tos(user_id):
@@ -210,7 +210,7 @@ def get_has_agreed_to_tos(user_id):
     return Query(sql_str, (user_id,)).run_query()['Has_Agreed_TOS']
 
 def get_notification_id(notification_type):
-    sql_str = """SELECT Notification_ID 
+    sql_str = """SELECT Notification_ID
                 FROM Notification_Types
                 WHERE Type = ?;
                 """
@@ -298,7 +298,7 @@ def get_is_admin(user_id):
     elif query_result['Is_Admin'] > 0:
         return True
 
-    return False 
+    return False
 
 def select_effect_data(effect_id):
     return select(("*",), "Effects", False, "WHERE Effect_ID=?", (effect_id,))
@@ -351,3 +351,46 @@ def select_item_picture_name(item_id):
 
 def select_site_notifications():
     return select(("*",), "Site_Notifications", True)
+
+def select_character_skills(char_id):
+    joins = (
+        "INNER JOIN Skills on Character_Skills.Skill_ID=Skills.Skill_ID",
+    )
+    fields = (
+        "Character_Skills.Skill_ID",
+        "Character_Skills.Skill_Base_Value",
+        "Skills.Skill_Name",
+        "Skills.Skill_Type"
+    )
+    return select(fields, "Character_Skills", True, "WHERE Character_ID=?", (char_id,), joins)
+
+def select_all_skills():
+    return select(("*",), "Skills", True)
+
+def select_skill_id_from_name(skill_name):
+    return select(("Skill_ID",), "Skills", False, "WHERE Skill_Name=?", (skill_name,))
+
+def select_char_skill(char_id, skill_id=-1):
+    where_clause = "WHERE Character_ID=?"
+    args = [char_id]
+    multiple = True
+    if skill_id > -1:
+        where_clause += " AND Skill_ID=?"
+        args.append(skill_id)
+        multiple = False
+
+    return select(("*",), "Character_Skills", multiple, where_clause, tuple(args))
+
+def select_abilities(char_id, ability_id=-1):
+    where_clause = "WHERE Character_ID=?"
+    args = [char_id]
+    multiple = True
+    if ability_id > -1:
+        where_clause += " AND Ability_ID=?"
+        args.append(ability_id)
+        multiple = False
+
+    return select(("*",), "Abilities", multiple, where_clause, tuple(args))
+
+def select_ability_id_from_name(ability_name):
+    return select(("Ability_ID",), "Abilities", False, "WHERE Ability_Name=?", (ability_name,))

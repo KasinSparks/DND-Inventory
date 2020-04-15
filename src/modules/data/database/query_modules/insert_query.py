@@ -50,12 +50,28 @@ def create_login_attempt(user_id):
 
 def create_race(race_name):
     insert("Races", {"Race_Name" : race_name})
-    
+
 def create_class(class_name):
     insert("Class", {"Class_Name" : class_name})
-    
+
 def create_alignment(alignment_name):
     insert("Alignments", {"Alignment_Name" : alignment_name})
 
 def create_character(data):
     insert("Character", data)
+
+def insert_char_skill(char_id, skill_id, skill_val=0):
+    data = {
+        "Character_ID" : char_id,
+        "Skill_ID" : skill_id,
+        "Skill_Base_Value" : skill_val
+    }
+    insert("Character_Skills", data)
+
+def insert_char_ability(char_id, ability_name, ability_description):
+    data = {
+        "Character_ID" : char_id,
+        "Ability_Name" : ability_name,
+        "Ability_Description" : ability_description
+    }
+    insert("Abilities", data)
