@@ -7,6 +7,7 @@ RUN pip3 install --requirement /tmp/requirements.txt
 
 COPY ./src /var/www/src
 COPY ./run.wsgi /var/www/src/
+COPY ./install /tmp/
 
 COPY ./apache2_site.conf /etc/apache2/sites-available/
 
@@ -21,6 +22,7 @@ RUN python3 /tmp/create_instance.py && \
     sqlite3 /example_site_data/instance/database/db.sqlite < /tmp/schema.sql && \
     chown -R www-data /example_site_data/instance/database && \
     chown -R www-data /example_site_data/instance/uploads && \
+	chmod 750 /tmp/install && \
     cp /tmp/example.cfg /example_site_data/instance/production.cfg && \
     service apache2 start && \ 
     a2dissite 000-default && \ 

@@ -48,9 +48,9 @@ def register():
         flash(error)
 
     return render_template('auth/register.html',
-                            header_text=header_text,
-                            error_msg=error,
-                            username=username)
+                           header_text=header_text,
+                           error_msg=error,
+                           username=username)
 
 # Login
 @bp.route('/login', methods=('GET', 'POST'))
@@ -66,12 +66,6 @@ def login():
         user = select_query.select_user_data(username)
 
         if user is not None:
-            # Check for is verified
-            if user['Is_Verified'] < 1:
-                return render_template('auth/not_verified.html',
-                                header_text=header_text,
-                                inner_text=None
-                )
 
             timeout_time_minutes = 10
 
@@ -102,6 +96,12 @@ def login():
                 # User has not agreed
                 return redirect(url_for('auth.register_tos'))
 
+            # Check for is verified
+            if user['Is_Verified'] < 1:
+                return render_template('auth/not_verified.html',
+                                       header_text=header_text,
+                                       inner_text=None)
+
             return redirect(url_for('home'))
 
         flash(error)
@@ -111,11 +111,11 @@ def login():
         site_notifications = None
 
     return render_template('auth/login.html',
-                            header_text=header_text,
-                            error_msg=error,
-                            tries_remaining=tries_remaining,
-                            unlockout_time=unlockout_time,
-                            site_notification=site_notifications)
+                           header_text=header_text,
+                           error_msg=error,
+                           tries_remaining=tries_remaining,
+                           unlockout_time=unlockout_time,
+                           site_notification=site_notifications)
 
 # Check if user is already loged in before a request
 @bp.before_app_request

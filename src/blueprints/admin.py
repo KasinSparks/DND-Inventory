@@ -343,7 +343,7 @@ def creationKit_helper(query_type, image_save_dir):
         "Item_Cha_Bonus" : convert_form_field_data_to_int('cha_bonus'),
         "Item_Effect1" : effect1_id,
         "Item_Effect2" : effect2_id,
-        #"Item_Attack_Bonus" : convert_form_field_data_to_int('bonus_damage'),
+        "Item_Attack_Bonus" : convert_form_field_data_to_int('bonus_damage'),
         #"Item_Initiative_Bonus" : convert_form_field_data_to_int('initiative_bonus'),
         "Item_Health_Bonus" : convert_form_field_data_to_int('health_bonus'),
         "Item_AC_Bonus" : convert_form_field_data_to_int('ac_bonus'),

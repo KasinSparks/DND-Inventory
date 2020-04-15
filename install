@@ -1,0 +1,6 @@
+mv /example_site_data/* /site_data
+chown www-data -R /site_data/instance/uploads
+chown www-data -R /site_data/instance/database
+chmod 740 -R /site_data/instance/uploads
+chmod 740 /site_data/instance/database
+chmod 640 /site_data/instance/database/db.sqlite

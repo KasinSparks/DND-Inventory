@@ -489,6 +489,7 @@ table td{
 .stats_table td{
 	text-align: center;
 	padding: 4px;
+	max-width: 128px;
 }
 
 .item_info_footer{
