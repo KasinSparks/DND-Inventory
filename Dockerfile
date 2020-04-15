@@ -18,7 +18,7 @@ COPY ./schema.sql /tmp/
 
 
 RUN python3 /tmp/create_instance.py && \
-    sqlite3 /example_example_site_data/instance/database/db.sqlite < /tmp/schema.sql && \
+    sqlite3 /example_site_data/instance/database/db.sqlite < /tmp/schema.sql && \
     chown -R www-data /example_site_data/instance/database && \
     chown -R www-data /example_site_data/instance/uploads && \
     cp /tmp/example.cfg /example_site_data/instance/production.cfg && \

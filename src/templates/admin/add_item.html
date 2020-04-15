@@ -28,7 +28,7 @@
                         </div>
                         <div class="input_item">
                             <label for="slot">Slot:</label>
-                            <select name="slot" required>
+                            <select name="slot" onchange="item_create_slot_change()" required>
                                 <option value="" selected>Slot</option>
                                 {% for s in slots %}
                                     <option value="{{ s['Slots_Name'] }}">{{ s['Slots_Name'] }}</option>
@@ -100,23 +100,19 @@
                             <label for="health_bonus">Health Bonus:</label>
                             <input name="health_bonus" type="number" min="-999" max="999" placeholder="0">
                         </div>
-                        <div class="input_item">
+                        <div class="input_item" id="ac_bonus" style="display: none;">
                             <label for="ac_bonus">AC Bonus:</label>
                             <input name="ac_bonus" type="number" min="-999" max="999" placeholder="0">
                         </div>
-                        <div class="input_item">
-                            <label for="dnof">Number of Dices:</label>
-                            <input name="dnof" type="number" min="0" max="999" placeholder="0">
-                        </div>
-                        <div class="input_item">
-                            <label for="dnofs">Dice Sides:</label>
-                            <input name="dnofs" type="number" min="0" max="999" placeholder="0">
-                        </div>
-                        <div class="input_item">
-                            <label for="bonus_damage">Bonus Damage:</label>
-                            <input name="bonus_damage" type="number" min="0" max="999" placeholder="0">
-                        </div>
-                        <div id="wield_req">
+                        <div id="wield_req" style="display: none;">
+							<div class="input_item">
+								<label for="dnof">Number of Dices:</label>
+								<input name="dnof" type="number" min="0" max="999" placeholder="0">
+							</div>
+							<div class="input_item">
+								<label for="dnofs">Dice Sides:</label>
+								<input name="dnofs" type="number" min="0" max="999" placeholder="0">
+							</div>
                             <div class="input_item">
                                 <label for="wield_str">Wield Strength Requirement:</label>
                                 <input name="wield_str" type="number" min="0" max="999" placeholder="0">

@@ -1688,3 +1688,48 @@ function _cancel_mod_ability(parent_div, old_html){
 	ability_header.innerHTML = old_html;
 }
 
+function item_create_slot_change(slot_name=null){
+	var sel_val = "";
+	if (slot_name === null) {
+		selector = document.getElementsByName("slot")[0];
+		sel_val = selector.value.toLowerCase();
+	} else {
+		sel_val = slot_name.toLowerCase();
+	}
+	var wield_req_div = document.getElementById("wield_req");
+	var chest_el = document.getElementById("ac_bonus");
+
+	var wield_new_style = "display: none;";
+	var torso_new_style = "display: none;";
+
+	if (sel_val === "weapon") {
+		// show wield requirements
+		wield_new_style = wield_req_div.getAttribute("style").replace("display: none;", "");
+		_set_element_style(wield_req_div, wield_new_style);
+		_set_element_style_to_display_none(chest_el);
+	} else if (sel_val === "torso") { 
+		torso_new_style = chest_el.getAttribute("style").replace("display: none;", "");
+		_set_element_style(chest_el, torso_new_style);
+		_set_element_style_to_display_none(wield_req_div);
+	} else {
+		_set_element_style_to_display_none(chest_el);
+		_set_element_style_to_display_none(wield_req_div);
+	}
+}
+
+function _element_style_has_display_none(element){
+	return element.getAttribute("style").includes("display: none;");
+}
+
+function _set_element_style_to_display_none(element){
+	if (_element_style_has_display_none(element)) { return; }
+	_set_element_style(element, element.getAttribute("style") + " display: none;");
+}
+
+function _set_element_style(element, new_style){
+	element.setAttribute("style", new_style);
+}
+
+function detect_item_type(slot_name){
+	item_create_slot_change(slot_name);
+}
