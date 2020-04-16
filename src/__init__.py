@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, session, send_from_directory, request
+from flask import Flask, render_template, session, send_from_directory, request, redirect, url_for
 
 def create_app(test_config=None, is_development_env=True, instance_path=None):
     # create and configure the app
@@ -54,9 +54,15 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
     @app.route('/home')
     @login_required
     def home():
+        from modules.data.database.query_modules import select_query
+
+        user_id = session["user_id"]
+        if not user_id or select_query.select_user_data_from_id(user_id)["Is_Verified"] < 1:
+            return redirect(url_for('auth.login'))
+
+
         header_text = get_current_username()
 
-        from modules.data.database.query_modules import select_query
         site_notifications = select_query.select_site_notifications()
         if site_notifications is None or len(site_notifications) < 1:
             site_notifications = None
