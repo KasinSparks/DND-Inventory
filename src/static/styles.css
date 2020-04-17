@@ -806,9 +806,19 @@ table td{
 
 .inv_line_item{
 	width: 100%;
-	height: 70px;
+	min-height: 70px;
 	background-color: #1b1b1b;
 	border-bottom: 3px solid black;
+}
+
+.inv_line_item [class*="ability_"], .inv_line_item [class*="skill_"]{
+	margin: 0 auto;
+	display: flex;
+}
+
+.inv_line_item .ability_info_field, .inv_line_item .skill_info_field{
+	margin: auto;
+	padding-right: 4px;
 }
 
 .inv_add_item_button{
@@ -1224,41 +1234,29 @@ table td{
 	margin: auto;
 }
 
-.skill_category_text{
-	padding-left: 32px;
-}
-
-.skills_mod_buttons{
+.ability_mod_buttons, .skills_mod_buttons{
 	display: flex;
 	flex-direction: row;
 	margin: 0 auto;
 }
 
-.skill_name{
-	width: 50%;
-	margin: 0 auto;
-}
-
-.skill_val{
-	width: 33%;
-	margin: 0 auto;
-}
-
-#ability_description{
+#ability_description, #skill_description{
 	resize: none;
 	width: 80%;
 }
 
-.new_ability_input{
+.new_ability_input, .edit_ability_input, .new_skill_input, .edit_skill_input{
 	background: #252525;
 	border: 3px solid black;
+	border-top: none;
+	border-left: none;
 }
 
-.new_ability_input label{
+.new_ability_input label, .edit_ability_input label, .new_skill_input label, .edit_skill_input label{
 	color: #c1c1c1;
 }
 
-.new_ability_input input, textarea{
+.new_ability_input input, textarea, .edit_ability_input input, .new_skill_input input, .edit_skill_input input{
 	margin: 0 auto;
 }
 
@@ -1268,18 +1266,19 @@ table td{
 	border-bottom: solid black 3px;
 }
 
-.ability_edit_button{
+.ability_edit_button, .skill_edit_button{
 	width: 31px;
 	height: 31px;
 	background-image: url(images/edit.png);
 }
 
-.ability_remove_button{
+.ability_remove_button, .skill_remove_button{
 	width: 31px;
 	height: 31px;
 	background-image: url(images/inv_remove_item.png);
+	margin-right: 32px;
 }
 
-.ability_name{
-	width: 80%;
+.ability_name, .skill_name{
+	width: 75%;
 }

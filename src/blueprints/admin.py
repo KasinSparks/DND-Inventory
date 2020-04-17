@@ -7,7 +7,7 @@ from flask import (
 from werkzeug.utils import secure_filename
 from blueprints.auth import login_required, get_current_username
 from modules.data.database.query_modules import select_query, delete_query, insert_query, update_query
-from modules.account.authentication_checks import check_for_admin_status
+from modules.account.authentication_checks import is_admin, not_admin_redirect
 from modules.data.string_shorten import shorten_string
 from modules.data.form_data import get_request_field_data, convert_form_field_data_to_int
 from modules.IO.file.image_handler import ImageHandler
@@ -19,7 +19,8 @@ bp = Blueprint('admin', __name__, url_prefix='/admin')
 @bp.route('users')
 @login_required
 def admin_users():
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
 
     users = select_query.select_user_data_except_user(session['user_id'])
     user_data = []
@@ -41,7 +42,8 @@ def admin_users():
 @bp.route('users/<string:username>')
 @login_required
 def admin_users_characters(username):
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
 
     user_id = select_query.get_user_id(username)
     characters = select_query.select_char_name_and_id(user_id)
@@ -53,7 +55,8 @@ def admin_users_characters(username):
 @bp.route('creationKit')
 @login_required
 def admin_creationKit():
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
 
     items = select_query.select_items()
     buckets = {}
@@ -76,7 +79,8 @@ def admin_creationKit():
 @bp.route('creationKit/add')
 @login_required
 def admin_creationKit_add():
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
 
     slot_names = select_query.select_slot_names()
     rarity_names = select_query.select_rarity_names()
@@ -91,7 +95,8 @@ def admin_creationKit_add():
 @bp.route('creationKit/edit/<int:item_id>')
 @login_required
 def admin_creationKit_edit(item_id):
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
 
     slot_names = select_query.select_slot_names()
     rarity_names = select_query.select_rarity_names()
@@ -152,7 +157,8 @@ def admin_creationKit_edit(item_id):
 @bp.route('creationKit/remove/<int:item_id>')
 @login_required
 def admin_creationKit_remove(item_id):
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
     delete_query.delete_item(item_id)
     Logger().log("Deleting item with id=" + str(item_id))
     # go though user's equiped items and unequiped deleted item
@@ -172,7 +178,8 @@ def admin_creationKit_remove(item_id):
 @bp.route('creationKit/add/submit', methods=('GET', 'POST'))
 @login_required
 def admin_creationKit_add_submit():
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
     if request.method == 'POST':
         _new_name = get_request_field_data("name")
         name_check = select_query.get_item_id_from_name(_new_name)
@@ -192,7 +199,8 @@ def admin_creationKit_add_submit():
 @bp.route('creationKit/edit/submit', methods=('GET', 'POST'))
 @login_required
 def admin_creationKit_edit_submit():
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
     if request.method == 'POST':
         full_dir_name = os.path.join(current_app.config['IMAGE_UPLOAD'], "items")
         creationKit_helper("UPDATE", full_dir_name)
@@ -204,14 +212,16 @@ def admin_creationKit_edit_submit():
 @bp.route('users/verify/<int:user_id>')
 @login_required
 def admin_verify_user(user_id):
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
     update_query.update_isVerified(user_id, True)
     return '200'
 
 @bp.route('notifications')
 @login_required
 def admin_notifications():
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
     notifications = select_query.select_notifications()
 
     return render_template('admin/notifications.html',
@@ -221,21 +231,24 @@ def admin_notifications():
 @bp.route('notifications/remove/<int:notification_id>')
 @login_required
 def admin_remove_notification(notification_id):
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
     delete_query.delete_notification(notification_id)
     return '200'
 
 @bp.route('notifications/markRead/<int:notification_id>')
 @login_required
 def admin_markRead_notification(notification_id):
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
     update_query.update_notification_read_status(notification_id, True)
     return '200'
 
 @bp.route('users/remove', methods=('GET', 'POST'))
 @login_required
 def admin_remove_user():
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
     if request.method != 'POST':
         return '400'
 
@@ -263,7 +276,8 @@ def admin_remove_user():
 @bp.route('users/makeAdmin', methods=('GET', 'POST'))
 @login_required
 def make_user_admin():
-    check_for_admin_status()
+    if not is_admin():
+        return not_admin_redirect()
 
     if request.method != 'POST':
         return '400'

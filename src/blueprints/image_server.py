@@ -1,6 +1,6 @@
 from flask import (Blueprint, url_for, send_from_directory, current_app, session)
 
-from blueprints.auth import login_required
+from blueprints.auth import login_required, verified_required, tos_required
 
 from modules.account.authentication_checks import is_admin
 
@@ -12,6 +12,8 @@ bp = Blueprint('imageserver', __name__, url_prefix='/imageserver')
 
 @bp.route('/user/<string:image_name>')
 @login_required
+@verified_required
+@tos_required
 def getUserImage(image_name):
     # TODO: Read the docs on how to improve this for server
     path = os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'users', str(session['user_id']), "profile_image")
@@ -21,6 +23,8 @@ def getUserImage(image_name):
 
 @bp.route('/item/<string:image_name>')
 @login_required
+@verified_required
+@tos_required
 def getItemImage(image_name):
     # TODO: Read the docs on how to improve this for server
     path = os.path.join('..', current_app.config['IMAGE_UPLOAD'], 'items')

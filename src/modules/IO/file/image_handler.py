@@ -74,7 +74,8 @@ class ImageHandler():
             image.save(new_path, "png")
             return new_file
         except IOError as e:
-            self._logger.error('Unable to resize image ' + str(existing_file_name) + ' ...\n' + e.strerror)	
+            self._logger.error(e)
+            self._logger.error('Unable to resize image ' + str(existing_file_name) + ' ...')	
 
         return "" 
 

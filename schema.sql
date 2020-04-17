@@ -126,9 +126,10 @@ DROP TABLE IF EXISTS "Abilities";
 CREATE TABLE IF NOT EXISTS "Abilities" (
 	"Ability_ID"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
 	"Character_ID"	INTEGER NOT NULL,
-	"Ability_Type"	INTEGER NOT NULL DEFAULT 0,
+	"Ability_Type"	TEXT NOT NULL,
 	"Ability_Name"	TEXT NOT NULL,
-	"Ability_Description"	TEXT NOT NULL
+	"Ability_Description"	TEXT NOT NULL,
+	"Ability_Damage"	TEXT DEFAULT ''
 );
 DROP TABLE IF EXISTS "Notification_Types";
 CREATE TABLE IF NOT EXISTS "Notification_Types" (

@@ -98,19 +98,22 @@ def update(table_name, data, where_clause="", where_clause_data=()):
     ## TODO: see the delete query todo
     Query(sql_str, tuple(args), False).run_query()
 
-def update_char_skill(char_id, skill_id, amount):
-    data = {
-        "Character_ID" : char_id,
-        "Skill_ID" : skill_id,
-        "Skill_Base_Value" : amount
-    }
-    update("Character_Skills", data, "WHERE Character_ID=? and Skill_ID=?", (char_id, skill_id))
+def update_char_skill(char_id, skill_id, name=None, description=None):
+    data = {"Character_ID" : char_id, "Skill_ID" : skill_id}
+    if name is not None:
+        data["Skill_Name"] = name
+    if description is not None:
+        data["Skill_Description"] = description
 
-def update_char_ability(char_id, ability_id, ability_name, ability_description):
+    update("Skills", data, "WHERE Character_ID=? and Skill_ID=?", (char_id, skill_id))
+
+def update_char_ability(char_id, ability_id, ability_name, ability_description, ability_damage, ability_type):
     data = {
         "Character_ID" : char_id,
         "Ability_ID" : ability_id,
         "Ability_Name" : ability_name,
-        "Ability_Description" : ability_description
+        "Ability_Description" : ability_description,
+        "Ability_Damage" : ability_damage,
+        "Ability_Type" : ability_type
     }
     update("Abilities", data, "WHERE Character_ID=? and Ability_ID=?", (char_id, ability_id))

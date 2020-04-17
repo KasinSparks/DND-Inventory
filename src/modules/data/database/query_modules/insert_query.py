@@ -60,18 +60,20 @@ def create_alignment(alignment_name):
 def create_character(data):
     insert("Character", data)
 
-def insert_char_skill(char_id, skill_id, skill_val=0):
+def insert_char_skill(char_id, name, description):
     data = {
         "Character_ID" : char_id,
-        "Skill_ID" : skill_id,
-        "Skill_Base_Value" : skill_val
+        "Skill_Name" : name,
+        "Skill_Description" : description
     }
-    insert("Character_Skills", data)
+    insert("Skills", data)
 
-def insert_char_ability(char_id, ability_name, ability_description):
+def insert_char_ability(char_id, ability_name, ability_description, ability_damage, ability_type):
     data = {
         "Character_ID" : char_id,
         "Ability_Name" : ability_name,
-        "Ability_Description" : ability_description
+        "Ability_Description" : ability_description,
+        "Ability_Damage" : ability_damage,
+        "Ability_Type" : ability_type
     }
     insert("Abilities", data)

@@ -10,6 +10,7 @@ import datetime
 from modules.account.account_try import add_account_try, account_tries_remaining, get_lockout_time, is_attempt_within_range
 from modules.data.form_data import get_request_field_data
 from modules.data.database.query_modules import select_query, insert_query, update_query
+from modules.account.authentication_checks import is_verified, not_verified_redirect, has_agreed_tos, not_agreed_redirect
 
 import math
 
@@ -140,17 +141,32 @@ def login_required(view):
     def wrapped_view(**kwargs):
         if g.user is None:
             return redirect(url_for('auth.login'))
-
         return view(**kwargs)
 
     return wrapped_view
 
+def verified_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if not is_verified():
+            return not_verified_redirect()
+        return view(**kwargs)
+
+    return wrapped_view
+
+def tos_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if not has_agreed_tos():
+            return not_agreed_redirect()
+        return view(**kwargs)
+
+    return wrapped_view
 
 @bp.route('/register/tos')
 @login_required
 def register_tos():
     # TODO: if user has already accepted TOS
-
     return render_template('auth/register_tos.html',
                             header_text=get_current_username())
 
@@ -186,3 +202,13 @@ def accept_tos():
 @login_required
 def get_current_username():
     return select_query.get_username(session['user_id'])
+
+# Depercated
+"""@login_required
+def is_verifed():
+    user_data = select_query.select_user_data_from_id(session["user_id"])
+    if user_data is not None and user_data["Is_Verified"] > 0:
+        return True
+
+    return False
+"""

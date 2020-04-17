@@ -82,7 +82,7 @@ function getEquipmentItemDetailsHTML(jsonData, function_call='test2()'){
 				if(jsonData.slot === 10){	
 					equipmentItemDetailsHTML += '<tr>\
 						<td colspan=2><h2>Damage:</h2></td>\
-						<td colspan=2><h2>' + jsonData.item_damage_num_of_dice_sides + ' d ' + jsonData.item_damage_num_of_dices + ' ' + (jsonData.bonus_damage < 0 ? '' : '+') + jsonData.bonus_damage + '</h2></td>\
+						<td colspan=2><h2>' + jsonData.item_damage_num_of_dices + ' d ' + jsonData.item_damage_num_of_dice_sides + ' ' + (jsonData.bonus_damage < 0 ? '' : '+') + jsonData.bonus_damage + '</h2></td>\
 					</tr>\
 					<tr>\
 						<td><h2>Wield Str:</h2></td>\
@@ -96,13 +96,12 @@ function getEquipmentItemDetailsHTML(jsonData, function_call='test2()'){
 						<td><h2>Wield Int:</h2></td>\
 						<td><h2>' + jsonData.wield_int + '</h2></td>\
 					</tr>'
-				} else if(jsonData.slot === 3){
-					equipmentItemDetailsHTML += '<tr>\
-						<td colspan=2><h2>AC:</h2></td>\
-						<td colspan=2><h2>' + jsonData.ac + '</h2></td>\
-					</tr>'
-
 				}
+
+				equipmentItemDetailsHTML += '<tr>\
+					<td colspan=2><h2>AC:</h2></td>\
+					<td colspan=2><h2>' + jsonData.ac + '</h2></td>\
+				</tr>'
 				 
 	equipmentItemDetailsHTML += '<tr>\
 					<td><h2>STR:</h2></td>\
@@ -195,11 +194,13 @@ function inv_tab(activeClass, activeButtonID){
 	return;
 }
 
+/* Depercated */
+/*
 function _update_skills_data(){
 	// get the modifier data locally
 	var labels = ["str", "dex", "con", "int", "wis", "cha"];
 
-}
+}*/
 
 function category_expand_and_collapse(categoryID, option, line_item_class, button_class){
 	inv_cat = document.getElementById(categoryID); 
@@ -1475,6 +1476,8 @@ function make_user_admin(user_id, username){
 	}
 }
 
+/* Depercated */
+/*
 function modify_skill(char_id, amount, skill_name, field_id_name){
 	var params = 'char_id=' + char_id + '&skill_name=' + skill_name + '&amount=' + amount;
 	var http = new XMLHttpRequest();
@@ -1491,7 +1494,7 @@ function modify_skill(char_id, amount, skill_name, field_id_name){
 		}
 	}
 	http.send(params);
-}
+}*/
 
 var ability_header_old = "";
 function add_ability(char_id){
@@ -1519,11 +1522,17 @@ function add_ability(char_id){
 	var ability_header = document.getElementById("ability_header");
 	ability_header_old = ability_header.innerHTML;
 	var new_html = '<div class="new_ability_input">\
-			<label for"ability_name">Ability Name</label>\
-			<input id="ability_name" name="ability_name" type="text">\
+			<label for"ability_name">Ability Name: </label>\
+			<input id="ability_name" name="ability_name" type="text" value="" maxlength="63">\
 			<br>\
-			<label for"ability_description">Ability Description</label>\
+			<label for"ability_description">Ability Description: </label>\
 			<textarea id="ability_description" name="ability_description" rows="5" columns="100" maxlength="500"></textarea>\
+			<br>\
+			<label for"ability_damage">Ability Damage: </label>\
+			<input id="ability_damage" name="ability_damage" type="text", value="" maxlength="63">\
+			<br>\
+			<label for"ability_type">Ability Type: </label>\
+			<input id="ability_type" name="ability_type" type="text", value="" maxlength="63">\
 			<br>\
 			<button onclick="submit_ability(' + char_id + ', \'/character/abilities/add\')">Submit</button>\
 			<button onclick="cancel_add_ability()">Cancel</button>\
@@ -1531,15 +1540,59 @@ function add_ability(char_id){
 	ability_header.innerHTML = new_html;
 }
 
-function submit_ability(char_id, url, old_ability_name=null, ability_name=null, ability_description=null){
+var skill_header_old = "";
+function add_skill(char_id){
+	var skill_test = null;
+	try{
+		var skill_test = [
+			document.getElementsByClassName("new_skill_input"),
+			document.getElementsByClassName("edit_skill_input")
+		];
+	} catch (error) {
+		// an edit or create is NOT already open
+		// ignore and go on
+	}
+
+	for(var i = 0; i < skill_test.length; ++i){
+		if (skill_test[i] !== null && skill_test[i].length > 0) {
+			console.error("Misc. modification window is already open. Please close existing misc. modification window before continuing.");
+			
+			alert("Misc. modification window is already open. Please close existing misc. modification window before continuing.");
+
+			return;
+		}
+	}
+
+	var skill_header = document.getElementById("skills_header");
+	skill_header_old = skill_header.innerHTML;
+	var new_html = '<div class="new_skill_input">\
+			<label for"skill_name">Name: </label>\
+			<input id="skill_name" name="skill_name" type="text" value="" maxlength="63">\
+			<br>\
+			<label for"skill_description">Description: </label>\
+			<textarea id="skill_description" name="skill_description" rows="5" columns="100" maxlength="500"></textarea>\
+			<br>\
+			<button onclick="submit_skill(' + char_id + ', \'/character/skill/add\')">Submit</button>\
+			<button onclick="cancel_add_skill()">Cancel</button>\
+		</div>';
+	skill_header.innerHTML = new_html;
+}
+
+function submit_ability(char_id, url, old_ability_name=null, ability_name=null, ability_description=null, ability_damage=null, ability_type=null){
 	if(ability_name === null){
 		var ability_name = document.getElementById("ability_name").value;
 	}
 	if(ability_description === null){
 		var ability_description = document.getElementById("ability_description").value;
 	}
+	if(ability_damage === null){
+		var ability_damage = document.getElementById("ability_damage").value;
+	}
+	if(ability_type === null){
+		var ability_type = document.getElementById("ability_type").value;
+	}
 	
-	var params = 'char_id=' + char_id + '&ability_name=' + ability_name + '&ability_description=' + ability_description + '&old_ability_name=' + old_ability_name;
+	var params = 'char_id=' + char_id + '&ability_name=' + ability_name + '&ability_description=' + ability_description + '&old_ability_name=' + old_ability_name + '&ability_damage=' + ability_damage + '&ability_type=' + ability_type;
 	var http = new XMLHttpRequest();
 	http.open('POST', url, true);
 
@@ -1573,6 +1626,14 @@ function submit_ability(char_id, url, old_ability_name=null, ability_name=null, 
 				_old_des_el.innerHTML = json_data.Ability_Description;
 				_old_des_el.setAttribute("id", _old_des_el.getAttribute("id").replace(old_name, json_data.Ability_Name));
 				
+				var _old_damage_el = document.getElementById("ability_" + old_name + "_damage")
+				_old_damage_el.innerHTML = json_data.Ability_Damage;
+				_old_damage_el.setAttribute("id", _old_damage_el.getAttribute("id").replace(old_name, json_data.Ability_Name));
+
+				var _old_type_el = document.getElementById("ability_" + old_name + "_type")
+				_old_type_el.innerHTML = json_data.Ability_Type;
+				_old_type_el.setAttribute("id", _old_type_el.getAttribute("id").replace(old_name, json_data.Ability_Name));
+
 				var _edit_button = line_item.getElementsByClassName("ability_edit_button")[0];
 				_edit_button.setAttribute("onclick", _edit_button.getAttribute("onclick").replace(old_name, json_data.Ability_Name));
 				var _remove_button = line_item.getElementsByClassName("ability_remove_button")[0];
@@ -1583,9 +1644,71 @@ function submit_ability(char_id, url, old_ability_name=null, ability_name=null, 
 				// new ability
 				var i_html = document.getElementsByClassName("inv_container_abilities_section")[0];
 
-				i_html.innerHTML += add_ability_html(char_id, json_data.Ability_Name, json_data.Ability_Description);
+				i_html.innerHTML += add_ability_html(char_id, json_data.Ability_Name, json_data.Ability_Description, json_data.Ability_Damage, json_data.Ability_Type);
 				console.log(this.response);	
 				cancel_add_ability();
+			}
+
+		}
+	}
+	http.send(params);
+}
+
+function submit_skill(char_id, url, old_skill_name=null, skill_name=null, skill_description=null){
+	if(skill_name === null){
+		var skill_name = document.getElementById("skill_name").value;
+	}
+	if(skill_description === null){
+		var skill_description = document.getElementById("skill_description").value;
+	}
+	
+	var params = 'char_id=' + char_id + '&skill_name=' + skill_name + '&skill_description=' + skill_description + '&old_skill_name=' + old_skill_name; 
+	var http = new XMLHttpRequest();
+	http.open('POST', url, true);
+
+	//Send the proper header information along with the request
+	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+	http.onreadystatechange = function() {
+		//Call a function when the state changes.
+		if(http.readyState == 4 && http.status == 200) {
+			// do something here
+			// TODO
+			//document.getElementById(field_id_name).getElementsByTagName("h2")[0].innerHTML = this.response;
+			if(this.response.substring(0, 5) === "ERROR"){
+				console.error(this.response);
+				alert(this.response);
+				return;
+			}
+			
+					
+			var json_data = JSON.parse(this.response);
+			var char_id = json_data.char_id;
+			var old_name = json_data.old_name;
+
+			if(old_name !== 'null'){
+				// edit skill
+				cancel_edit_skill(old_name);
+				var line_item = document.getElementById("skills_" + old_name);
+				line_item.setAttribute("id", line_item.getAttribute("id").replace(old_name, json_data.Skill_Name));
+				line_item.getElementsByClassName("skill_name")[0].innerHTML = json_data.Skill_Name;
+				var _old_des_el = document.getElementById("skill_" + old_name + "_description")
+				_old_des_el.innerHTML = json_data.Skill_Description;
+				_old_des_el.setAttribute("id", _old_des_el.getAttribute("id").replace(old_name, json_data.Skill_Name));
+				
+				var _edit_button = line_item.getElementsByClassName("skill_edit_button")[0];
+				_edit_button.setAttribute("onclick", _edit_button.getAttribute("onclick").replace(old_name, json_data.Skill_Name));
+				var _remove_button = line_item.getElementsByClassName("skill_remove_button")[0];
+				_remove_button.setAttribute("onclick", _remove_button.getAttribute("onclick").replace(old_name, json_data.Skill_Name));
+				var _expand_button = line_item.getElementsByClassName("inv_category_button")[0];
+				_expand_button.setAttribute("onclick", _expand_button.getAttribute("onclick").replace(old_name, json_data.Skill_Name));
+			} else {
+				// new skill
+				var i_html = document.getElementsByClassName("inv_container_skills_section")[0];
+
+				i_html.innerHTML += add_skill_html(char_id, json_data.Skill_Name, json_data.Skill_Description);
+				console.log(this.response);	
+				cancel_add_skill();
 			}
 
 		}
@@ -1604,13 +1727,38 @@ function delete_ability(char_id, ability_name){
 	http.onreadystatechange = function() {
 		//Call a function when the state changes.
 		if(http.readyState == 4 && http.status == 200) {
+			if (this.response !== "200") {
+				alert("Ability could not be deleted");
+				return;
+			}
 			document.getElementById("abilities_" + ability_name).remove();
 		}
 	}
 	http.send(params);
 }
 
-function add_ability_html(char_id, ability_name, ability_description){
+function delete_skill(char_id, skill_name){
+	var params = 'char_id=' + char_id + '&skill_name=' + skill_name;
+	var http = new XMLHttpRequest();
+	http.open('POST', 'skill/delete', true);
+
+	//Send the proper header information along with the request
+	http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+	http.onreadystatechange = function() {
+		//Call a function when the state changes.
+		if(http.readyState == 4 && http.status == 200) {
+			if (this.response !== "200") {
+				alert("Skill could not be deleted");
+				return;
+			}
+			document.getElementById("skills_" + skill_name).remove();
+		}
+	}
+	http.send(params);
+}
+
+function add_ability_html(char_id, ability_name, ability_description, ability_damage, ability_type){
 	var html = '<div id="abilities_' + ability_name + '" class="inv_category">\
 		<div class="inv_category_line">\
 			<div class="inv_line_inner">\
@@ -1626,7 +1774,24 @@ function add_ability_html(char_id, ability_name, ability_description){
 		<div class="inv_line_item" style="display: none;">\
 			<div class="inv_line_inner">\
 				<div class="ability_description">\
+					<h2 class="ability_info_field">Description: </h2>\
 					<h2 id="ability_' + ability_name + '_description">' + ability_description + '</h2>\
+				</div>\
+			</div>\
+		</div>\
+		<div class="inv_line_item" style="display: none;">\
+			<div class="inv_line_inner">\
+				<div class="ability_description">\
+					<h2 class="ability_info_field">Damage: </h2>\
+					<h2 id="ability_' + ability_name + '_damage">' + ability_damage + '</h2>\
+				</div>\
+			</div>\
+		</div>\
+		<div class="inv_line_item" style="display: none;">\
+			<div class="inv_line_inner">\
+				<div class="ability_description">\
+					<h2 class="ability_info_field">Type: </h2>\
+					<h2 id="ability_' + ability_name + '_type">' + ability_type + '</h2>\
 				</div>\
 			</div>\
 		</div>\
@@ -1659,13 +1824,21 @@ function edit_ability(char_id, old_ability_name){
 
 	var ability_header = document.getElementById("abilities_" + old_ability_name);
 	var old_ability_description = document.getElementById("ability_" + old_ability_name + "_description").innerHTML;
+	var old_ability_type = document.getElementById("ability_" + old_ability_name + "_type").innerHTML; 
+	var old_ability_damage = document.getElementById("ability_" + old_ability_name + "_damage").innerHTML; 
 	edit_ability_header_old = ability_header.innerHTML;
 	var new_html = '<div class="edit_ability_input">\
-			<label for"ability_name">Ability Name</label>\
-			<input id="ability_name" name="ability_name" type="text" value="' + old_ability_name + '">\
+			<label for"ability_name">Ability Name: </label>\
+			<input id="ability_name" name="ability_name" type="text" value="' + old_ability_name + '" maxlength="63">\
 			<br>\
-			<label for"ability_description">Ability Description</label>\
+			<label for"ability_description">Ability Description: </label>\
 			<textarea id="ability_description" name="ability_description" rows="5" columns="100" maxlength="500">' + old_ability_description + '</textarea>\
+			<br>\
+			<label for="ability_damge">Ability Damage: </label>\
+			<input id="ability_damage" name="ability_damage" type="text", value="' + old_ability_damage + '" maxlength="63">\
+			<br>\
+			<label for="ability_type">Ability Type: </label>\
+			<input id="ability_type" name="ability_type" type="text", value="' + old_ability_type + '" maxlength="63">\
 			<br>\
 			<button onclick="submit_ability(' + char_id + ', \'/character/abilities/edit\', \'' + old_ability_name + '\')">Submit</button>\
 			<button onclick="cancel_edit_ability(\'' + old_ability_name + '\')">Cancel</button>\
@@ -1688,6 +1861,81 @@ function _cancel_mod_ability(parent_div, old_html){
 	ability_header.innerHTML = old_html;
 }
 
+function add_skill_html(char_id, skill_name, skill_description){
+	var html = '<div id="skills_' + skill_name + '" class="inv_category">\
+		<div class="inv_category_line">\
+			<div class="inv_line_inner">\
+				<div class="skill_remove_button clickable" onclick="delete_skill(' + char_id + ', \'' + skill_name + '\');"></div>\
+				<h2 class="skill_name">' + skill_name + '</h2>\
+				<div class="skills_mod_buttons">\
+					<div class="skill_edit_button clickable" onclick="edit_skill(' + char_id + ', \'' + skill_name + '\');"></div>\
+					<div style="width: 8px;"></div>\
+					<div class="inv_category_expand_button inv_category_button clickable" onclick="category_expand_and_collapse(\'skills_' + skill_name + '\', \'expand\', \'inv_line_item\', \'inv_category_button\');"></div >\
+				</div>\
+			</div>\
+		</div>\
+		<div class="inv_line_item" style="display: none;">\
+			<div class="inv_line_inner">\
+				<div class="skill_description">\
+					<h2 class="skill_info_field">Description: </h2>\
+					<h2 id="skill_' + skill_name + '_description">' + skill_description + '</h2>\
+				</div>\
+			</div>\
+		</div>\
+	</div>'
+	return html;
+}
+
+var edit_skill_header_old = "";
+function edit_skill(char_id, old_skill_name){
+	var skill_test = null;
+	try{
+		var skill_test = [
+			document.getElementsByClassName("new_skill_input"),
+			document.getElementsByClassName("edit_skill_input")
+		];
+	} catch (error) {
+		// an edit or create is NOT already open
+		// ignore and go on
+	}
+
+	for(var i = 0; i < skill_test.length; ++i){
+		if (skill_test[i] !== null && skill_test[i].length > 0) {
+			console.error("Misc. modification window is already open. Please close existing misc modification window before continuing.");
+			
+			alert("Misc. modification window is already open. Please close existing misc modification window before continuing.");
+
+			return;
+		}
+	}
+
+	var skill_header = document.getElementById("skills_" + old_skill_name);
+	var old_skill_description = document.getElementById("skill_" + old_skill_name + "_description").innerHTML;
+
+	edit_skill_header_old = skill_header.innerHTML;
+	var new_html = '<div class="edit_skill_input">\
+			<label for"skill_name">Name: </label>\
+			<input id="skill_name" name="skill_name" type="text" value="' + old_skill_name + '" maxlength="63">\
+			<br>\
+			<label for"skill_description">Description: </label>\
+			<textarea id="skill_description" name="skill_description" rows="5" columns="100" maxlength="500">' + old_skill_description + '</textarea>\
+			<br>\
+			<button onclick="submit_skill(' + char_id + ', \'/character/skill/edit\', \'' + old_skill_name + '\')">Submit</button>\
+			<button onclick="cancel_edit_skill(\'' + old_skill_name + '\')">Cancel</button>\
+		</div>';
+	skill_header.innerHTML = new_html;
+}
+
+function cancel_add_skill(){
+	_cancel_mod_ability("skills_header", skill_header_old);
+	skill_header_old = "";
+}
+
+function cancel_edit_skill(name){
+	_cancel_mod_ability("skills_" + name, edit_skill_header_old);
+	edit_skill_header_old = "";
+}
+
 function item_create_slot_change(slot_name=null){
 	var sel_val = "";
 	if (slot_name === null) {
@@ -1697,22 +1945,14 @@ function item_create_slot_change(slot_name=null){
 		sel_val = slot_name.toLowerCase();
 	}
 	var wield_req_div = document.getElementById("wield_req");
-	var chest_el = document.getElementById("ac_bonus");
 
 	var wield_new_style = "display: none;";
-	var torso_new_style = "display: none;";
 
 	if (sel_val === "weapon") {
 		// show wield requirements
 		wield_new_style = wield_req_div.getAttribute("style").replace("display: none;", "");
 		_set_element_style(wield_req_div, wield_new_style);
-		_set_element_style_to_display_none(chest_el);
-	} else if (sel_val === "torso") { 
-		torso_new_style = chest_el.getAttribute("style").replace("display: none;", "");
-		_set_element_style(chest_el, torso_new_style);
-		_set_element_style_to_display_none(wield_req_div);
 	} else {
-		_set_element_style_to_display_none(chest_el);
 		_set_element_style_to_display_none(wield_req_div);
 	}
 }

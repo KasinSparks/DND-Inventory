@@ -78,4 +78,22 @@ def get_character_items_id_and_field_names(char_item_query_result):
     return item_id_dict
 
 def calculate_modifier(stat_value):
-    return math.floor((stat_value - 10) / 2)
+    _existing_val = 0
+    _minor_offset = 10
+    _interval = 2
+
+    # This can be changed to use modulos and increase value per a given amount
+    if math.fabs(stat_value) > 20:
+        _existing_val = 5
+        _minor_offset = 20
+        _interval = 4
+
+    return math.floor(_existing_val + (stat_value - _minor_offset) / _interval)
+
+def check_length(data, min_len, max_len):
+    _data_len = len(data)
+    if _data_len >= min_len and _data_len <= max_len:
+        return True
+
+    return False
+
