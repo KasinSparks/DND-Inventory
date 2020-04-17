@@ -55,10 +55,12 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
     @login_required
     def home():
         from modules.data.database.query_modules import select_query
+        from modules.account.authentication_checks import is_verified, not_verified_redirect, has_agreed_tos, not_agreed_redirect
 
-        user_id = session["user_id"]
-        if not user_id or select_query.select_user_data_from_id(user_id)["Is_Verified"] < 1:
-            return redirect(url_for('auth.login'))
+        if not is_verified():
+            return not_verified_redirect()
+        if not has_agreed_tos():
+            return not_agreed_redirect()
 
 
         header_text = get_current_username()
