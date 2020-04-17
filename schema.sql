@@ -102,8 +102,9 @@ CREATE TABLE IF NOT EXISTS "Class" (
 DROP TABLE IF EXISTS "Skills";
 CREATE TABLE IF NOT EXISTS "Skills" (
 	"Skill_ID"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"Character_ID"	INTEGER NOT NULL,
 	"Skill_Name"	TEXT NOT NULL,
-	"Skill_Type"	TEXT NOT NULL
+	"Skill_Description"	TEXT NOT NULL
 );
 DROP TABLE IF EXISTS "Alignments";
 CREATE TABLE IF NOT EXISTS "Alignments" (
@@ -115,12 +116,6 @@ CREATE TABLE IF NOT EXISTS "Item_Skills" (
 	"Item_ID"	INTEGER NOT NULL,
 	"Skill_ID"	INTEGER NOT NULL,
 	PRIMARY KEY("Item_ID")
-);
-DROP TABLE IF EXISTS "Character_Skills";
-CREATE TABLE IF NOT EXISTS "Character_Skills" (
-	"Character_ID"	INTEGER NOT NULL,
-	"Skill_ID"	INTEGER NOT NULL,
-	"Skill_Base_Value"	INTEGER NOT NULL DEFAULT 0
 );
 DROP TABLE IF EXISTS "Abilities";
 CREATE TABLE IF NOT EXISTS "Abilities" (
@@ -185,24 +180,6 @@ INSERT INTO "Slots" VALUES (8,'Ring',1);
 INSERT INTO "Slots" VALUES (9,'Item',1);
 INSERT INTO "Slots" VALUES (10,'Weapon',1);
 INSERT INTO "Slots" VALUES (11,'Misc.',0);
-INSERT INTO "Skills" VALUES (1,'Athletics','Strength');
-INSERT INTO "Skills" VALUES (2,'Acrobatics','Dexterity');
-INSERT INTO "Skills" VALUES (3,'Sleight of Hand','Dexterity');
-INSERT INTO "Skills" VALUES (4,'Stealth','Dexterity');
-INSERT INTO "Skills" VALUES (5,'Arcana','Intelligence');
-INSERT INTO "Skills" VALUES (6,'History','Intelligence');
-INSERT INTO "Skills" VALUES (7,'Investigation','Intelligence');
-INSERT INTO "Skills" VALUES (8,'Nature','Intelligence');
-INSERT INTO "Skills" VALUES (9,'Religion','Intelligence');
-INSERT INTO "Skills" VALUES (10,'Animal Handling','Wisdom');
-INSERT INTO "Skills" VALUES (11,'Insight','Wisdom');
-INSERT INTO "Skills" VALUES (12,'Medicine','Wisdom');
-INSERT INTO "Skills" VALUES (13,'Perception','Wisdom');
-INSERT INTO "Skills" VALUES (14,'Survival','Wisdom');
-INSERT INTO "Skills" VALUES (15,'Deception','Charisma');
-INSERT INTO "Skills" VALUES (16,'Intimidation','Charisma');
-INSERT INTO "Skills" VALUES (17,'Performance','Charisma');
-INSERT INTO "Skills" VALUES (18,'Persuasion','Charisma');
 INSERT INTO "Alignments" VALUES (1,'Lawful Good');
 INSERT INTO "Alignments" VALUES (2,'Lawful Neutral');
 INSERT INTO "Alignments" VALUES (3,'Lawful Evil');
