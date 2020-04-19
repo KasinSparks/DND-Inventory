@@ -65,7 +65,7 @@ def get_user_id(username):
 
     return result
 
-def	select_char_name_and_id(user_id):
+def select_char_name_and_id(user_id):
     sql_str = """SELECT Character_Name, Character_ID
                 FROM Character
                 WHERE User_ID = ?;
@@ -379,3 +379,6 @@ def select_abilities(char_id, ability_id=-1):
 
 def select_ability_id_from_name(ability_name, char_id):
     return select(("Ability_ID",), "Abilities", False, "WHERE Ability_Name=? AND Character_ID=?", (ability_name, char_id))
+
+def select_user_id_from_char_id(char_id):
+    return select(("User_ID",), "Character", False, "WHERE Character_ID=?", (char_id,))

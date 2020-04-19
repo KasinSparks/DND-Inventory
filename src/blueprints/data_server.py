@@ -14,24 +14,33 @@ from blueprints.auth import login_required, verified_required, tos_required
 from logger.logger import Logger
 from modules.data.database.query_modules import select_query
 from modules.data.database import data_helper
+from modules.data.database.data_helper import get_user_id_from_char_id
+from modules.account.authentication_checks import is_admin, check_if_user_has_character
 
 import os
 
 bp = Blueprint('dataserver', __name__, url_prefix='/dataserver')
 
 def _get_item_details(char_id, equipment_slot="", item_id=-1):
+    user_id = session["user_id"]
+    if not check_if_user_has_character(user_id, char_id):
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return jsonify(None)
+
     # Get the character's item piece
     try:
-        items = select_query.select_character_data(char_id, session['user_id'])
+        items = select_query.select_character_data(char_id, user_id)
     except:
-        Logger.error("ERROR: Items were not found")
+        Logger().error("ERROR: Items were not found")
         return ""
 
     if equipment_slot is not None and equipment_slot != "":
         try:
             item_id = items['Character_' + equipment_slot]
         except:
-            Logger.error("ERROR: Items were not found")
+            Logger().error("ERROR: Items were not found")
             return ""
 
     # Ensure a proper item_id is given
@@ -92,7 +101,14 @@ def inventoryItemDetails(char_id, item_id):
 @verified_required
 @tos_required
 def get_class(char_id):
-    query_result = select_query.select_character_class(session['user_id'], char_id)
+    user_id = session["user_id"]
+    if not check_if_user_has_character(user_id, char_id):
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return jsonify(current_value="Err")
+
+    query_result = select_query.select_character_class(user_id, char_id)
 
     if query_result is None:
         return jsonify(current_value="Error getting Class Name")
@@ -104,7 +120,14 @@ def get_class(char_id):
 @verified_required
 @tos_required
 def get_race(char_id):
-    query_result = select_query.select_character_race(session['user_id'], char_id)
+    user_id = session["user_id"]
+    if not check_if_user_has_character(user_id, char_id):
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return jsonify(current_value="Err")
+
+    query_result = select_query.select_character_race(user_id, char_id)
 
     if query_result is None:
         return jsonify(current_value="Error getting Race Name")
@@ -131,7 +154,14 @@ def get_alignment_options():
 @tos_required
 def get_level(char_id):
     field_name = "Character_Level"
-    query_result = select_query.select_char_fields(session['user_id'], char_id, (field_name,))
+    user_id = session["user_id"]
+    if not check_if_user_has_character(user_id, char_id):
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return jsonify(current_value="Err")
+
+    query_result = select_query.select_char_fields(user_id, char_id, (field_name,))
 
     if query_result is None:
         return jsonify(current_value=0)
@@ -144,7 +174,14 @@ def get_level(char_id):
 @tos_required
 def get_health(char_id):
     field_name = "Character_HP"
-    query_result = select_query.select_char_fields(session['user_id'], char_id, (field_name,))
+    user_id = session["user_id"]
+    if not check_if_user_has_character(user_id, char_id):
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return jsonify(current_value="Err")
+
+    query_result = select_query.select_char_fields(user_id, char_id, (field_name,))
 
     if query_result is None:
         return jsonify(current_value=0)
@@ -152,7 +189,14 @@ def get_health(char_id):
     return jsonify(current_value=query_result[field_name])
 
 def get_stat_data(char_id : int, character_field : str, item_field : str):
-    query_result = select_query.select_char_fields(session['user_id'], char_id, (character_field,))
+    user_id = session["user_id"]
+    if not check_if_user_has_character(user_id, char_id):
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return jsonify(current_value="Err")
+
+    query_result = select_query.select_char_fields(user_id, char_id, (character_field,))
 
     if query_result is None:
         return jsonify(current_value=0, base=0)
@@ -249,7 +293,14 @@ def get_cha(char_id):
 @tos_required
 def get_currency(char_id):
     field_name = "Character_Currency"
-    query_result = select_query.select_char_fields(session['user_id'], char_id, (field_name,))
+    user_id = session["user_id"]
+    if not check_if_user_has_character(user_id, char_id):
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return jsonify(current_value="Err")
+
+    query_result = select_query.select_char_fields(user_id, char_id, (field_name,))
 
     if query_result is None:
         return jsonify(current_value=0)
@@ -293,7 +344,14 @@ def get_item_list(item_slot):
 @verified_required
 @tos_required
 def get_current_equiped_items(char_id, item_slot):
-    characters = select_query.select_char_fields(session["user_id"], char_id)
+    user_id = session["user_id"]
+    if not check_if_user_has_character(user_id, char_id):
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return jsonify(current_value="Err")
+
+    characters = select_query.select_char_fields(user_id, char_id)
 
     if characters is None:
         return redirect(url_for('character.character_select'))
@@ -313,7 +371,7 @@ def get_current_equiped_items(char_id, item_slot):
     else:
         slots.append("Character_" + slot_name)
 
-    item_ids = select_query.select_char_fields(session["user_id"], char_id, tuple(slots))
+    item_ids = select_query.select_char_fields(user_id, char_id, tuple(slots))
 
     field_names = ['Item_ID', 'Item_Name', 'Item_Picture', 'Rarities_Color']
 
@@ -373,7 +431,14 @@ def get_current_equiped_items(char_id, item_slot):
 @verified_required
 @tos_required
 def get_items_in_slot(char_id, item_slot):
-    characters = select_query.select_char_fields(session["user_id"], char_id)
+    user_id = session["user_id"]
+    if not check_if_user_has_character(user_id, char_id):
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return jsonify(current_value="Err")
+
+    characters = select_query.select_char_fields(user_id, char_id)
     if characters is None:
         return 'NULL'
 
@@ -413,7 +478,14 @@ def get_items_in_slot(char_id, item_slot):
 @verified_required
 @tos_required
 def getItemAmount(char_id, item_id):
-    characters = select_query.select_char_fields(session["user_id"], char_id)
+    user_id = session["user_id"]
+    if not check_if_user_has_character(user_id, char_id):
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return jsonify(current_value="Err")
+
+    characters = select_query.select_char_fields(user_id, char_id)
 
     if characters is None:
         return redirect(url_for('character.character_select'))

@@ -18,6 +18,7 @@ from modules.data.form_data import convert_form_field_data_to_int, get_request_f
 from modules.data.string_shorten import shorten_string
 from modules.IO.file.file_checks import allowed_file
 from modules.IO.file.image_handler import ImageHandler
+from modules.data.database.data_helper import get_user_id_from_char_id
 
 bp = Blueprint('character', __name__, url_prefix='/character')
 
@@ -385,10 +386,18 @@ def create_character_submit():
     # TODO: add variables so users do not have to reenter data if error occurs
     return redirect(url_for('character.create_character'))
 
+
 def edit_string_field(select_query_callback, insert_table, insert_field_name, update_query_callback, char_id):
     user_id = session["user_id"]
+
     if not check_if_user_has_character(user_id, char_id):
-        return '400'
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return "ERR"
+        else:
+            return "ERR"
+
 
     if request.method != 'POST':
         return "Invalid request error."
@@ -407,7 +416,12 @@ def edit_string_field(select_query_callback, insert_table, insert_field_name, up
 def edit_number_field(update_query_callback, char_id):
     user_id = session["user_id"]
     if not check_if_user_has_character(user_id, char_id):
-        return '400'
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return "ERR"
+        else:
+            return "ERR"
 
     if request.method != 'POST':
         return "Invalid request error."
@@ -447,7 +461,12 @@ def edit_race(char_id):
 def edit_alignment(char_id):
     user_id = session["user_id"]
     if not check_if_user_has_character(user_id, char_id):
-        return '400'
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return "ERR"
+        else:
+            return "ERR"
 
     if request.method != 'POST':
         return "Invalid request error."
@@ -494,7 +513,12 @@ def edit_image(char_id):
     #TODO: change to image_handler
     user_id = session["user_id"]
     if not check_if_user_has_character(user_id, char_id):
-        return 'Error: attempted to access data outside of user\'s scope'
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return "ERR"
+        else:
+            return 'Error: attempted to access data outside of user\'s scope'
 
     if request.method == 'POST':
         if 'image' not in request.files:
@@ -522,14 +546,18 @@ def edit_image(char_id):
 @verified_required
 @tos_required
 def edit_health(char_id):
-    new_val = edit_number_field(update_query.update_char_health, char_id) 
+    new_val = edit_number_field(update_query.update_char_health, char_id)
     return jsonify(character_hp=new_val)
 
 def edit_field(char_id, character_field: str, item_field: str):
     user_id = session["user_id"]
     if not check_if_user_has_character(user_id, char_id):
-        # TODO: change this to a exception later
-        return 0
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return "ERR"
+        else:
+            return "ERR"
 
     if request.method != 'POST':
         return "Invalid request error."
@@ -664,7 +692,12 @@ def add_items(char_id):
     if request.method == 'POST':
         if not check_if_user_has_character(user_id, char_id):
             # TODO: change this to a exception later
-            return 0
+            if is_admin():
+                user_id = get_user_id_from_char_id(char_id)
+                if user_id < 0:
+                    return "ERR"
+            else:
+                return "ERR"
 
         for line in request.form:
             try:
@@ -703,7 +736,12 @@ def remove_items(char_id):
     if request.method == 'POST':
         if not check_if_user_has_character(session['user_id'], char_id):
             # TODO: change this to a exception later
-            return 0
+            if is_admin():
+                user_id = get_user_id_from_char_id(char_id)
+                if user_id < 0:
+                    return "ERR"
+            else:
+                return "ERR"
 
         try:
             for k in request.form:
@@ -763,8 +801,13 @@ def item_equip(char_id, item_id, slot_number = 0):
     characters = select_query.select_character_data(char_id, user_id)
 
     if characters is None:
-        # Error
-        return redirect(url_for('character.character_select'))
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return "ERR"
+            characters = select_query.select_character_data(char_id, user_id)
+        else:
+            return redirect(url_for('character.character_select'))
 
     error = "None"
     item = select_query.select(("*",), "Inventory", False, "WHERE Character_ID=? AND Item_ID=?", (char_id, item_id))
@@ -880,8 +923,13 @@ def item_unequip(char_id, item_id, slot_number=0, remove_all=0):
     error = "None"
 
     if characters is None:
-        # Error
-        return redirect(url_for('character.character_select'))
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return "ERR"
+            characters = select_query.select_character_data(char_id, user_id)
+        else:
+            return redirect(url_for('character.character_select'))
 
     item = select_query.select(("*",), "Inventory", False, "WHERE Character_ID=? AND Item_ID=?", (char_id, item_id))
 
@@ -1086,8 +1134,13 @@ def _abilities_modify(modify_type="INSERT"):
     characters = select_query.select_character_data(char_id, user_id)
 
     if characters is None:
-        # Error
-        return redirect(url_for('character.character_select'))
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return "ERR"
+            characters = select_query.select_character_data(char_id, user_id)
+        else:
+            return redirect(url_for('character.character_select'))
 
     _error_msg = ""
     _error_msg += str(_ability_data_len_check(ability_name, "name", 1, 64))
@@ -1180,8 +1233,13 @@ def abilities_delete():
     characters = select_query.select_character_data(char_id, user_id)
 
     if characters is None:
-        # Error
-        return redirect(url_for('character.character_select'))
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return "ERR"
+            characters = select_query.select_character_data(char_id, user_id)
+        else:
+            return redirect(url_for('character.character_select'))
 
     ability_id = select_query.select_ability_id_from_name(ability_name, char_id)
     #old_ability_name = select_query.select_abilities(char_id, ability_id)["Ability_Name"]
@@ -1223,8 +1281,13 @@ def skill_delete():
     characters = select_query.select_character_data(char_id, user_id)
 
     if characters is None:
-        # Error
-        return redirect(url_for('character.character_select'))
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return "ERR"
+            characters = select_query.select_character_data(char_id, user_id)
+        else:
+            return redirect(url_for('character.character_select'))
 
     skill_id = select_query.select_skill_id_from_name(skill_name, char_id)
     #old_skill_name = select_query.select_abilities(char_id, skill_id)["Ability_Name"]
@@ -1253,8 +1316,13 @@ def _skill_modify(modify_type="INSERT"):
     characters = select_query.select_character_data(char_id, user_id)
 
     if characters is None:
-        # Error
-        return redirect(url_for('character.character_select'))
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return "ERR"
+            characters = select_query.select_character_data(char_id, user_id)
+        else:
+            return redirect(url_for('character.character_select'))
 
     _error_msg = ""
     _error_msg += str(_skill_data_len_check(skill_name, "name", 1, 64))
