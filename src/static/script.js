@@ -124,16 +124,21 @@ function getEquipmentItemDetailsHTML(jsonData, function_call='test2()'){
 				<tr>\
 					<td colspan=2><h2 class="weight">Weight:</h2></td>\
 					<td colspan=2><h2 class="weight">' + jsonData.weight + '</h2></td>\
-				</tr>\
-				<tr>\
-					<td colspan=2><h2>' + jsonData.effect1_name + ':</h2></td>\
-					<td colspan=2><h2>' + jsonData.effect1_description + '</h2></td>\
-				</tr>\
-				<tr>\
-					<td colspan=2><h2>' + jsonData.effect2_name + ':</h2></td>\
-					<td colspan=2><h2>' + jsonData.effect2_description + '</h2></td>\
-				</tr>\
-			</table>\
+				</tr>';
+	if (jsonData.effect1_name !== "Effect1") {
+		equipmentItemDetailsHTML += '<tr>\
+				<td colspan=2><h2>' + jsonData.effect1_name + ':</h2></td>\
+				<td colspan=2><h2>' + jsonData.effect1_description + '</h2></td>\
+			</tr>';
+	}
+	if (jsonData.effect2_name !== "Effect2") {
+		equipmentItemDetailsHTML += '<tr>\
+				<td colspan=2><h2>' + jsonData.effect2_name + ':</h2></td>\
+				<td colspan=2><h2>' + jsonData.effect2_description + '</h2></td>\
+			</tr>';
+	}
+	
+	equipmentItemDetailsHTML += '</table>\
 		</div>\
 		<div class="item_info_footer" onclick="' + function_call + ';">\
 			<h1>X</h1>\

@@ -1,5 +1,7 @@
 import math
 from flask import jsonify
+from modules.data.database.query_modules import select_query
+from logger.logger import Logger
 
 def init_item_data():
     item_data = {
@@ -97,3 +99,9 @@ def check_length(data, min_len, max_len):
 
     return False
 
+def get_user_id_from_char_id(char_id):
+    try:
+        return select_query.select_user_id_from_char_id(char_id)["User_ID"]
+    except:
+        Logger().error("Unable to get User_ID from character ID")
+        return -1
