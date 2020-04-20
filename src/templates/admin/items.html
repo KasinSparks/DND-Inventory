@@ -9,12 +9,12 @@
     <div class="user_container">
         <div class="inner_container">
             <div class="tab">
-                    <h1>{{ header_text }}</h1>
+                    <h1>{{ header_text|e }}</h1>
             </div>
             <div class="character_select_inner_panel">
                 <div class="sub_inner_panel">
                     {% for b in buckets %}
-                        <div id="item_category_{{ b }}" class="item_category">
+                        <div id="item_category_{{ b|e }}" class="item_category">
                             <div class="item_category_line user_button_char_select">
                                 <h2>{{ b|e }}</h2>
                                 <div class="item_category_collapse_button item_category_button clickable" onclick="category_expand_and_collapse('item_category_{{ b|e }}', 'collapse', 'item_line', 'item_category_button');"></div >

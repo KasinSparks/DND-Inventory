@@ -17,22 +17,22 @@
                         <input name="id" value="{{ item_id }}" hidden>
                         <div class="input_item">
                             <label for="name">Name:</label>
-                            <input name="name" type="text" placeholder="Item Name" value="{{ items['Item_Name'] }}" maxlength="25" required>
+                            <input name="name" type="text" placeholder="Item Name" value="{{ items['Item_Name']|e }}" maxlength="25" required>
                         </div> 
                         <div class="input_item">
                             <label for="picture">Picture:</label>
-                            <input name="picture" type="file" placeholder="Picture" accept="image/*" value="{{ items['Item_Picture'] }}">
+                            <input name="picture" type="file" placeholder="Picture" accept="image/*" value="{{ items['Item_Picture']|e }}">
                         </div> 
                         <div class="input_item">
                             <label for="description">Description:</label>
-                            <input name="description" type="text" placeholder="Item Description" value="{{ items['Item_Description'] }}" required>
+                            <input name="description" type="text" placeholder="Item Description" value="{{ items['Item_Description']|e }}" required>
                         </div>
                         <div class="input_item">
                             <label for="rarity">Rarity:</label>
                             <select name="rarity" required>
-                                <option  value="{{ items['Rarities_Name'] }}" selected>{{ items['Rarities_Name'] }}</option>
+                                <option  value="{{ items['Rarities_Name']|e }}" selected>{{ items['Rarities_Name']|e }}</option>
                                 {% for r in rarities %}
-                                    <option value="{{ r['Rarities_Name'] }}">{{ r['Rarities_Name'] }}</option>
+                                    <option value="{{ r['Rarities_Name']|e }}">{{ r['Rarities_Name']|e }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -41,7 +41,7 @@
                             <select name="effect1" onchange="select_other_button(['effect1_name', 'effect1_description'], this.value);" required>
                                 <option value="{{ effect1_name }}" selected>{{ effect1_name }}</option>
                                 {% for e in effects %}
-                                    <option value="{{ e['Effect_Name'] }}">{{ e['Effect_Name'] }}</option>
+                                    <option value="{{ e['Effect_Name']|e }}">{{ e['Effect_Name']|e }}</option>
                                 {% endfor %}
                                 <option value="OTHER">Other</option>
                             </select>
@@ -53,7 +53,7 @@
                             <select name="effect2" onchange="select_other_button(['effect2_name', 'effect2_description'], this.value);" required>
                                 <option  value="{{ effect2_name }}" selected>{{ effect2_name }}</option>
                                 {% for e in effects %}
-                                    <option value="{{ e['Effect_Name'] }}">{{ e['Effect_Name'] }}</option>
+                                    <option value="{{ e['Effect_Name']|e }}">{{ e['Effect_Name']|e }}</option>
                                 {% endfor %}
                                 <option value="OTHER">Other</option>
                             </select>

@@ -8,7 +8,7 @@
     {% if site_notification is not none %}
         <div class="site_notification">
             {% for sn in site_notification %}
-                <h2>{{ sn["Note"] }}</h2>
+                <h2>{{ sn["Note"]|e }}</h2>
             {% endfor %}
         </div>
     {% endif %}
@@ -16,7 +16,7 @@
         <div class="inner_container">
             <div class="tab">
                 {% if error_msg is none %}
-                    <h1>{{ header_text }}</h1>
+                    <h1>{{ header_text|e }}</h1>
                 {% elif error_msg == 'Incorrect password' %}
                     <h1 style="color: orange;">Tries remaining {{ tries_remaining }}</h1>
                 {% elif error_msg == 'Account Locked' %}
