@@ -333,6 +333,13 @@ def create_character_submit():
             'health_points' : convert_form_field_data_to_int('health_points')
         }
 
+        if not allowed_string(get_request_field_data('race_other')):
+            error = "ERROR: Invalid character in race"
+        if not allowed_string(get_request_field_data('class_other')):
+            error = "ERROR: Invalid character in class"
+        if not allowed_string(get_request_field_data('alignment_other')):
+            error = "ERROR: Invalid character in alignment"
+
         # Check form data
         name_length = len(str(get_request_field_data('name')))
         if name_length < 1 or name_length > 25:
@@ -403,6 +410,8 @@ def edit_string_field(select_query_callback, insert_table, insert_field_name, up
         return "Invalid request error."
 
     new_val = get_request_field_data('value')
+    if not allowed_string(new_val):
+        return "ERR Invalid char"
     result = select_query_callback(new_val)
 
     if result is None:
@@ -1130,6 +1139,9 @@ def _abilities_modify(modify_type="INSERT"):
     except:
         return "Invaild data was supplied with the given request"
 
+    if not allowed_string(ability_name):
+        return "ERROR: the following characters are not allowed: ', \", ?, ',' , *, ';'. Please retry without these values.  Value(s) were not modified."
+
     user_id = session["user_id"]
     characters = select_query.select_character_data(char_id, user_id)
 
@@ -1312,6 +1324,9 @@ def _skill_modify(modify_type="INSERT"):
     except:
         return "Invaild data was supplied with the given request"
 
+    if not allowed_string(skill_name):
+        return "ERROR: the following characters are not allowed: ', \", ?, ',' , *, ';'. Please retry without these values.  Value(s) were not modified."
+
     user_id = session["user_id"]
     characters = select_query.select_character_data(char_id, user_id)
 
@@ -1372,3 +1387,17 @@ def _skill_modify(modify_type="INSERT"):
         char_skill_data_dict[f] = char_skill_data[f]
 
     return jsonify(char_skill_data_dict)
+
+def allowed_string(str_val):
+    for s in str_val:
+        if not is_allowed_char(s):
+            return False
+
+    return True
+
+def is_allowed_char(char):
+    _banned_chars = ["'", '"', '?', ',', '*', ';']
+    if char not in _banned_chars:
+        return True
+
+    return False

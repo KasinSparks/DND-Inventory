@@ -10,7 +10,7 @@
         <div class="create_character_container">
             <div class="inner_container">
                 <div class="tab">
-                    <h1>{{ header_text }}</h1>
+                    <h1>{{ header_text|e }}</h1>
                 </div>
                 <div class="item_create_container">
                     <form class="create_character_form" action="add/submit" method="POST" enctype="multipart/form-data">
@@ -31,7 +31,7 @@
                             <select name="slot" onchange="item_create_slot_change()" required>
                                 <option value="" selected>Slot</option>
                                 {% for s in slots %}
-                                    <option value="{{ s['Slots_Name'] }}">{{ s['Slots_Name'] }}</option>
+                                    <option value="{{ s['Slots_Name']|e }}">{{ s['Slots_Name']|e }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -40,7 +40,7 @@
                             <select name="rarity" required>
                                 <option value="" selected>Rarity</option>
                                 {% for r in rarities %}
-                                    <option value="{{ r['Rarities_Name'] }}">{{ r['Rarities_Name'] }}</option>
+                                    <option value="{{ r['Rarities_Name']|e }}">{{ r['Rarities_Name']|e }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -49,7 +49,7 @@
                             <select name="effect1" onchange="select_other_button(['effect1_name', 'effect1_description'], this.value);" required>
                                 <option value="None" selected>None</option>
                                 {% for e in effects %}
-                                    <option value="{{ e['Effect_Name'] }}">{{ e['Effect_Name'] }}</option>
+                                    <option value="{{ e['Effect_Name']|e }}">{{ e['Effect_Name']|e }}</option>
                                 {% endfor %}
                                 <option value="OTHER">Other</option>
                             </select>
@@ -61,7 +61,7 @@
                             <select name="effect2" onchange="select_other_button(['effect2_name', 'effect2_description'], this.value);" required>
                                 <option value="None" selected>None</option>
                                 {% for e in effects %}
-                                    <option value="{{ e['Effect_Name'] }}">{{ e['Effect_Name'] }}</option>
+                                    <option value="{{ e['Effect_Name']|e }}">{{ e['Effect_Name']|e }}</option>
                                 {% endfor %}
                                 <option value="OTHER">Other</option>
                             </select>

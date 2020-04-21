@@ -9,7 +9,7 @@
     <div class="user_container">
         <div class="inner_container">
             <div class="tab">
-                    <h1>{{ header_text }}</h1>
+                    <h1>{{ header_text|e }}</h1>
             </div>
             <div class="character_select_inner_panel">
                 <div class="sub_inner_panel">
@@ -19,14 +19,14 @@
                                 {% if u['Is_Verified'] < 1 %}
                                     <div class="small_buttons character_select_bottom_button_verify clickable" onclick="verify_user({{ u['User_ID'] }});"></div>
                                 {% endif %}
-                                <div class="small_buttons character_select_bottom_button_remove clickable" onclick="remove_user({{ u['User_ID'] }}, '{{ u['Username'] }}');"></div>
+                                <div class="small_buttons character_select_bottom_button_remove clickable" onclick="remove_user({{ u['User_ID'] }}, '{{ u['Username']|e }}');"></div>
                             </div>
-                            <div class="clickable user_button_user_name" onclick="location.href='/admin/users/{{ u['Username'] }}';">
+                            <div class="clickable user_button_user_name" onclick="location.href='/admin/users/{{ u['Username']|e }}';">
                                 <h2>{{ u['Username']|e }}</h2>
                             </div>
                             <div class="verify_deny_buttons">
                                 {% if u['Is_Admin'] < 1 %}
-                                    <div id="make_admin_button_{{ u['Username'] }}" class="small_buttons character_select_bottom_button_admin clickable" onclick="make_user_admin({{ u['User_ID'] }}, '{{ u['Username'] }}');"></div>
+                                    <div id="make_admin_button_{{ u['Username']|e }}" class="small_buttons character_select_bottom_button_admin clickable" onclick="make_user_admin({{ u['User_ID']|e }}, '{{ u['Username']|e }}');"></div>
                                 {% endif %}
                             </div>
                         </div>
@@ -35,9 +35,6 @@
                 <div class="character_select_bottom_buttons_container">
                     <div class="character_select_bottom_button_goback clickable" onclick="window.history.go(-1); return false;"></div>
                 </div>
-<!-- 				<div class="user_button clickable" onclick="location.href='/character/create'">
-                    <h2>Create New Character</h2>
-                </div> -->
             </div>
             
         </div>
@@ -45,13 +42,4 @@
             <p>Copyright 2020</p>
         </div>
     </div>
-
-<!-- 	<div class="panels">
-        <ul>
-            {% for c in characters %}
-                <li><a href="{{ c['Character_ID'] }}">{{ c['Character_Name'] }}</a></li>
-            {% endfor %}
-        </ul>
-        <a href="create">Create Character</button>
-    </div> -->
 </body>

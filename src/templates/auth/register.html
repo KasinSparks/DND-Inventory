@@ -9,9 +9,9 @@
         <div class="inner_container">
             <div class="tab">
                 {% if error_msg is none %}
-                    <h1>{{ header_text }}</h1>
+                    <h1>{{ header_text|e }}</h1>
                 {% else %}
-                    <h1 style="color: orange;">{{ error_msg }}</h1>
+                    <h1 style="color: orange;">{{ error_msg|e }}</h1>
                 {% endif %}
             </div>
             <div class="login_inner_panel">

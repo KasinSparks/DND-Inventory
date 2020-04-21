@@ -294,7 +294,7 @@ def get_is_admin(user_id):
     if query_result is None:
         #raise Exception("Invalid query attempted to run.")
         # TODO: this should throw an exception, but for now it will just be logged
-        Logger.error("Invalid query attempted to run")
+        Logger().error("Invalid query attempted to run")
     elif query_result['Is_Admin'] > 0:
         return True
 

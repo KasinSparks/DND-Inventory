@@ -1528,7 +1528,7 @@ function add_ability(char_id){
 	ability_header_old = ability_header.innerHTML;
 	var new_html = '<div class="new_ability_input">\
 			<label for"ability_name">Ability Name: </label>\
-			<input id="ability_name" name="ability_name" type="text" value="" maxlength="63">\
+			<input id="ability_name" name="ability_name" type="text" value="" maxlength="63" onkeyup="valid_char(event, \'ability_name\');">\
 			<br>\
 			<label for"ability_description">Ability Description: </label>\
 			<textarea id="ability_description" name="ability_description" rows="5" columns="100" maxlength="500"></textarea>\
@@ -1572,7 +1572,7 @@ function add_skill(char_id){
 	skill_header_old = skill_header.innerHTML;
 	var new_html = '<div class="new_skill_input">\
 			<label for"skill_name">Name: </label>\
-			<input id="skill_name" name="skill_name" type="text" value="" maxlength="63">\
+			<input id="skill_name" name="skill_name" type="text" value="" maxlength="63" onkeyup="valid_char(event, \'skill_name\');">\
 			<br>\
 			<label for"skill_description">Description: </label>\
 			<textarea id="skill_description" name="skill_description" rows="5" columns="100" maxlength="500"></textarea>\
@@ -1834,7 +1834,7 @@ function edit_ability(char_id, old_ability_name){
 	edit_ability_header_old = ability_header.innerHTML;
 	var new_html = '<div class="edit_ability_input">\
 			<label for"ability_name">Ability Name: </label>\
-			<input id="ability_name" name="ability_name" type="text" value="' + old_ability_name + '" maxlength="63">\
+			<input id="ability_name" name="ability_name" type="text" value="' + old_ability_name + '" maxlength="63" onkeyup="valid_char(event, \'ability_name\');">\
 			<br>\
 			<label for"ability_description">Ability Description: </label>\
 			<textarea id="ability_description" name="ability_description" rows="5" columns="100" maxlength="500">' + old_ability_description + '</textarea>\
@@ -1920,7 +1920,7 @@ function edit_skill(char_id, old_skill_name){
 	edit_skill_header_old = skill_header.innerHTML;
 	var new_html = '<div class="edit_skill_input">\
 			<label for"skill_name">Name: </label>\
-			<input id="skill_name" name="skill_name" type="text" value="' + old_skill_name + '" maxlength="63">\
+			<input id="skill_name" name="skill_name" type="text" value="' + old_skill_name + '" maxlength="63" onkeyup="valid_char(event, \'skill_name\');">\
 			<br>\
 			<label for"skill_description">Description: </label>\
 			<textarea id="skill_description" name="skill_description" rows="5" columns="100" maxlength="500">' + old_skill_description + '</textarea>\
@@ -1977,4 +1977,38 @@ function _set_element_style(element, new_style){
 
 function detect_item_type(slot_name){
 	item_create_slot_change(slot_name);
+}
+
+function is_allowed_string(str_val){
+    _banned_chars = ['\'', '\"', '?', ',', '*', ';'];
+	_str = String(str_val);
+
+	for (var i = 0; i < _str.length; ++i) {
+		for (var j = 0; j < _banned_chars.length; ++j) {
+			if (_str[i] === _banned_chars[j]) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+function valid_char(event, name){
+	var key_pressed = event.key;
+	if (!is_allowed_string(key_pressed)){
+		alert("Invalid character: " + key_pressed);
+		var _input = document.getElementsByName(name)[0];
+		_input.value = replace_all(String(key_pressed), _input.value); 
+	}
+}
+
+function replace_all(replace_char, from_string){
+	var _new_str = "";
+	for (var i = 0; i < from_string.length; ++i) {
+		if (from_string[i] !== replace_char) {
+			_new_str += from_string[i];	
+		}
+	}
+	return _new_str;
 }
