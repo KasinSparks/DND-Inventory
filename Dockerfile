@@ -1,4 +1,8 @@
-FROM ubuntu:19.10
+FROM ubuntu:latest
+
+ENV TZ=US/Eastern
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 RUN apt update && apt install -y \
     apache2 python3 python3-pip libapache2-mod-wsgi-py3 sqlite3
 
