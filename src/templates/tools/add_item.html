@@ -1,36 +1,44 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <head>
-    <title>Edit Item</title>
+    <title>Add Item</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
-<body onload="detect_item_type('{{ item_slots_name }}');">
+<body>
     <div class="panels">
         <div class="create_character_container">
             <div class="inner_container">
                 <div class="tab">
-                    <h1>{{ header_text }}</h1>
+                    <h1>{{ header_text|e }}</h1>
                 </div>
                 <div class="item_create_container">
-                    <form class="create_character_form" action="submit" method="POST" enctype="multipart/form-data">
-                        <input name="id" value="{{ item_id }}" hidden>
+                    <form class="create_character_form" action="add/submit" method="POST" enctype="multipart/form-data">
                         <div class="input_item">
                             <label for="name">Name:</label>
-                            <input name="name" type="text" placeholder="Item Name" value="{{ items['Item_Name']|e }}" maxlength="25" required>
+                            <input name="name" type="text" placeholder="Item Name" maxlength="25" required>
                         </div> 
                         <div class="input_item">
                             <label for="picture">Picture:</label>
-                            <input name="picture" type="file" placeholder="Picture" accept="image/*" value="{{ items['Item_Picture']|e }}">
+                            <input name="picture" type="file" placeholder="Picture" accept="image/*" required>
                         </div> 
                         <div class="input_item">
                             <label for="description">Description:</label>
-                            <input name="description" type="text" placeholder="Item Description" value="{{ items['Item_Description']|e }}" required>
+                            <input name="description" type="text" placeholder="Item Description" required>
+                        </div>
+                        <div class="input_item">
+                            <label for="slot">Slot:</label>
+                            <select name="slot" onchange="item_create_slot_change()" required>
+                                <option value="" selected>Slot</option>
+                                {% for s in slots %}
+                                    <option value="{{ s['Slots_Name']|e }}">{{ s['Slots_Name']|e }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="input_item">
                             <label for="rarity">Rarity:</label>
                             <select name="rarity" required>
-                                <option  value="{{ items['Rarities_Name']|e }}" selected>{{ items['Rarities_Name']|e }}</option>
+                                <option value="" selected>Rarity</option>
                                 {% for r in rarities %}
                                     <option value="{{ r['Rarities_Name']|e }}">{{ r['Rarities_Name']|e }}</option>
                                 {% endfor %}
@@ -39,7 +47,7 @@
                         <div class="input_item">
                             <label for="effect1">Effect 1:</label>
                             <select name="effect1" onchange="select_other_button(['effect1_name', 'effect1_description'], this.value);" required>
-                                <option value="{{ effect1_name }}" selected>{{ effect1_name }}</option>
+                                <option value="None" selected>None</option>
                                 {% for e in effects %}
                                     <option value="{{ e['Effect_Name']|e }}">{{ e['Effect_Name']|e }}</option>
                                 {% endfor %}
@@ -51,7 +59,7 @@
                         <div class="input_item">
                             <label for="effect2">Effect 2:</label>
                             <select name="effect2" onchange="select_other_button(['effect2_name', 'effect2_description'], this.value);" required>
-                                <option  value="{{ effect2_name }}" selected>{{ effect2_name }}</option>
+                                <option value="None" selected>None</option>
                                 {% for e in effects %}
                                     <option value="{{ e['Effect_Name']|e }}">{{ e['Effect_Name']|e }}</option>
                                 {% endfor %}
@@ -62,39 +70,39 @@
                         </div>
                         <div class="input_item">
                             <label for="weight">Weight:</label>
-                            <input name="weight" type="number" min="-999" max="9999" value="{{ items['Item_Weight'] }}" placeholder="0">
+                            <input name="weight" type="number" min="-999" max="9999" placeholder="0">
                         </div>
                         <div class="input_item">
                             <label for="str_bonus">Strength Bonus:</label>
-                            <input name="str_bonus" type="number" min="-999" max="999" value="{{ items['Item_Str_Bonus'] }}" placeholder="0">
+                            <input name="str_bonus" type="number" min="-999" max="999" placeholder="0">
                         </div>
                         <div class="input_item">
                             <label for="dex_bonus">Dexterity Bonus:</label>
-                            <input name="dex_bonus" type="number" min="-999" max="999" value="{{ items['Item_Dex_Bonus'] }}" placeholder="0">
+                            <input name="dex_bonus" type="number" min="-999" max="999" placeholder="0">
                         </div>
                         <div class="input_item">
                             <label for="con_bonus">Constitution Bonus:</label>
-                            <input name="con_bonus" type="number" min="-999" max="999" value="{{ items['Item_Con_Bonus'] }}" placeholder="0">
+                            <input name="con_bonus" type="number" min="-999" max="999" placeholder="0">
                         </div>
                         <div class="input_item">
                             <label for="int_bonus">Intelligence Bonus:</label>
-                            <input name="int_bonus" type="number" min="-999" max="999" value="{{ items['Item_Int_Bonus'] }}" placeholder="0">
+                            <input name="int_bonus" type="number" min="-999" max="999" placeholder="0">
                         </div>
                         <div class="input_item">
                             <label for="wis_bonus">Wisdom Bonus:</label>
-                            <input name="wis_bonus" type="number" min="-999" max="999" value="{{ items['Item_Wis_Bonus'] }}" placeholder="0">
+                            <input name="wis_bonus" type="number" min="-999" max="999" placeholder="0">
                         </div>
                         <div class="input_item">
                             <label for="cha_bonus">Charisma Bonus:</label>
-                            <input name="cha_bonus" type="number" min="-999" max="999" value="{{ items['Item_Cha_Bonus'] }}" placeholder="0">
+                            <input name="cha_bonus" type="number" min="-999" max="999" placeholder="0">
                         </div>
                         <div class="input_item">
                             <label for="health_bonus">Health Bonus:</label>
-                            <input name="health_bonus" type="number" min="-999" max="999" value="{{ items['Item_Health_Bonus'] }}" placeholder="0">
+                            <input name="health_bonus" type="number" min="-999" max="999" placeholder="0">
                         </div>
                         <div class="input_item">
                             <label for="ac_bonus">AC Bonus:</label>
-                            <input name="ac_bonus" type="number" min="-999" max="999" value="{{ items['Item_AC_Bonus'] }}" placeholder="0">
+                            <input name="ac_bonus" type="number" min="-999" max="999" placeholder="0">
                         </div>
                         <div id="wield_req" style="display: none;">
 							<div class="input_item">
@@ -103,27 +111,27 @@
 							</div>
 							<div class="input_item">
 								<label for="dnof">Number of Dices:</label>
-								<input name="dnof" type="number" min="0" max="999" value="{{ items['Item_Damage_Num_Of_Dices'] }}" placeholder="0">
+								<input name="dnof" type="number" min="0" max="999" placeholder="0">
 							</div>
 							<div class="input_item">
 								<label for="dnofs">Dice Sides:</label>
-								<input name="dnofs" type="number" min="0" max="999" value="{{ items['Item_Damage_Num_Of_Dice_Sides'] }}" placeholder="0">
+								<input name="dnofs" type="number" min="0" max="999" placeholder="0">
 							</div>
                             <div class="input_item">
                                 <label for="wield_str">Wield Strength Requirement:</label>
-                                <input name="wield_str" type="number" min="0" max="999" value="{{ items['Wield_Str'] }}" placeholder="0">
+                                <input name="wield_str" type="number" min="0" max="999" placeholder="0">
                             </div>
                             <div class="input_item">
                                 <label for="wield_dex">Wield Dexterity Requirement:</label>
-                                <input name="wield_dex" type="number" min="0" max="999" value="{{ items['Wield_Dex'] }}" placeholder="0">
+                                <input name="wield_dex" type="number" min="0" max="999" placeholder="0">
                             </div>
                             <div class="input_item">
                                 <label for="wield_wis">Wield Wisdom Requirement:</label>
-                                <input name="wield_wis" type="number" min="0" max="999" value="{{ items['Wield_Wis'] }}" placeholder="0">
+                                <input name="wield_wis" type="number" min="0" max="999" placeholder="0">
                             </div>
                             <div class="input_item">
-                                <label for="wield_int">Wield Intel. Requirement:</label>
-                                <input name="wield_int" type="number" min="0" max="999" value="{{ items['Wield_Int'] }}" placeholder="0">
+                                <label for="wield_int">Wield Intelligence Requirement:</label>
+                                <input name="wield_int" type="number" min="0" max="999" placeholder="0">
                             </div>
                         </div>
                         <div class="input_item">
@@ -132,7 +140,7 @@
                     </form>
                 </div>
                 <div class="character_select_bottom_buttons_container">
-                    <div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('admin.admin_creationKit') }}';"></div>
+                    <div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('tools.creationKit') }}';"></div>
                 </div>
             </div>
             <div class="footer">

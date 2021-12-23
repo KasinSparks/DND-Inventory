@@ -49,6 +49,10 @@ def _get_item_details(char_id, equipment_slot="", item_id=-1):
         #raise Exception("Tried to get item details of item with id " + str(item_id))
         return jsonify(None)
 
+    # Check to see if the item has been approved
+    if int(select_query.select(("Approved",), "Items", False, "WHERE Item_ID=?", (item_id,))[0]) != 1:
+        return jsonify(None)
+
     item_query_result = select_query.select_items(item_id)
 
     # Check to see if ID has been assigned
@@ -316,7 +320,7 @@ def dummy_call():
 @verified_required
 @tos_required
 def get_item_list(item_slot):
-    field_names = ("Item_ID", "Item_Name", "Item_Picture", "Rarities_Color")
+    field_names = ("Item_ID", "Item_Name", "Item_Picture", "Rarities_Color", "Approved")
     query_result = select_query.select_item_fields_from_item_slot(item_slot, field_names)
 
     # TODO: handle if query_result is none
@@ -324,11 +328,13 @@ def get_item_list(item_slot):
     item_list = []
 
     for item in query_result:
-        item_data = {}
-        for key in field_names:
-            item_data[key] = item[key]
+        if int(item["Approved"]) == 1:
+            # Item has been approved, add the item to the list users can pick from
+            item_data = {}
+            for key in field_names:
+                item_data[key] = item[key]
 
-        item_list.append(item_data)
+            item_list.append(item_data)
 
     slot_name = select_query.select_slot_names(item_slot)["Slots_Name"]
 

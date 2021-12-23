@@ -43,6 +43,9 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
     # image_server
     from blueprints import image_server
     app.register_blueprint(image_server.bp)
+    # creation kit
+    from blueprints import tools
+    app.register_blueprint(tools.bp)
 
 
 

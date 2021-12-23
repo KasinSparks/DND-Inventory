@@ -1500,7 +1500,6 @@ function modify_skill(char_id, amount, skill_name, field_id_name){
 	}
 	http.send(params);
 }*/
-
 var ability_header_old = "";
 function add_ability(char_id){
 	var ability_test = null;

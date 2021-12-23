@@ -18,10 +18,21 @@
                             {% if n['Has_Been_Read'] < 1 %}
                                 <div id="notification_read_{{ n['Note_ID'] }}" class="small_buttons character_select_bottom_button_read clickable" onclick="mark_read({{ n['Note_ID'] }});"></div>
                             {% endif %}
+                            {% if n['Type'] == 'New User' %}
                             <div class="clickable user_button_notification" onclick="alert('Not Implemented Yet...');">
                                 <h2>{{ n['Type']|e }}: {{ n['Username']|e }}</h2>
                             </div>
                             <div class="small_buttons character_select_bottom_button_remove clickable" onclick="remove_note({{ n['Note_ID'] }});"></div>
+                            {% elif n['Type'] == 'New Item' or n['Type'] == 'Edit Item' %}
+                            <div class="clickable user_button_notification" onclick="alert('Not Implemented Yet...');">
+                                <h2>{{ n['Type']|e }}</h2>
+                                <h4>User: {{ n['Username']|e }}</h4>
+                            </div>
+                            <div class="verify_deny_buttons">
+                                <div class="small_buttons item_notification_button_pass clickable" onclick=""></div>
+                                <div class="small_buttons item_notification_button_deny clickable" onclick=""></div>
+                            </div>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>

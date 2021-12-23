@@ -905,6 +905,10 @@ table td{
 	cursor: pointer;
 }
 
+.clickable:hover{
+	filter: brightness(85%);
+}
+
 
 .char_item_val_change_container {
 	/*visibility: hidden;*/
@@ -1174,6 +1178,14 @@ table td{
 	background-image: url(images/verify.png);
 }
 
+.item_notification_button_pass{
+	background-image: url(images/pass.png);
+}
+
+.item_notification_button_deny{
+	background-image: url(images/deny.png);
+}
+
 .character_select_bottom_button_read{
 	background-image: url(images/read.png);
 }
@@ -1260,7 +1272,7 @@ table td{
 	margin: 0 auto;
 }
 
-.ability_header_seperator{
+.ability_header_seperator .skill_header_seperator .submit_item_header_seperator{
 	background-color: #1e1e1e;
 	height: 23px;
 	border-bottom: solid black 3px;
@@ -1279,6 +1291,6 @@ table td{
 	margin-right: 32px;
 }
 
-.ability_name, .skill_name{
+.ability_name, .skill_name .submit_item_name{
 	width: 75%;
 }
