@@ -13,6 +13,35 @@ function equipmentItemDetails(charId, equipmentItemStr){
 	return;
 }
 
+function itemDetailsPanel(itemID) {
+	var htmlInner = document.getElementsByClassName("sub_inner_panel")[0];
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function(){
+		if(this.readyState == 4 && this.status == 200){
+			htmlInner.innerHTML = htmlInner.innerHTML.concat(
+				'<div class="itemfulldetail">' + getEquipmentItemDetailsHTML(this.response, 'closePrev()')
+					+ '<div class="item_approved">Approved: ' + (this.response.approved == 1 ? 'True' : 'False') + '</div>\
+                        <div class="verify_deny_buttons">\
+                            <div class="small_buttons item_notification_button_pass clickable" onclick="item_acceptance(' + itemID + ', true);"></div>\
+                            <div class="small_buttons item_notification_button_deny clickable" onclick="item_acceptance(' + itemID + ', false);"></div>\
+                        </div>\
+					</div>');
+			return;
+		}
+	};
+	
+	const webpage = '/dataserver/itemFullDetails/' + itemID;
+	xhttp.open("GET", webpage, true);
+	
+	xhttp.responseType = 'json';
+
+	xhttp.send();
+}
+
+function closePrev() {
+	document.getElementsByClassName("itemfulldetail")[0].remove();
+}
+
 function insertIntoHTML(element, data){
 	element.innerHTML = data;
 	return;
@@ -64,7 +93,7 @@ function getEquipmentItemDetailsHTML(jsonData, function_call='test2()'){
 	//var jsonResponse = JSON.parse(jsonData);
 	//console.log(jsonResponse);
 	console.log(jsonData);
-	var equipmentItemDetailsHTML = '<!--ITEM_INFO-->\
+	var equipmentItemDetailsHTML = '\
 	<div class="item_info">\
 		<div class="item_info_header">\
 			<img style="border-color: ' + jsonData.rarity_color + '" src="' + jsonData.image + '" alt="' + jsonData.slot + ' Item"/>\
@@ -1434,6 +1463,29 @@ function remove_note(note_id){
 	};
 	
 	const webpage = '/admin/notifications/remove/' + note_id;
+	xhttp.open("GET", webpage, true);
+
+	xhttp.send();
+}
+
+function item_acceptance(item_id, status){
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function(){
+		if(this.readyState == 4 && this.status == 200){
+			//itemInfo(element, this.responseText);
+			//document.getElementById('notification_' + note_id).remove();
+			var s = 'Approved: ' + (status == 1 ? 'True' : 'False');
+			console.log("yse");
+			document.getElementsByClassName('item_approved')[0].innerHTML = s;
+			return
+		}
+	};
+	
+	int_status = 0;
+	if (status) {
+		int_status = 1;
+	}
+	const webpage = '/admin/items/approveItem/' + item_id + '/' + int_status;
 	xhttp.open("GET", webpage, true);
 
 	xhttp.send();

@@ -99,15 +99,21 @@ def admin_markRead_notification(notification_id):
     update_query.update_notification_read_status(notification_id, True)
     return '200'
 
-@bp.route('notifications/approveItem/<int:notifitcation_id>/<int:item_id>')
+@bp.route('items/approveItem/<int:item_id>/<int:status>')
 @login_required
 @tos_required
 @verified_required
-def admin_approve_item_notification(notification_id, item_id):
+def admin_approve_item_notification(item_id, status):
     if not is_admin():
         return not_admin_redirect()
-    update_query.update_approved_item_status(item_id, True)
-    admin_markRead_notification(notification_id)
+    
+    #q = select_query.select(("Item_ID",), "Admin_Notifications", False, "WHERE Note_ID=?", (notification_id,))
+    #item_id = q['Item_ID']
+    if status != 0:
+        update_query.update_approved_item_status(item_id, True)
+    else:
+        update_query.update_approved_item_status(item_id, False)
+    #delete_query.delete_notification(notification_id)
     return '200'
 
 

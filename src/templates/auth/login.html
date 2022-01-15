@@ -20,7 +20,7 @@
                 {% elif error_msg == 'Incorrect password' %}
                     <h1 style="color: orange;">Tries remaining {{ tries_remaining }}</h1>
                 {% elif error_msg == 'Account Locked' %}
-                    <h1 style="color: red;">Account Locked for {{ unlockout_time['Minutes'] }}:{{ unlockout_time['Seconds'] }} minutes</h1>
+                    <h1 style="color: red;">Account Locked for {{ unlockout_time['Minutes'] }}:{{ unlockout_time['Seconds'] }} {% if unlockout_time['Minutes'] == 0 %} seconds {% else %} minutes {% endif %}</h1>
                 {% else %}
                     <h1 style="color: orange;">Incorrect Login</h1>
                 {% endif %}
@@ -42,8 +42,8 @@
                         </div>
                     </form>
                 </div>
-                <div class="reset_password">
-                    <button>Reset Password</button>
+                <div class="reset_password" >
+                    <button type="button" onclick="window.location = window.location.origin + '{{ url_for('auth.reset') }}'">Reset Password</button>
                 </div>
             </div>
             <div class="login_footer">

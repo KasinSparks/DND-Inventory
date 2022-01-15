@@ -1,4 +1,5 @@
 import os
+from random import random
 
 from flask import (
     Blueprint, g, redirect, render_template, request, session, url_for, current_app, jsonify, flash
@@ -106,8 +107,11 @@ def character_page(char_id):
 
     char_img = characters["Character_Image"]
 
-    if char_img is not None and char_img != '' and char_img != 'no_image.png':
+    if random() < 0.04:
+        image_data = url_for('static', filename='images/t_ray.jpeg')
+    elif char_img is not None and char_img != '' and char_img != 'no_image.png':
         image_data = '/imageserver/user/' + characters['Character_Image']
+
 
     character_data = {
         'name' : shorten_string(characters['Character_Name'], 20),

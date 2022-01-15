@@ -1,4 +1,6 @@
+from werkzeug.security import generate_password_hash
 from modules.data.database.query import Query
+from modules.data.database.query_modules.select_query import select_user_data
 
 def insert(table_name, item_data):
     if len(item_data) < 1:
@@ -33,8 +35,23 @@ def insert(table_name, item_data):
 def insert_effect(name, description):
     insert("Effects", {"Effect_Name" : name, "Effect_Description" : description})
 
-def create_user(username, hashed_password):
+def create_user(username: str, hashed_password, security_questions: list, security_answers: list):
     insert("Users", {"Username" : username, "Password" : hashed_password})
+    user_id = select_user_data(username)[0]
+    num_of_questions = len(security_questions)
+    num_of_answers = len(security_answers)
+
+    if num_of_answers != num_of_questions:
+        raise Exception("Mismatached num of security questions and answers")
+
+    for i in range(num_of_questions):
+        insert("Users_Security_Questions",
+            {
+                "User_ID": user_id,
+                "Question_ID": security_questions[i],
+                "Answer": generate_password_hash(str(security_answers[i]).strip().upper())
+            }
+        )
 
 def create_admin_notification(user_id, notification_type):
     insert("Admin_Notifications", 

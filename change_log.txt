@@ -1,0 +1,10 @@
+Version 1.6
+* Added security questions
+* Added ability to reset password using security questions
+* Changed incorrect password lockout time from ten minutes to one minute
+* All users can create items, but item will have to be approved by an admin
+* Added item created and edited notifications for admins
+* Admins are able to approve, deny, edit, and delete items
+* Added new password requirements
+
+* Minor bug fixes

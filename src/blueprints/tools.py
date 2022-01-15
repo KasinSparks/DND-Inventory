@@ -168,7 +168,7 @@ def creationKit_add_submit():
         item_id = select_query.get_item_id_from_name(_new_name)
         update_item_image(item_id, full_dir_name, select_query.select_item_picture_name(item_id)["Item_Picture"])
 
-        Logger().log("User: " + str(get_current_username()) + "has added item with id=" + str(item_id))
+        Logger().log("User: " + str(get_current_username()) + " has added item with id=" + str(item_id))
 
         return redirect(url_for('tools.creationKit'))
 
@@ -184,7 +184,7 @@ def creationKit_edit_submit():
         item_id = convert_form_field_data_to_int('id')
         update_item_image(item_id, full_dir_name, select_query.select_item_picture_name(item_id)["Item_Picture"])
 
-        Logger().log("User: " + str(get_current_username()) + "has edited item with id=" + str(item_id))
+        Logger().log("User: " + str(get_current_username()) + " has edited item with id=" + str(item_id))
 
         return redirect(url_for('tools.creationKit'))
 
@@ -195,7 +195,7 @@ def create_new_effect(effect_name, effect_description):
         raise Exception('Invalid effect')
 
     insert_query.insert_effect(effect_name, effect_description)
-    Logger().log("User: " + str(get_current_username()) + "has created effect with name: " + str(effect_name) + 
+    Logger().log("User: " + str(get_current_username()) + " has created effect with name: " + str(effect_name) + 
                 " and description: " + str(effect_description))
 
 def creationKit_helper(query_type, image_save_dir):

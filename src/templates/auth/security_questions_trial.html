@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<head>
+    <title>Reset Password</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+    <div class="login_container">
+        <div class="inner_container">
+            <div class="tab">
+                {% if error_msg is none %}
+                    <h1>{{ header_text|e }}</h1>
+                {% else %}
+                    <h1 style="color: orange;">{{ error_msg|e }}</h1>
+                {% endif %}
+            </div>
+            <div class="login_inner_panel">
+                <div class="login_panel">
+                    <form class="login_form" action="/auth/reset/newpass" method="POST">
+                        <input hidden name="username" value="{{ username }}">
+                        <!-- TODO: CSS -->
+                        <div class="security_question">
+                            {% for q in questions %}
+                                <div class="input_field">
+                                    <input type="text" name="answer{{ q['ID'] }}" placeholder="{{ q['Question'] }}" value="" required>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="input_field">
+                            <input type="text" name="password" placeholder="New Password" value="" required>
+                        </div> 
+                        <div class="input_field">
+                            <input type="text" name="password_confirm" placeholder="Confirm Password" value="" required>
+                        </div> 
+                        <div class="login_submit">
+                            <input class="submit_button" type="submit" value="">
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="login_footer">
+                <p>Copyright 2020</p>
+            </div>
+        </div>
+    </div>
+</body>

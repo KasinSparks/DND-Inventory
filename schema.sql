@@ -171,6 +171,19 @@ CREATE TABLE IF NOT EXISTS "Site_Notifications"(
 	"Notification_ID"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
 	"Note"	TEXT NOT NULL DEFAULT 'NULL'	
 );
+DROP TABLE IF EXISTS "Users_Security_Questions";
+CREATE TABLE IF NOT EXISTS "Users_Security_Questions"(
+	"ID"			INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"User_ID"		INTEGER NOT NULL,
+	"Question_ID"	INTEGER NOT NULL,
+	"Answer"		TEXT NOT NULL DEFAULT 'NULL'
+	
+);
+DROP TABLE IF EXISTS "Security_Questions";
+CREATE TABLE IF NOT EXISTS "Security_Questions"(
+	"ID"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+	"Question"	TEXT NOT NULL DEFAULT 'NULL'
+);
 INSERT INTO "Slots" VALUES (1,'Head',1);
 INSERT INTO "Slots" VALUES (2,'Shoulder',1);
 INSERT INTO "Slots" VALUES (3,'Torso',1);
@@ -202,4 +215,13 @@ INSERT INTO "Rarities" VALUES (8,'Heirloom','#00ccff');
 INSERT INTO "Notification_Types" VALUES (1,'New User');
 INSERT INTO "Notification_Types" VALUES (2,'New Item');
 INSERT INTO "Notification_Types" VALUES (3,'Edit Item');
+INSERT INTO "Security_Questions" VALUES (1,'What is your favorite number?');
+INSERT INTO "Security_Questions" VALUES (2,'What is your favorite word?');
+INSERT INTO "Security_Questions" VALUES (3,'What is your favorite book?');
+INSERT INTO "Security_Questions" VALUES (4,'What is your favorite movie?');
+INSERT INTO "Security_Questions" VALUES (5,'What is your favorite drink?');
+INSERT INTO "Security_Questions" VALUES (6,'Who was your favorite teacher?');
+INSERT INTO "Security_Questions" VALUES (7,'Who was or is your favorite president?');
+INSERT INTO "Security_Questions" VALUES (8,'What did you do during lockdown?');
+INSERT INTO "Security_Questions" VALUES (9,'Where were you on the new year of 2022?');
 COMMIT;

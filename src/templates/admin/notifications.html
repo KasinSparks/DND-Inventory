@@ -24,14 +24,11 @@
                             </div>
                             <div class="small_buttons character_select_bottom_button_remove clickable" onclick="remove_note({{ n['Note_ID'] }});"></div>
                             {% elif n['Type'] == 'New Item' or n['Type'] == 'Edit Item' %}
-                            <div class="clickable user_button_notification" onclick="alert('Not Implemented Yet...');">
+                            <div class="clickable user_button_notification" onclick="alert('GoTo Creation Kit to approve or deny');">
                                 <h2>{{ n['Type']|e }}</h2>
                                 <h4>User: {{ n['Username']|e }}</h4>
                             </div>
-                            <div class="verify_deny_buttons">
-                                <div class="small_buttons item_notification_button_pass clickable" onclick=""></div>
-                                <div class="small_buttons item_notification_button_deny clickable" onclick=""></div>
-                            </div>
+                            
                             {% endif %}
                         </div>
                     {% endfor %}

@@ -1,6 +1,10 @@
+from email.policy import default
 import os
+from webbrowser import get
 
 from flask import Flask, render_template, session, send_from_directory, request, redirect, url_for
+
+from modules.data.database.query_modules.select_query import get_user_id
 
 def create_app(test_config=None, is_development_env=True, instance_path=None):
     # create and configure the app
@@ -65,12 +69,31 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
         if not has_agreed_tos():
             return not_agreed_redirect()
 
+        username = get_current_username()
+        header_text = username 
 
-        header_text = get_current_username()
+        user_id = get_user_id(username)
 
         site_notifications = select_query.select_site_notifications()
         if site_notifications is None or len(site_notifications) < 1:
             site_notifications = None
+
+        # Make sure user has set security questions
+        questions = select_query.select(("Security_Questions.Question", "Security_Questions.ID",), "Users_Security_Questions", True, "WHERE User_ID=?", (user_id,),
+                                        ("INNER JOIN Security_Questions ON Users_Security_Questions.Question_ID=Security_Questions.ID",)
+        )
+        
+        if questions is None or len(questions) == 0:
+            defaults = select_query.select(("*",), "Security_Questions", True)
+            return render_template('auth/setsecurityquestions.html',
+                                    header_text=username,
+                                    error_msg=None,
+                                    num_of_questions=3,
+                                    defaults=defaults,
+                                    security_questions=[1, 2, 3],
+                                    security_answers=["", "", ""],
+                                    username=username
+            )
 
         if is_admin():
             return render_template('auth/admin.html',
