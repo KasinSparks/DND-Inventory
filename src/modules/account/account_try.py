@@ -45,7 +45,7 @@ def get_lockout_time(user_id):
     return attempt_datetime 
 
 # range is measured within minutes 
-def	is_attempt_within_range(user_id, range=10):
+def	is_attempt_within_range(user_id, range=1):
     result = __get_attempt_data__(user_id)
 
     if result is None:

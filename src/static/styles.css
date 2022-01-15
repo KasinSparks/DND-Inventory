@@ -549,7 +549,6 @@ table td{
 	height: 85%;	
 }
 
-
 .login_form .login_username{
 	background-image: url(../static/images/login_username.png);
 	width: 225px;
@@ -562,6 +561,13 @@ table td{
 	width: 225px;
 	height: 82px;
 	margin-top: 8px;
+}
+
+.login_form .input_field {
+	background-image: url(../static/images/login_username.png);
+	width: 225px;
+	height: 70px;
+	margin-top: 16px;
 }
 
 .login_form input{
@@ -905,6 +911,10 @@ table td{
 	cursor: pointer;
 }
 
+.clickable:hover{
+	filter: brightness(85%);
+}
+
 
 .char_item_val_change_container {
 	/*visibility: hidden;*/
@@ -1152,6 +1162,12 @@ table td{
 	margin: 20px auto;
 }
 
+.verify_deny_buttons .small_buttons{
+	width: 31px;
+	height: 31px;
+	margin: 20px auto;
+}
+
 
 .character_select_bottom_button_goback{
 	background-image: url(images/goBack.png);
@@ -1172,6 +1188,14 @@ table td{
 
 .character_select_bottom_button_verify{
 	background-image: url(images/verify.png);
+}
+
+.item_notification_button_pass{
+	background-image: url(images/pass.png);
+}
+
+.item_notification_button_deny{
+	background-image: url(images/deny.png);
 }
 
 .character_select_bottom_button_read{
@@ -1202,9 +1226,11 @@ table td{
 	overflow: hidden;
 }
 
-.verify_deny_buttons{
-	width: 31px;
+.itemfulldetail .verify_deny_buttons{
+	width: 100%;
 	margin: 0 auto;
+	display: flex;
+	flex-direction: row;
 }
 
 .verify_deny_buttons .small_buttons{
@@ -1260,7 +1286,7 @@ table td{
 	margin: 0 auto;
 }
 
-.ability_header_seperator{
+.ability_header_seperator .skill_header_seperator .submit_item_header_seperator{
 	background-color: #1e1e1e;
 	height: 23px;
 	border-bottom: solid black 3px;
@@ -1279,6 +1305,32 @@ table td{
 	margin-right: 32px;
 }
 
-.ability_name, .skill_name{
+.ability_name, .skill_name .submit_item_name{
 	width: 75%;
+}
+
+.itemfulldetail {
+	position: absolute;
+	background-color: rgba(0,0,0,0.7);
+}
+
+.itemfulldetail .item_approved {
+	color: white;
+}
+
+.security_question {
+	margin: 16px auto;
+}
+
+.security_question select {
+	width: 100%;
+}
+
+.security_question input {
+	margin: 3px auto;
+	border:#1b1b1b;
+	background-color: #252525;
+	border-style: solid;
+	width: 96%;
+	font-size: larger;
 }

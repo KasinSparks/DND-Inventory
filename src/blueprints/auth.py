@@ -9,39 +9,335 @@ import datetime
 
 from modules.account.account_try import add_account_try, account_tries_remaining, get_lockout_time, is_attempt_within_range
 from modules.data.form_data import get_request_field_data
-from modules.data.database.query_modules import select_query, insert_query, update_query
+from modules.data.database.query_modules import select_query, insert_query, update_query, delete_query
 from modules.account.authentication_checks import is_verified, not_verified_redirect, has_agreed_tos, not_agreed_redirect
 
 import math
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-# Register
-@bp.route('/register', methods=('GET', 'POST'))
-def register():
-    header_text = 'Register'
+
+
+# Authentication required
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+        return view(**kwargs)
+
+    return wrapped_view
+
+def verified_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if not is_verified():
+            return not_verified_redirect()
+        return view(**kwargs)
+
+    return wrapped_view
+
+def tos_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if not has_agreed_tos():
+            return not_agreed_redirect()
+        return view(**kwargs)
+
+    return wrapped_view
+
+@bp.route('/reset')
+def reset():
+    header_text = 'Reset Password'
+
+    return render_template('auth/reset_getusername.html',
+                           header_text=header_text,
+                           )
+
+
+# Reset password
+# TODO
+@bp.route('/reset/sq', methods=('POST',))
+def reset_sq():
+    header_text = 'Reset Password'
     error = None
     username = ""
 
     if request.method == 'POST':
-        username = get_request_field_data('username')
-        password = get_request_field_data('password')
-        confirm_password = get_request_field_data('password_confirm')
         error = None
+        username = get_request_field_data('username')
 
         if not username:
             error = 'Username is required.'
-        elif not password:
-            error = 'Password is required.'
-        elif password != confirm_password:
-            error = 'Passwords do not match.'
-        elif len(username) > 15:
-            error = 'Username MAX 15 characters'
-        elif select_query.get_user_id(username) is not None:
-            error = '{} Taken.'.format(username)
 
-        if error is None:
-            insert_query.create_user(username, generate_password_hash(password))
+        if error is not None:
+            return redirect(url_for('auth.login'))
+
+        #check to see if user exist and get security questions
+        user_id = select_query.get_user_id(username)
+        if user_id is None:
+            return redirect(url_for('auth.login'))
+        
+        questions = select_query.select(("Security_Questions.Question", "Security_Questions.ID",), "Users_Security_Questions", True, "WHERE User_ID=?", (user_id,),
+                                        ("INNER JOIN Security_Questions ON Users_Security_Questions.Question_ID=Security_Questions.ID",)
+        )
+        
+        num = len(questions)
+
+        return render_template('auth/security_questions_trial.html',
+                            header_text=header_text,
+                            error_msg=error,
+                            num_of_questions=num,
+                            questions=questions,
+                            username=username
+        )
+
+    return render_template('auth/login.html',
+                        header_text=header_text,
+                        error_msg=error,
+    )
+
+@bp.route('/set/newquestions', methods=('POST',))
+@login_required
+@verified_required
+@tos_required
+def set_questions():
+    header_text = 'Set Security Questions'
+    error = None
+    # check to make sure the user answered the questions correctly
+    if request.method == 'POST':
+        username = get_request_field_data('username')
+
+        if username is None or username == "":
+            error = 'Username is required'
+
+        user_id = select_query.get_user_id(username)
+        if user_id is None:
+            error = 'Unknown username' 
+
+        if error is not None:
+            print(error)
+            return redirect(url_for("auth.login")) 
+
+        #answers = []
+        #for r in request.form:
+        #    if r[0:6] == 'answer':
+        #        answers.append((r[-1], request.form[r]))
+
+        num_of_security_questions = 3
+        security_questions = []
+        security_answers = []
+        for i in range(num_of_security_questions):
+            security_questions.append(int(get_request_field_data('security_question' + str(i))))
+            security_answers.append(get_request_field_data('answer' + str(i)))
+
+
+        ## make sure all questions were answered
+        for a in security_answers:
+            if len(a) < 1 or a == "":
+                error = 'Please answer all the security questions.\n'
+                break
+
+        memo = []
+        for q in security_questions:
+            if q < 1:
+                error = 'You must select a security question.\n'
+                break
+            if q in memo:
+                error = 'You may not select two or more of the same security question.\n'
+                break
+            memo.append(q)
+
+        if error is not None:
+            defaults = select_query.select(("*",), "Security_Questions", True)
+            return render_template('auth/setsecurityquestions.html',
+                                    header_text=username,
+                                    error_msg=error,
+                                    num_of_questions=3,
+                                    defaults=defaults,
+                                    security_questions=security_questions,
+                                    security_answers=security_answers,
+                                    username=username
+            )
+
+        ## check the password 
+        password = get_request_field_data('password')
+        if not check_password_hash(select_query.select(("Password",), "Users", False, "WHERE User_ID=?", (user_id,))["Password"], password):
+            print("incorrect password")
+            return redirect(url_for('auth.login'))
+
+        ## remove old answers
+        questions = select_query.select(("Security_Questions.Question", "Security_Questions.ID",), "Users_Security_Questions", True, "WHERE User_ID=?", (user_id,),
+                                        ("INNER JOIN Security_Questions ON Users_Security_Questions.Question_ID=Security_Questions.ID",)
+        )
+
+        if questions is not None:
+            delete_query.delete("Users_Security_Questions", "WHERE User_ID=?", (user_id,))
+
+        ## add new answers
+        for i in range(num_of_security_questions):
+            insert_query.insert("Users_Security_Questions",
+                {
+                    "User_ID": user_id,
+                    "Question_ID": security_questions[i],
+                    "Answer": generate_password_hash(str(security_answers[i]).strip().upper())
+                }
+            )
+
+        return redirect(url_for("home"))
+
+    error = "Security questions were not set"
+
+    print("here") 
+    return render_template('auth/login.html',
+                           header_text='Login Page',
+                           error_msg=error,
+    )
+
+
+@bp.route('/reset/newpass', methods=('POST',))
+def newpass():
+    header_text = 'Reset Password'
+    error = None
+    # check to make sure the user answered the questions correctly
+    if request.method == 'POST':
+        username = get_request_field_data('username')
+
+        if not username:
+            error = 'Username is required'
+
+        user_id = select_query.get_user_id(username)
+        if user_id is None:
+            error = 'Unknown username' 
+
+        if error is not None:
+            return render_template('auth/reset_getusername.html',
+                                    header_text='Reset Password',
+                                    error_msg=error
+            )
+
+        answers = []        
+        for r in request.form:
+            if r[0:6] == 'answer':
+                answers.append((r[-1], request.form[r]))
+        
+
+        for a in answers:
+            correct_answer = select_query.select(("Answer",), "Users_Security_Questions", False, "WHERE User_ID=? AND Question_ID=?", (user_id, a[0],))
+            if not check_password_hash(correct_answer['Answer'], str(a[1]).strip().upper()):
+                error = 'Password was not reset'
+                break
+
+        password = [get_request_field_data('password'), get_request_field_data('password_confirm')]
+
+        if password[0] != password[1]:
+            error = 'Password was not reset'
+
+        if not check_password_requirements(password):
+            error = 'Password must be more than ten characters'
+
+        if error is not None:
+            return render_template('auth/reset_getusername.html',
+                                    header_text='Reset Password',
+                                    error_msg=error,
+            )
+
+        update_query.update("Users", {"Password": generate_password_hash(password[0])}, "WHERE User_ID=?", (user_id,))
+        return render_template('auth/login.html',
+                            header_text='Login Page',
+                            error_msg=error,
+        )
+
+    error = "Password was not reset"
+        
+    return render_template('auth/login.html',
+                           header_text='Login Page',
+                           error_msg=error,
+    )
+
+
+def check_password_requirements(password: str) -> str:
+    # Passwords need to have the following
+    # * at least 10 characters
+    # * at least one uppercase and one lowercase
+    # * at least one number
+
+    error = "" 
+
+    if (len(password) < 10):
+        error += "Password must be more that ten characters.\n"
+    ##if (password.islower()):
+    ##    error += "Password does not contain at least one uppercase.\n"
+    ##if (password.isupper()):
+    ##    error += "Password does not contain at least one lowercase.\n"
+
+    return error
+
+# Register
+@bp.route('/register', methods=('GET', 'POST'))
+def register():
+    header_text = 'Register'
+    error = "" 
+    username = ""
+    password = ""
+    num_of_security_questions = 3
+    security_questions = []
+    security_answers = []
+    for i in range(num_of_security_questions):
+        security_questions.append("")
+        security_answers.append("")
+
+    default_security_questions = select_query.select_default_security_questions()
+
+    if request.method == 'POST':
+        username = get_request_field_data('username')
+        password = get_request_field_data('password')
+        security_questions = []
+        security_answers = []
+        for i in range(num_of_security_questions):
+            security_questions.append(int(get_request_field_data('security_question' + str(i))))
+            security_answers.append(get_request_field_data('answer' + str(i)))
+        confirm_password = get_request_field_data('password_confirm')
+        error = "" 
+
+        password_req_check = check_password_requirements(password)
+
+        if not username:
+            error += 'Username is required.\n'
+        if password_req_check != "":
+            error += password_req_check
+        if not password:
+            error += 'Password is required.\n'
+        if password != confirm_password:
+            error += 'Passwords do not match.\n'
+        if len(username) > 15:
+            error += 'Username MAX 15 characters\n'
+        if select_query.get_user_id(username) is not None:
+            error += '{} Taken.\n'.format(username)
+        if len(security_questions) != num_of_security_questions:
+            error += 'Please select three of the security questions.\n'
+        if len(security_answers) != num_of_security_questions:
+            error += 'Please answer all the security questions.\n'
+
+        for a in security_answers:
+            if len(a) < 1 or a == "":
+                error += 'Please answer all the security questions.\n'
+                break
+
+        memo = []
+        for q in security_questions:
+            if q < 1:
+                error += 'You must select a security question.\n'
+                break
+            if q in memo:
+                error += 'You may not select two or more of the same security question.\n'
+                break
+            memo.append(q)
+        
+
+
+        if error == "":
+            insert_query.create_user(username, generate_password_hash(password), security_questions, security_answers)
             session.clear()
             session['user_id'] = select_query.get_user_id(username)
             return redirect(url_for('auth.register_tos'))
@@ -51,7 +347,12 @@ def register():
     return render_template('auth/register.html',
                            header_text=header_text,
                            error_msg=error,
-                           username=username)
+                           username=username,
+                           password=password,
+                           security_questions=security_questions,
+                           security_answers=security_answers,
+                           defaults=default_security_questions,
+                           num_of_questions=num_of_security_questions,)
 
 # Login
 @bp.route('/login', methods=('GET', 'POST'))
@@ -68,7 +369,7 @@ def login():
 
         if user is not None:
 
-            timeout_time_minutes = 10
+            timeout_time_minutes = 1
 
             if account_tries_remaining(user['User_ID']) < 1 and is_attempt_within_range(user['User_ID'], timeout_time_minutes):
                 # Accout locked
@@ -135,34 +436,6 @@ def logout():
     #return redirect(url_for('index'))
     return redirect(url_for('auth.login'))
 
-# Authentication required
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for('auth.login'))
-        return view(**kwargs)
-
-    return wrapped_view
-
-def verified_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if not is_verified():
-            return not_verified_redirect()
-        return view(**kwargs)
-
-    return wrapped_view
-
-def tos_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if not has_agreed_tos():
-            return not_agreed_redirect()
-        return view(**kwargs)
-
-    return wrapped_view
-
 @bp.route('/register/tos')
 @login_required
 def register_tos():
@@ -212,3 +485,6 @@ def is_verifed():
 
     return False
 """
+
+def get_current_user_id():
+    return session['user_id']

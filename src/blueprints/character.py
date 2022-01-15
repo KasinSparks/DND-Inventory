@@ -1,7 +1,8 @@
 import os
+from random import random
 
 from flask import (
-    Blueprint, g, redirect, render_template, request, session, url_for, current_app, jsonify
+    Blueprint, g, redirect, render_template, request, session, url_for, current_app, jsonify, flash
 )
 
 from werkzeug.utils import secure_filename
@@ -19,6 +20,7 @@ from modules.data.string_shorten import shorten_string
 from modules.IO.file.file_checks import allowed_file
 from modules.IO.file.image_handler import ImageHandler
 from modules.data.database.data_helper import get_user_id_from_char_id
+from logger.logger import Logger
 
 bp = Blueprint('character', __name__, url_prefix='/character')
 
@@ -105,8 +107,11 @@ def character_page(char_id):
 
     char_img = characters["Character_Image"]
 
-    if char_img is not None and char_img != '' and char_img != 'no_image.png':
+    if random() < 0.04:
+        image_data = url_for('static', filename='images/t_ray.jpeg')
+    elif char_img is not None and char_img != '' and char_img != 'no_image.png':
         image_data = '/imageserver/user/' + characters['Character_Image']
+
 
     character_data = {
         'name' : shorten_string(characters['Character_Name'], 20),
@@ -709,8 +714,20 @@ def add_items(char_id):
                 return "ERR"
 
         for line in request.form:
+            print(line)
             try:
                 item_id = int(line)
+                result_of_query = int(select_query.select(("Approved",), "Items", False, "WHERE Item_ID=?", (item_id,))[0]) 
+
+                print("Result of query: " + str(result_of_query))
+                if result_of_query != 1:
+                    print("here)")
+                    # Item has not been approved
+                    #flash("Item has not been approved yet.", "info")
+                    print("yup")
+                    Logger.log("yup")
+                    return str(weight)
+
                 prev_amount_query = select_query.select_item_amount_from_inv(char_id, item_id)
                 prev_amount = 0
                 numberOfItems = int(get_request_field_data(line))
@@ -722,6 +739,7 @@ def add_items(char_id):
                     else:
                         insert_data = {"Character_ID" : char_id, "Item_ID" : item_id, "Amount" : prev_amount + numberOfItems}
                         insert_query.insert("Inventory", insert_data)
+
 
             except Exception as e:
                 # TODO: logger
@@ -820,6 +838,11 @@ def item_equip(char_id, item_id, slot_number = 0):
 
     error = "None"
     item = select_query.select(("*",), "Inventory", False, "WHERE Character_ID=? AND Item_ID=?", (char_id, item_id))
+
+    if int(select_query.select(("Approved",), "Items", False, "WHERE Item_ID=?", (item_id,))[0]) != 1:
+        # Item has not been approved
+        # TODO: change this redirect
+        return redirect(url_for('character.character_select'))
 
     if item is None:
         return redirect(url_for('character.character_select'))
@@ -944,6 +967,8 @@ def item_unequip(char_id, item_id, slot_number=0, remove_all=0):
 
     if item is None:
         return redirect(url_for('character.character_select'))
+
+    
 
     slot_name = select_query.select_item_fields(item_id, ("Slots.Slots_Name",), ("INNER JOIN Slots ON Items.Item_Slot=Slots.Slots_ID",))["Slots_Name"]
 

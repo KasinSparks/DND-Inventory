@@ -1,6 +1,38 @@
-mv /example_site_data/* /site_data
+folder_name=DND-Inventory
+
+echo "Starting install..."
+
+ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+apt update && apt install -y \
+    apache2 python3 python3-pip libapache2-mod-wsgi-py3 sqlite3 vim git
+
+pip3 install --requirement /$folder_name/requirements.txt
+
+cp /$folder_name/apache2_site.conf /etc/apache2/sites-available/dnd_apache2_site.conf
+
+mkdir -p -m 740 /site_data/instance/database
+mkdir -p -m 740 /site_data/instance/uploads/items
+mkdir -p -m 740 /site_data/instance/uploads/users
+
+sqlite3 /site_data/instance/database/db.sqlite < /$folder_name/schema.sql
+
+cp /$folder_name/example.cfg /site_data/instance/production.cfg
+
 chown www-data -R /site_data/instance/uploads
 chown www-data -R /site_data/instance/database
 chmod 740 -R /site_data/instance/uploads
 chmod 740 /site_data/instance/database
 chmod 640 /site_data/instance/database/db.sqlite
+chown www-data:root /$folder_name/run.wsgi
+chown www-data:root -R /$folder_name/src
+
+ln -s /DND-Inventory/src /var/www/src
+ln -s /DND-Inventory/run.wsgi /var/www/run.wsgi
+
+service apache2 start
+a2dissite 000-default
+a2ensite dnd_apache2_site
+service apache2 reload
+
+echo "Install Finished!"

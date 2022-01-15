@@ -20,11 +20,13 @@
                                 <div class="item_category_collapse_button item_category_button clickable" onclick="category_expand_and_collapse('item_category_{{ b|e }}', 'collapse', 'item_line', 'item_category_button');"></div >
                             </div>
                             {% for i in buckets[b] %}
-                                <div class="item_line">
+                                <div class="item_line" onclick="itemDetailsPanel({{ i['Item_ID'] }});">
                                     <div class="user_button_char_select clickable" style="display: flex; flex-direction: row;">
-                                        <div class="small_buttons character_select_bottom_button_remove clickable" onclick="location.href='/admin/creationKit/remove/{{ i['Item_ID'] }}'"></div>
+                                        {% if is_admin %}
+                                        <div class="small_buttons character_select_bottom_button_remove clickable" onclick="location.href='/tools/creationKit/remove/{{ i['Item_ID'] }}'"></div>
+                                        {% endif %}
                                         <h2>{{ i['Item_Name']|e }}</h2>
-                                        <div class="small_buttons character_select_bottom_button_edit clickable" onclick="location.href='/admin/creationKit/edit/{{ i['Item_ID'] }}'"></div>
+                                        <div class="small_buttons character_select_bottom_button_edit clickable" onclick="location.href='/tools/creationKit/edit/{{ i['Item_ID'] }}'"></div>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -32,7 +34,7 @@
                     {% endfor %}
                 </div>
                 <div class="character_select_bottom_buttons_container">
-                    <div class="character_select_bottom_button_new clickable" onclick="location.href='/admin/creationKit/add'"></div>
+                    <div class="character_select_bottom_button_new clickable" onclick="location.href='/tools/creationKit/add'"></div>
                     <div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('home') }}';"></div>
                 </div>
             </div>

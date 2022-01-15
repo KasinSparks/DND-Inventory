@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-    <title>Register</title>
+    <title>Set Security Questsions</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
@@ -16,17 +16,8 @@
             </div>
             <div class="login_inner_panel">
                 <div class="login_panel">
-                    <form class="login_form" action="/auth/register" method="POST">
-                        <div class="login_username">
-                            <input type="text" name="username" placeholder="Username" value="{{ username }}" required>
-                        </div>
-                        <div class="login_password">
-                            <input type="password" name="password" placeholder="Password" value="{{ password }}" required>
-                        </div>
-                        <div class="login_password">
-                            <input type="password" name="password_confirm" placeholder="Confirm Password" value="" required>
-                        </div>
-                        <!-- TODO: CSS -->
+                    <form class="login_form" action="/auth/set/newquestions" method="POST">
+                        <input hidden name="username" value="{{ username }}">
                         {% for n in range(num_of_questions) %}
                         <div class="security_question">
                             <select name="security_question{{ n }}" required>
@@ -38,9 +29,12 @@
                                     {% endif %}
                                 {% endfor %}
                             </select>
-                            <input type="text" name="answer{{ n }}" placeholder="Security Question {{ n + 1 }}" value="{{ security_answers[n] }}">
+                            <input type="text" name="answer{{ n }}" placeholder="Security Question {{ n + 1 }}" value="{{ security_answers[n] }}" required>
                         </div>
                         {% endfor %}
+                        <div class="input_field">
+                            <input type="password" name="password" placeholder="Password" value="" required>
+                        </div> 
                         <div class="login_submit">
                             <input class="submit_button" type="submit" value="">
                         </div>

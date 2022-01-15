@@ -25,6 +25,12 @@ def update_notification_read_status(note_id, has_been_read=False):
         read = 1
     update("Admin_Notifications", {"Has_Been_Read" : read}, "WHERE Note_ID=?", (note_id,))
 
+def update_approved_item_status(item_id, has_been_approved=False):
+    approved = 0
+    if has_been_approved:
+        approved = 1
+    update("Items", {"Approved" : approved}, "WHERE Item_ID=?", (item_id,))
+
 def change_user_admin_status(user_id, is_admin=False):
     admin = 0
     if is_admin:

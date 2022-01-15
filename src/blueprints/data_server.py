@@ -49,6 +49,10 @@ def _get_item_details(char_id, equipment_slot="", item_id=-1):
         #raise Exception("Tried to get item details of item with id " + str(item_id))
         return jsonify(None)
 
+    # Check to see if the item has been approved
+    if int(select_query.select(("Approved",), "Items", False, "WHERE Item_ID=?", (item_id,))[0]) != 1:
+        return jsonify(None)
+
     item_query_result = select_query.select_items(item_id)
 
     # Check to see if ID has been assigned
@@ -316,7 +320,7 @@ def dummy_call():
 @verified_required
 @tos_required
 def get_item_list(item_slot):
-    field_names = ("Item_ID", "Item_Name", "Item_Picture", "Rarities_Color")
+    field_names = ("Item_ID", "Item_Name", "Item_Picture", "Rarities_Color", "Approved")
     query_result = select_query.select_item_fields_from_item_slot(item_slot, field_names)
 
     # TODO: handle if query_result is none
@@ -324,11 +328,13 @@ def get_item_list(item_slot):
     item_list = []
 
     for item in query_result:
-        item_data = {}
-        for key in field_names:
-            item_data[key] = item[key]
+        if int(item["Approved"]) == 1:
+            # Item has been approved, add the item to the list users can pick from
+            item_data = {}
+            for key in field_names:
+                item_data[key] = item[key]
 
-        item_list.append(item_data)
+            item_list.append(item_data)
 
     slot_name = select_query.select_slot_names(item_slot)["Slots_Name"]
 
@@ -511,13 +517,85 @@ def getItemAmount(char_id, item_id):
 @verified_required
 @tos_required
 def getItemDetails(item_id):
-    select_fields = ("Item_Name", "Item_Picture", "Rarities.Rarities_Color")
+    select_fields = ("Item_Name", "Item_Picture", "Approved", "Rarities.Rarities_Color")
     joins = ("INNER JOIN Rarities ON Rarities.Rarities_ID=Items.Rarity_ID",)
     where_clause = "WHERE Item_ID = ?"
     result = select_query.select(select_fields, "Items", False, where_clause, (item_id,), joins)
+    # TODO: do we want this to provide data iff approved, will break inv. equiped I think
+    #if int(item["Approved"]) == 1:
 
     return jsonify(
         name=result['Item_name'],
         picture=result['Item_Picture'],
         color=result['Rarities_Color']
     )
+
+@bp.route('/itemFullDetails/<int:item_id>')
+@login_required
+@verified_required
+@tos_required
+def getItemFullDetails(item_id):
+    if is_admin():
+        # Ensure a proper item_id is given
+        if item_id < 1:
+            # TODO: needs better error handling
+            #raise Exception("Tried to get item details of item with id " + str(item_id))
+            return jsonify(None)
+
+        item_query_result = select_query.select_items(item_id)
+
+        # Check to see if ID has been assigned
+        if item_query_result is None:
+            item_query_result = data_helper.init_item_data()
+
+        #TODO: this effect query also shows up in admin.py... Could extract this to a function
+        if item_query_result is not None:
+            # Check if item has an effect on it
+            if item_query_result['Item_Effect1'] is not None and item_query_result['Item_Effect1'] > 0:
+                # Check to see if ID has been assigned
+                effect1QueryResult = select_query.select_effect_data(item_query_result['Item_Effect1'])
+            else:
+                effect1QueryResult = {'Effect_Name' : 'Effect1', 'Effect_Description' : 'None'}
+
+            # Check if item has an effect on it
+            if item_query_result['Item_Effect2'] is not None and item_query_result['Item_Effect2'] > 0:
+                # Check to see if ID has been assigned
+                effect2QueryResult = select_query.select_effect_data(item_query_result['Item_Effect2'])
+            else:
+                effect2QueryResult = {'Effect_Name' : 'Effect2', 'Effect_Description' : 'None'}
+
+        image = url_for('static', filename='images/no_image.png')
+
+        if item_query_result['Item_Picture'] is not None and item_query_result['Item_Picture'] != '' and item_query_result['Item_Picture'] != 'no_image.png':
+            image = '/imageserver/item/' + item_query_result['Item_Picture']
+
+        return jsonify(
+            approved=item_query_result['Approved'],
+            description=item_query_result['Item_Description'],
+            name=item_query_result['Item_Name'],
+            image=image,
+            rarity=item_query_result['Rarities_Name'],
+            rarity_color=item_query_result['Rarities_Color'],
+            slot=item_query_result['Item_Slot'],
+            weight=item_query_result['Item_Weight'],
+            str_bonus=item_query_result['Item_Str_Bonus'],
+            dex_bonus=item_query_result['Item_Dex_Bonus'],
+            con_bonus=item_query_result['Item_Con_Bonus'],
+            int_bonus=item_query_result['Item_Int_Bonus'],
+            wis_bonus=item_query_result['Item_Wis_Bonus'],
+            cha_bonus=item_query_result['Item_Cha_Bonus'],
+            effect1_name=effect1QueryResult['Effect_Name'],
+            effect1_description=effect1QueryResult['Effect_Description'],
+            effect2_name=effect2QueryResult['Effect_Name'],
+            effect2_description=effect2QueryResult['Effect_Description'],
+            item_damage_num_of_dices=item_query_result['Item_Damage_Num_Of_Dices'],
+            item_damage_num_of_dice_sides=item_query_result['Item_Damage_Num_Of_Dice_Sides'],
+            ac=item_query_result['Item_AC_Bonus'],
+            bonus_damage=item_query_result['Item_Attack_Bonus'],
+            wield_str=item_query_result['Wield_Str'],
+            wield_dex=item_query_result['Wield_Dex'],
+            wield_wis=item_query_result['Wield_Wis'],
+            wield_int=item_query_result['Wield_Int'],
+        )
+        
+    return 400

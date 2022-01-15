@@ -21,6 +21,10 @@ def select(select_fields, from_table, multiple=False, where_clause="", args=(), 
     sql_str += where_clause + ";"
     return Query(sql_str, args, True, multiple).run_query()
 
+def select_default_security_questions():
+    sql_str = """SELECT * FROM Security_Questions;"""
+    return Query(sql_str, (), True, True).run_query()
+
 def select_user_data_except_user(user_id):
     sql_str = """SELECT User_ID, Username, Is_Verified, Is_Admin
             FROM Users

@@ -19,7 +19,7 @@
                     <div class="equipment_tab" style="width: 100%; height: 67.5%; background-color: #424242; border-bottom-style: solid; border-bottom-color: black; border-bottom-width: 1%;">
                         <div class="equipment">
                             <div class="equipment_side">
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Head');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Head');">
                                     <div class="equipment_left_item equipment_item">
                                         <div class="equipment_left_img">
                                             <img id="equipment_Head_image" src="{{ equiped_item['head']['image']|e }}" alt="Head Item" />
@@ -33,7 +33,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Shoulder');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Shoulder');">
                                     <div class="equipment_left_item equipment_item">
                                         <div class="equipment_left_img">
                                             <img id="equipment_Shoulder_image" src="{{ equiped_item['shoulder']['image']|e }}" alt="Shoulder Item" />
@@ -47,7 +47,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Torso');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Torso');">
                                     <div class="equipment_left_item equipment_item">
                                         <div class="equipment_left_img">
                                             <img  id="equipment_Torso_image" src="{{ equiped_item['Torso']['image']|e }}" alt="Torso Item" />
@@ -61,7 +61,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Hand');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Hand');">
                                     <div class="equipment_left_item equipment_item">
                                         <div class="equipment_left_img">
                                             <img  id="equipment_Hand_image" src="{{ equiped_item['hand']['image']|e }}" alt="Hand Item" />
@@ -75,7 +75,7 @@
                                         </div>
                                     </div>
                                 </div>	
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Leg');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Leg');">
                                     <div class="equipment_left_item equipment_item">
                                         <div class="equipment_left_img">
                                             <img id="equipment_Leg_image" src="{{ equiped_item['leg']['image']|e }}" alt="Leg Item" />
@@ -89,7 +89,7 @@
                                         </div>
                                     </div>
                                 </div>	
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Foot');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Foot');">
                                     <div class="equipment_left_item equipment_item">
                                         <div class="equipment_left_img">
                                             <img id="equipment_Foot_image" src="{{ equiped_item['Foot']['image']|e }}" alt="Foot Item" />
@@ -105,7 +105,7 @@
                                 </div>	
                             </div>
                             <div class="equipment_side">
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Trinket1');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Trinket1');">
                                     <div class="equipment_right_item equipment_item">
                                         <div class="equipment_right_item_name">
                                             <h2  id="equipment_Trinket1_text"
@@ -119,7 +119,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Trinket2');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Trinket2');">
                                     <div class="equipment_right_item equipment_item">
                                         <div class="equipment_right_item_name">
                                             <h2  id="equipment_Trinket2_text"
@@ -133,7 +133,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Ring1');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Ring1');">
                                     <div class="equipment_right_item equipment_item">
                                         <div class="equipment_right_item_name">
                                             <h2 id="equipment_Ring1_text" 
@@ -147,7 +147,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Ring2');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Ring2');">
                                     <div class="equipment_right_item equipment_item">
                                         <div class="equipment_right_item_name">
                                             <h2  id="equipment_Ring2_text"
@@ -161,7 +161,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Item1');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Item1');">
                                     <div class="equipment_right_item equipment_item">
                                         <div class="equipment_right_item_name">
                                             <h2  id="equipment_Item1_text"
@@ -175,7 +175,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Item2');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Item2');">
                                     <div class="equipment_right_item equipment_item">
                                         <div class="equipment_right_item_name">
                                             <h2  id="equipment_Item2_text"
@@ -200,7 +200,7 @@
                     <div style="width: 100%; height: 23%; background-color: #424242;">
                         <div class="equipment">
                             <div class="equipment_side">
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Weapon1');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Weapon1');">
                                     <div class="equipment_left_item equipment_item">
                                         <div class="equipment_left_img">
                                             <img id="equipment_Weapon1_image" src="{{ equiped_item['weapon1']['image']|e }}" alt="Main Hand 1" />
@@ -214,7 +214,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Weapon2');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Weapon2');">
                                     <div class="equipment_left_item equipment_item">
                                         <div class="equipment_left_img">
                                             <img id="equipment_Weapon2_image" src="{{ equiped_item['offhand1']['image']|e }}" alt="Offhand 1" />
@@ -230,7 +230,7 @@
                                 </div>
                             </div>
                             <div class="equipment_side">
-                                <div class="equipment_row" onclick="equipmentItemDetails({{ char_id }}, 'Weapon3');">
+                                <div class="equipment_row clickable" onclick="equipmentItemDetails({{ char_id }}, 'Weapon3');">
                                     <div class="equipment_right_item equipment_item">
                                         <div class="equipment_right_item_name">
                                             <h2  id="equipment_Weapon3_text"
@@ -244,7 +244,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="equipment_row tooltip" onclick="equipmentItemDetails({{ char_id }}, 'Weapon4');">
+                                <div class="equipment_row clickable tooltip" onclick="equipmentItemDetails({{ char_id }}, 'Weapon4');">
                                     <div class="equipment_right_item equipment_item">
                                         <div class="equipment_right_item_name">
                                             <h2  id="equipment_Weapon4_text"
@@ -437,19 +437,29 @@
     <div class="inv_container">
         <div class="inner_container">
             <div class="inv_container_menubar">
-                <div id="Inventory" class="inv_container_menu_button_active" onclick="inv_tab('inv_container_inventory_section', 'Inventory');">
+                <div id="Inventory" class="inv_container_menu_button_active clickable" onclick="inv_tab('inv_container_inventory_section', 'Inventory');">
                     <h1>Inventory</h1>
                 </div>
-                <div id="Abilities" class="inv_container_menu_button_inactive" onclick="inv_tab('inv_container_abilities_section', 'Abilities');">
+                <div id="Abilities" class="inv_container_menu_button_inactive clickable" onclick="inv_tab('inv_container_abilities_section', 'Abilities');">
                     <h1>Abilities</h1>
                 </div>
-                <div id="Skills" class="inv_container_menu_button_middle inv_container_menu_button_inactive" onclick="inv_tab('inv_container_skills_section', 'Skills');">
+                <div id="Skills" class="inv_container_menu_button_middle inv_container_menu_button_inactive clickable" onclick="inv_tab('inv_container_skills_section', 'Skills');">
                     <h1>Misc.</h1>
                 </div>
             </div>
             <div class="inv_container_inner_area">
-                {% for ii in inv_items %}
-                    <div class="inv_container_inventory_section">
+                <div class="inv_container_inventory_section">
+                <!--
+                    <div id="submit_item_header" class="inv_category">
+						<div class="inv_category_line">
+							<div class="inv_line_inner">
+								<h2 class="submit_item_name"><i>Submit New Item</i></h2>
+								<div class="inv_add_item_button clickable" onclick="add_new_item({{ char_id }})"></div>
+							</div>
+						</div>
+					</div>
+                -->
+                    {% for ii in inv_items %}
                         <div id="inv_category_{{ ii }}" class="inv_category">
                             <div class="inv_category_line">
                                 <div class="inv_line_inner">
@@ -487,8 +497,8 @@
                                 </div>
                             {% endfor %}
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
                 <div class="inv_container_abilities_section" style="display: none;">
 					<div id="ability_header" class="inv_category">
 						<div class="inv_category_line">
