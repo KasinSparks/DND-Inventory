@@ -616,6 +616,7 @@ def getItemFullDetails(item_id):
             wield_dex=item_query_result['Wield_Dex'],
             wield_wis=item_query_result['Wield_Wis'],
             wield_int=item_query_result['Wield_Int'],
+            magic_resistance=item_query_result['Item_Magic_Resistance'],
         )
         
     return 400
