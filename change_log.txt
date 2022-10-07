@@ -3,7 +3,7 @@ Version 1.7
 * Removed random TRAY
 * Added Magic Resistance stat for all items
 * Added Resource stat for all characters
-* 
+* Fixed Bouns damage field on weapons not display current value  
 
 Version 1.6
 * Added security questions
