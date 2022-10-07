@@ -105,6 +105,13 @@ def select_items_name_and_id():
             """
     return Query(sql_str, multiple=True).run_query()
 
+def select_unapproved_items():
+    sql_str = """SELECT Approved, Item_ID
+                FROM Items
+                WHERE Approved = 0;
+            """
+    return Query(sql_str, multiple=True).run_query()
+
 def select_slot_names(slot_id = -1):
     where_command = ""
     args = ()
