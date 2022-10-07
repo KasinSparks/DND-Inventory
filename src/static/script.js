@@ -131,6 +131,11 @@ function getEquipmentItemDetailsHTML(jsonData, function_call='test2()'){
 					<td colspan=2><h2>AC:</h2></td>\
 					<td colspan=2><h2>' + jsonData.ac + '</h2></td>\
 				</tr>'
+
+				equipmentItemDetailsHTML += '<tr>\
+					<td colspan=2><h2>MR:</h2></td>\
+					<td colspan=2><h2>' + jsonData.magic_resistance + '</h2></td>\
+				</tr>'
 				 
 	equipmentItemDetailsHTML += '<tr>\
 					<td><h2>STR:</h2></td>\
@@ -590,6 +595,14 @@ function changeMaxHealth(char_id){
 		var ccd = new ChangeData(char_id, '/dataserver/getMaxHealth/' + char_id, 'json',
 			'character_max_hp', '/character/edit/maxhealth/')
 		ccd.dataCall(ccd.number_additional);
+	}
+}
+
+function changeResource(char_id){
+	if(!isChangeCharDataOpen){
+		var ccd = new ChangeData(char_id, '/dataserver/getResource/' + char_id, 'json',
+			'character_resource', '/character/edit/resource/')
+		ccd.dataCall(ccd.number);
 	}
 }
 

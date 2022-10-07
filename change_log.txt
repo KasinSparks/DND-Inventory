@@ -1,5 +1,8 @@
 Version 1.7
 * Removed image requirement for adding new items
+* Removed random TRAY
+* Added Magic Resistance stat for all items
+* Added Resource stat for all characters
 * 
 
 Version 1.6

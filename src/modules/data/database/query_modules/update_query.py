@@ -72,6 +72,9 @@ def update_char_currency(currency, user_id, char_id):
 def update_char_health(health, user_id, char_id):
     update("Character", {"Character_HP" : health}, "WHERE User_ID=? AND Character_ID=?", (user_id, char_id))
 
+def update_char_resource(resource, user_id, char_id):
+    update("Character", {"Character_Resource" : resource}, "WHERE User_ID=? AND Character_ID=?", (user_id, char_id))
+
 def update_char_image(image, user_id, char_id):
     update("Character", {"Character_Image" : image}, "WHERE User_ID=? AND Character_ID=?", (user_id, char_id))
 

@@ -107,9 +107,11 @@ def character_page(char_id):
 
     char_img = characters["Character_Image"]
 
-    if random() < 0.04:
-        image_data = url_for('static', filename='images/t_ray.jpeg')
-    elif char_img is not None and char_img != '' and char_img != 'no_image.png':
+
+    #if random() < 0.04:
+    #    image_data = url_for('static', filename='images/t_ray.jpeg')
+    #elif char_img is not None and char_img != '' and char_img != 'no_image.png':
+    if char_img is not None and char_img != '' and char_img != 'no_image.png':
         image_data = '/imageserver/user/' + characters['Character_Image']
 
 
@@ -132,6 +134,7 @@ def character_page(char_id):
         'wis' : int(characters['Character_Wisdom']) + stat_bonus['wis'],
         'cha' : int(characters['Character_Charisma']) + stat_bonus['cha'],
         'image' : image_data,
+        'resource' : int(characters['Character_Resource']),
     }
 
     stat_modifiers = {
@@ -335,7 +338,7 @@ def create_character_submit():
             'intelligence' : convert_form_field_data_to_int('intelligence'),
             'wisdom' : convert_form_field_data_to_int('wisdom'),
             'charisma' : convert_form_field_data_to_int('charisma'),
-            'health_points' : convert_form_field_data_to_int('health_points')
+            'health_points' : convert_form_field_data_to_int('health_points'),
         }
 
         if not allowed_string(get_request_field_data('race_other')):
@@ -562,6 +565,14 @@ def edit_image(char_id):
 def edit_health(char_id):
     new_val = edit_number_field(update_query.update_char_health, char_id)
     return jsonify(character_hp=new_val)
+
+@bp.route('/edit/resource/<int:char_id>', methods=('GET', 'POST'))
+@login_required
+@verified_required
+@tos_required
+def edit_resource(char_id):
+    new_val = edit_number_field(update_query.update_char_resource, char_id)
+    return jsonify(character_resource=new_val)
 
 def edit_field(char_id, character_field: str, item_field: str):
     user_id = session["user_id"]
