@@ -96,6 +96,7 @@ def creationKit_edit(item_id):
             'Item_Damage_Num_Of_Dice_Sides' : -1,
             'Item_AC_Bonus' : -1,
             'Approved' : 0,
+            'Item_Magic_Resistance' : 0,
         }
 
     item_effect0 = 'None'
@@ -269,14 +270,15 @@ def creationKit_helper(query_type, image_save_dir):
         "Wield_Dex" : convert_form_field_data_to_int('wield_dex'),
         "Wield_Wis" : convert_form_field_data_to_int('wield_wis'),
         "Wield_Int" : convert_form_field_data_to_int('wield_int'),
-        "Approved" : 0
+        "Approved" : 0,
+        "Item_Magic_Resistance" : convert_form_field_data_to_int('magic_resistance'),
     }
 
     if is_admin():
         query_data['Approved'] = 1
 
     saved_filename = None
-    if 'picture' in request.files:
+    if 'picture' in request.files and request.files['picture'].filename != '':
         new_img = request.files['picture']
         saved_filename = ImageHandler().save_image(new_img, image_save_dir, "temp_item")
 

@@ -27,7 +27,8 @@ def init_item_data():
         'Wield_Str' : 0,
         'Wield_Dex' : 0,
         'Wield_Wis' : 0,
-        'Wield_Int' : 0
+        'Wield_Int' : 0,
+        'Item_Magic_Resistance' : 0,
     }
     return item_data
 
@@ -58,6 +59,7 @@ def item_data_to_json(item_data, image, effect1_data, effect2_data):
         wield_dex=item_data['Wield_Dex'],
         wield_wis=item_data['Wield_Wis'],
         wield_int=item_data['Wield_Int'],
+        magic_resistance=item_data['Item_Magic_Resistance'],
     )
 
 FIELD_NAMES = (

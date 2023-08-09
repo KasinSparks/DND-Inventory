@@ -1173,6 +1173,9 @@ table td{
 	background-image: url(images/goBack.png);
 }
 
+.character_select_bottom_button_approveall{
+	background-image: url(images/pass.png);
+}
 
 .character_select_bottom_button_new{
 	background-image: url(images/new.png);

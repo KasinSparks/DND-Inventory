@@ -116,6 +116,24 @@ def admin_approve_item_notification(item_id, status):
     #delete_query.delete_notification(notification_id)
     return '200'
 
+@bp.route('items/approveAllItems')
+@login_required
+@tos_required
+@verified_required
+def admin_approve_all_item_notification():
+    if not is_admin():
+        return not_admin_redirect()
+    
+    #item_id = q['Item_ID']
+    items = select_query.select_unapproved_items()
+    for n in items:
+        #print(n[1])
+        update_query.update_approved_item_status(n[1], True)
+        q = select_query.select(("Note_ID",), "Admin_Notifications", False, "WHERE Item_ID=?", (n[1],))
+        if q is not None:
+            delete_query.delete_notification(q[0])
+    return render_template('admin/approveallitems.html',
+                            item_count=len(items))
 
 @bp.route('users/remove', methods=('GET', 'POST'))
 @login_required

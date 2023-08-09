@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<head>
+    <title>Approve All Items</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body onload="redirect_after_seconds('../../tools/creationKit', 5000);">
+    <div class="user_container">
+        <div class="inner_container">
+            <div class="tab">
+                    <h1>{{ header_text|e }}</h1>
+            </div>
+            <div class="character_select_inner_panel">
+                <div class="sub_inner_panel">
+                    <div>
+                        <h3 style="color: white">
+                            Approved {{ item_count }} number of items.
+                        </h3>
+                        <p style="color: white">
+                            Redirecting in 5 seconds.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <div class="footer">
+            <p>Copyright 2020</p>
+        </div>
+    </div>
+</body>

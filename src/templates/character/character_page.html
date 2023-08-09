@@ -323,6 +323,17 @@
                             <h3 class="info_data"></h3>
                         </div>
                     </div>
+                    <div class="info_item">
+                        <div class="info_left_section">
+                            <h3 class="info_data">Resource</h3>
+                        </div>	
+                        <div class="info_middle_section info_middle_section_top_image clickable" onclick="changeResource({{ char_id }});">
+                            <h3 id="character_resource" class="info_data">{{ character_data['resource']|e }}</h3>
+                        </div>
+                        <div class="info_right_section info_right_section_top_image">
+                            <h3 class="info_data"></h3>
+                        </div>
+                    </div>
 
                     <div class="info_item_seperator"></div>
 
@@ -359,8 +370,6 @@
                             <h3 id="character_max_weight" class="info_data">{{ character_data['max_weight']|e }}</h3>
                         </div>
                     </div>
-
-                    <div class="info_item_seperator"></div>
 
                     <div class="info_item_seperator"></div>
 

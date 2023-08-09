@@ -35,6 +35,9 @@
                 </div>
                 <div class="character_select_bottom_buttons_container">
                     <div class="character_select_bottom_button_new clickable" onclick="location.href='/tools/creationKit/add'"></div>
+                    {% if is_admin %}
+                    <div class="character_select_bottom_button_approveall clickable" onclick="location.href='/admin/items/approveAllItems'"></div>
+                    {% endif %}
                     <div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('home') }}';"></div>
                 </div>
             </div>

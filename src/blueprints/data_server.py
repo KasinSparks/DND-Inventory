@@ -235,6 +235,26 @@ def get_max_health(char_id):
 def get_AC(char_id):
     return get_stat_data(char_id, 'Character_AC', 'Item_AC_Bonus')
 
+@bp.route('getResource/<int:char_id>')
+@login_required
+@verified_required
+@tos_required
+def get_Resource(char_id):
+    field_name = "Character_Resource"
+    user_id = session["user_id"]
+    if not check_if_user_has_character(user_id, char_id):
+        if is_admin():
+            user_id = get_user_id_from_char_id(char_id)
+            if user_id < 0:
+                return jsonify(current_value="Err")
+
+    query_result = select_query.select_char_fields(user_id, char_id, (field_name,))
+
+    if query_result is None:
+        return jsonify(current_value=0)
+
+    return jsonify(current_value=query_result[field_name])
+
 @bp.route('getInitiative/<int:char_id>')
 @login_required
 @verified_required
@@ -596,6 +616,7 @@ def getItemFullDetails(item_id):
             wield_dex=item_query_result['Wield_Dex'],
             wield_wis=item_query_result['Wield_Wis'],
             wield_int=item_query_result['Wield_Int'],
+            magic_resistance=item_query_result['Item_Magic_Resistance'],
         )
         
     return 400

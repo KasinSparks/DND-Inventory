@@ -6,6 +6,8 @@ from flask import Flask, render_template, session, send_from_directory, request,
 
 from modules.data.database.query_modules.select_query import get_user_id
 
+import json
+
 def create_app(test_config=None, is_development_env=True, instance_path=None):
     # create and configure the app
     if instance_path is None:
@@ -17,7 +19,7 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
     if is_development_env:
         config_filename = 'debug'
     # get the app's config
-    app.config.from_json(os.path.join(app.instance_path, config_filename + '.cfg'))
+    app.config.from_file(os.path.join(app.instance_path, config_filename + '.cfg'), load=json.load)
 
     # ensure the instance folder exists
     try:
