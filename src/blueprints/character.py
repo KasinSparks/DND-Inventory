@@ -550,7 +550,12 @@ def edit_image(char_id):
         fullDirName = os.path.join(current_app.config['IMAGE_UPLOAD'], dirName)
         image_name = "profile_image_" + str(select_query.get_username(user_id)) + '_' + str(char_id)
         filename = ImageHandler().save_image(new_img, fullDirName, image_name)
-        thumbnail_name = ImageHandler()._resize_image_to_thumbnail(os.path.join(fullDirName, filename), (265, 385), fullDirName)
+
+        # Check if it is a GIF or not
+        if new_img.filename.upper().split('.')[-1] == "GIF":
+            thumbnail_name = secure_filename(filename)
+        else:
+            thumbnail_name = ImageHandler()._resize_image_to_thumbnail(os.path.join(fullDirName, filename), (265, 385), fullDirName)
 
         update_query.update_char_image(thumbnail_name, user_id, char_id)
 
