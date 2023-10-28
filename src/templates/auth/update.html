@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<head>
+    <title>Update</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+    <div class="user_container">
+        <div class="inner_container">
+            <div class="tab">
+                    <h1>{{ header_text }}</h1>
+            </div>
+            <div class="character_select_inner_panel">
+                <div class="sub_inner_panel">
+                    <h3 style="color: #c1c1c1;">We new support GIFS!!!</h3>
+                    <img src="static/images/rickroll.gif">
+                    <img src="static/images/rickroll.gif">
+                    <img src="static/images/rickroll.gif">
+                    <img src="static/images/rickroll.gif">
+                </div>
+                <div class="character_select_bottom_buttons_container">
+                    <div class="character_select_bottom_button_goback clickable" onclick="window.location.href='{{ url_for('home') }}';"></div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Copyright 2020</p>
+        </div>
+    </div>
+</body>

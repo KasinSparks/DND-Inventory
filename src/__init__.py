@@ -108,6 +108,48 @@ def create_app(test_config=None, is_development_env=True, instance_path=None):
                                header_text=header_text,
                                site_notification=site_notifications)
 
+    @app.route('/update')
+    @login_required
+    def update():
+        from modules.data.database.query_modules import select_query
+        from modules.account.authentication_checks import is_verified, not_verified_redirect, has_agreed_tos, not_agreed_redirect
+
+        if not is_verified():
+            return not_verified_redirect()
+        if not has_agreed_tos():
+            return not_agreed_redirect()
+
+        username = get_current_username()
+        header_text = username 
+
+        user_id = get_user_id(username)
+
+        site_notifications = select_query.select_site_notifications()
+        if site_notifications is None or len(site_notifications) < 1:
+            site_notifications = None
+
+        # Make sure user has set security questions
+        questions = select_query.select(("Security_Questions.Question", "Security_Questions.ID",), "Users_Security_Questions", True, "WHERE User_ID=?", (user_id,),
+                                        ("INNER JOIN Security_Questions ON Users_Security_Questions.Question_ID=Security_Questions.ID",)
+        )
+        
+        if questions is None or len(questions) == 0:
+            defaults = select_query.select(("*",), "Security_Questions", True)
+            return render_template('auth/setsecurityquestions.html',
+                                    header_text=username,
+                                    error_msg=None,
+                                    num_of_questions=3,
+                                    defaults=defaults,
+                                    security_questions=[1, 2, 3],
+                                    security_answers=["", "", ""],
+                                    username=username
+            )
+
+
+        return render_template('auth/update.html',
+                               header_text=header_text,
+                               site_notification=site_notifications)
+
     @app.route("/robots.txt")
     def robots():
         return send_from_directory(app.static_folder, request.path[1:])
