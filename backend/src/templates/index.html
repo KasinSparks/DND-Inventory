@@ -1,0 +1,39 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+<script type="text/javascript" charset="utf-8">
+    var socket = io("ws://localhost:5000");
+    socket.on('connect', function() {
+        socket.emit('my event', {data: 'I\'m connected!'});
+    });
+
+    var ms = Date.now();
+
+    socket.on('my response', (data) => {
+	    console.log(data);
+    });
+
+    socket.on('mouse_people', (data) => {
+	//console.log(data)
+	var cursor = document.getElementById("cursor");
+	var cursor2 = document.getElementById("cursor2");
+	cursor.style.left = data["3"][0];
+	cursor.style.top = data["3"][1];
+	cursor2.style.left = data["5"][0];
+	cursor2.style.top = data["5"][1];
+    });
+
+    onmousemove = (e) => {
+	    if (Date.now() > ms + 250) {
+		    var id = document.getElementById("test_val").value;
+		    //console.log("id: " + id + "; mouse location:", e.x, e.y);
+		    socket.emit("mouse_event", id, e.x, e.y);
+		    ms = Date.now();
+	    }
+    }
+    
+</script>
+<body>
+  <div>
+  <input type="number" id="test_val">id:</input>
+  <span style="height: 25px; width: 25px; background-color: red; border-radius: 50%; position: absolute; left: 100px; top: 200px; pointer-events: none;" class="dot" id="cursor"></span>
+  <span style="height: 25px; width: 25px; background-color: blue; border-radius: 50%; position: absolute; left: 100px; top: 200px; pointer-events: none;" class="dot" id="cursor2"></span>
+</body>
