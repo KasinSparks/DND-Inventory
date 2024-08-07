@@ -5,9 +5,9 @@ echo "Starting install..."
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 apt update && apt install -y \
-    apache2 python3 python3-pip libapache2-mod-wsgi-py3 sqlite3 vim git
+    apache2 python3 python3-flask python3-pillow libapache2-mod-wsgi-py3 sqlite3 vim git
 
-pip3 install --requirement /$folder_name/requirements.txt
+#pip3 install --requirement /$folder_name/requirements.txt
 
 cp /$folder_name/apache2_site.conf /etc/apache2/sites-available/dnd_apache2_site.conf
 
