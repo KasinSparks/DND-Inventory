@@ -858,7 +858,7 @@ table td{
 }
 
 .inv_remove_item_button{
-	background-image: url(./images/inv_remove_item.png);
+	background-image: url(./images/remove.png);
 	width: 31px;
 	height: 31px;
 }
@@ -1304,7 +1304,7 @@ table td{
 .ability_remove_button, .skill_remove_button{
 	width: 31px;
 	height: 31px;
-	background-image: url(images/inv_remove_item.png);
+	background-image: url(images/remove.png);
 	margin-right: 32px;
 }
 

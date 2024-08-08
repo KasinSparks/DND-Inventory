@@ -1,4 +1,5 @@
 var saveForLater = new Map([["", ""]]);
+var isChangeCharDataOpen = false;
 
 function equipmentItemDetails(charId, equipmentItemStr){
 	var hmtlInner = document.getElementsByClassName('eq_container')[0];
@@ -472,7 +473,6 @@ class ChangeData{
 }
 
 
-var isChangeCharDataOpen = false;
 
 function submitChanges(char_id, field_id_name, submit_route, callType=0){
 	var element = document.getElementById('new_value');
