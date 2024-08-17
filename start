@@ -1,24 +1,6 @@
 folder_name=/home/dnd/DND-Inventory
 
-echo "Starting Nginx..."
-
-echo "TODO: start Nginx"
-
-echo "nginx has been started."
-
-
-echo "Switching to dnd user to run the gunicorn server".
-if ["$USER" != "dnd"]; then
-    su dnd
-fi
-echo "DONE."
-
-echo "Activating python virtual environment..."
-source $folder_name/.venv/bin/activate
-echo "DONE."
-
 echo "Staring server..."
-gunicorn -w 4 '__init__:create_app(is_development_env=False)'
-echo "DONE."
+su -c "/home/dnd/DND-Inventory/src/.venv/bin/python3 -m gunicorn -w 4 'src.__init__:create_app(is_development_env=False)'" dnd
 
 echo "Server has been started."

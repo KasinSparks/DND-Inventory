@@ -7,25 +7,10 @@ echo "Starting install..."
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 apt update && apt install -y \
-    nginx python3 python3-pip sqlite3 vim git tmux
+    nginx python3-full python3-pip python3-venv sqlite3 vim git tmux
 
 echo "DONE."
 
-echo "Switching to dnd user for running the gunicorn server..."
-su dnd
-echo "DONE."
-
-echo "Creating python virtual environment..."
-python -m venv $folder_name/.venv
-echo "DONE."
-
-echo "Activating python virtual environment..."
-source $folder_name/.venv/bin/activate
-echo "DONE."
-
-echo "Installing python requirements..."
-pip install --requirement $folder_name/requirements.txt
-echo "DONE."
 
 echo "Creating site data directories..."
 mkdir -p -m 740 $site_data_folder/instance/database
@@ -47,10 +32,22 @@ chown dnd -R $site_data_folder/instance/database
 chmod 740 -R $site_data_folder/instance/uploads
 chmod 740 $site_data_folder/instance/database
 chmod 640 $site_data_folder/instance/database/db.sqlite
-chown dnd -R $folder_name/src
+chown dnd -R $folder_name
 echo "Done."
 
-cat $folder_name/dnd_nginx.conf >> /etc/nginx.conf
+cat $folder_name/dnd_nginx.conf >> /etc/nginx/nginx.conf
+
+echo "Creating python virtual environment..."
+su -c 'python3 -m venv /home/dnd/DND-Inventory/src/.venv' dnd
+echo "DONE."
+
+echo "Activating python virtual environment..."
+su -c 'source /home/dnd/DND-Inventory/src/.venv/bin/activate' dnd
+echo "DONE."
+
+echo "Installing python requirements..."
+su -c '/home/dnd/DND-Inventory/src/.venv/bin/pip3 install --requirement /home/dnd/DND-Inventory/requirements.txt' dnd
+echo "DONE."
 
 echo "Install Finished!"
 
