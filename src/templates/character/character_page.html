@@ -382,6 +382,8 @@
                         </div>
                         <div class="info_right_section info_right_section_bottom_image">
                             <h3 id="character_str_mod" class="info_data">{{ stat_modifiers['str']|e }}</h3>
+* creationKit/
+* creationKit/
                         </div>
                     </div>
                     <div class="info_item">
@@ -449,11 +451,14 @@
                 <div id="Inventory" class="inv_container_menu_button_active clickable" onclick="inv_tab('inv_container_inventory_section', 'Inventory');">
                     <h1>Inventory</h1>
                 </div>
-                <div id="Abilities" class="inv_container_menu_button_inactive clickable" onclick="inv_tab('inv_container_abilities_section', 'Abilities');">
+                <div id="Abilities" class="inv_container_menu_button_middle inv_container_menu_button_inactive clickable" onclick="inv_tab('inv_container_abilities_section', 'Abilities');">
                     <h1>Abilities</h1>
                 </div>
                 <div id="Skills" class="inv_container_menu_button_middle inv_container_menu_button_inactive clickable" onclick="inv_tab('inv_container_skills_section', 'Skills');">
                     <h1>Misc.</h1>
+                </div>
+                <div id="Notes" class="inv_container_menu_button_inactive clickable" onclick="inv_tab('inv_container_notes_section', 'Notes');">
+                    <h1>Notes</h1>
                 </div>
             </div>
             <div class="inv_container_inner_area">
@@ -591,6 +596,20 @@
 							</div>
 						</div>
 					{% endfor %}
+                </div>
+                <div class="inv_container_notes_section" style="display: none;">
+			<div class="inv_category_line">
+				<div class="inv_line_inner">
+					<label for="google_doc_id">Google Document ID:</label>
+					<input name="google_doc_id"></input>
+					<!-- TODO: XSS vulnerability might be here if the user is allows to enter in values into the url. -->
+					<button onclick="document.getElementById('google_document_window').src='https://docs.google.com/document/d/'+ document.getElementsByName('google_doc_id')[0].value +  '/edit?embedded=true'">Open</button>
+				</div>
+			</div>
+			<div id="notes_header" class="inv_category" style="height: 90%">
+				<!--<textarea id="character_notes_id" rows="64" cols="91" spellcheck="true" wrap="soft" class="character_notes"></textarea> -->
+<iframe id="google_document_window" width="100%" height="100%" src="https://docs.google.com/document/d/0/edit?rm=embedded">Loading...</iframe>
+			</div>
                 </div>
             </div>
         </div>

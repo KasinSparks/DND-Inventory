@@ -1337,3 +1337,11 @@ table td{
 	width: 96%;
 	font-size: larger;
 }
+
+.character_notes {
+	resize: none;
+}
+
+.inv_container_notes_section {
+	height: 100%;
+}

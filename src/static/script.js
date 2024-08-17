@@ -2076,3 +2076,48 @@ function replace_all(replace_char, from_string){
 	}
 	return _new_str;
 }
+
+var notes = "";
+var notes_textarea = null;
+
+window.addEventListener("load", (e) => {
+	notes_textarea = document.getElementById("character_notes_id");
+	console.log(notes_textarea);
+
+	if (notes_textarea !== null) {
+		// TODO: get notes from server
+		notes = "test";
+		notes_textarea.value = notes;
+		start_save_notes_interval();
+	}
+});
+
+window.addEventListener("beforeunload", (e) => {
+	if (curr_notes !== notes) {
+		save_notes();
+	}
+
+	if (saveTimerIntervalID !== null) {
+		clearInterval(saveTimerIntervalID);
+	}
+});
+
+var saveTimerIntervalID = null;
+
+function start_save_notes_interval() {
+	saveTimerIntervalID = setInterval((f) => {
+		const curr_notes = document.getElementById("character_notes_id").value;
+		if (curr_notes !== notes) {
+			console.log("saving new changes!");
+			notes = curr_notes;
+			// TODO: Determine diff of strings
+			
+			// TODO: Sent diffs to server
+
+			// TODO: Update saving icon
+			
+			save_notes();
+		}
+	}, 10000);
+}
+
