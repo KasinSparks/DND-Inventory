@@ -1,9 +1,11 @@
 FROM ubuntu:latest
 
-COPY ./ /DND-Inventory
-VOLUME /site_data
+RUN adduser dnd
 
-RUN chmod 750 /DND-Inventory/install
+COPY ./ /home/dnd/DND-Inventory
+VOLUME /home/dnd/site_data
+
+RUN chmod 750 /home/dnd/DND-Inventory/install
 
 EXPOSE 80
 EXPOSE 443
